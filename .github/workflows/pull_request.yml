@@ -1,0 +1,44 @@
+name: "pull_request"
+
+on:
+  pull_request:
+  push:
+    tags:
+      - 'main'
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v3.4.1
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
+      - name: build
+        uses: gradle/gradle-build-action@v2.3.0
+        with:
+          arguments: --full-stacktrace build
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: 'reports-${{ matrix.os }}'
+          path: '**/build/reports/**'
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop
