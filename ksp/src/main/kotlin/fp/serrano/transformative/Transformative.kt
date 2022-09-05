@@ -55,13 +55,23 @@ class Transformative(private val codegen: CodeGenerator, private val logger: KSP
     }
 
     val originalParams = klass.primaryConstructor!!.parameters.map {
-      it.name!!.asString() to it.type.resolve().qualifiedString()
+      it.name!!.asString() to it.type.resolve()
     }
     val args = originalParams.joinToString(separator = ", ") { (name, type) ->
-      "${name}: ($type) -> $type = { it }"
+      val ty = type.qualifiedString()
+      when (val eltType = type.listElementType()) {
+        null -> "${name}: ($ty) -> $ty = { it }"
+        else -> {
+          val eltTy = eltType.qualifiedString()
+          "${name}: ($ty) -> $ty = { it }, ${name}Each: ($eltTy) -> $eltTy"
+        }
+      }
     }
-    val body = originalParams.joinToString(separator = ", ") { (name, _) ->
-      "$name = $name(this.$name)"
+    val body = originalParams.joinToString(separator = ", ") { (name, type) ->
+      when (type.listElementType()) {
+        null -> "$name = $name(this.$name)"
+        else -> "$name = $name(this.$name.map(${name}Each))"
+      }
     }
 
     val fullType = "${klass.simpleName.asString()}$simpleTyArgs"
@@ -90,4 +100,10 @@ internal fun KSType.qualifiedString(): String = when (declaration) {
       if (isMarkedNullable) "$withArgs?" else withArgs
     }
   }
+}
+
+internal fun KSType.listElementType(): KSType? = when {
+  declaration.qualifiedName?.asString() == "kotlin.collections.List" ->
+    arguments.first().type?.resolve()
+  else -> null
 }
