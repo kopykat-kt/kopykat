@@ -59,18 +59,28 @@ class Transformative(private val codegen: CodeGenerator, private val logger: KSP
     }
     val args = originalParams.joinToString(separator = ", ") { (name, type) ->
       val ty = type.qualifiedString()
-      when (val eltType = type.listElementType()) {
-        null -> "${name}: ($ty) -> $ty = { it }"
-        else -> {
-          val eltTy = eltType.qualifiedString()
+      when {
+        type.listElementType() != null -> {
+          val eltTy = type.listElementType()!!.qualifiedString()
           "${name}: ($ty) -> $ty = { it }, ${name}Each: ($eltTy) -> $eltTy"
         }
+        type.mapElementType() != null -> {
+          val mapTy = type.mapElementType()!!
+          val keyTy = mapTy.first.qualifiedString()
+          val valTy = mapTy.second.qualifiedString()
+          val entryTy = "kotlin.collections.Map.Entry<$keyTy, $valTy>"
+          "${name}: ($ty) -> $ty = { it }, ${name}Each: ($entryTy) -> $valTy"
+        }
+        else -> "${name}: ($ty) -> $ty = { it }"
       }
     }
     val body = originalParams.joinToString(separator = ", ") { (name, type) ->
-      when (type.listElementType()) {
-        null -> "$name = $name(this.$name)"
-        else -> "$name = $name(this.$name.map(${name}Each))"
+      when {
+        type.listElementType() != null ->
+          "$name = $name(this.$name.map(${name}Each))"
+        type.mapElementType() != null ->
+          "$name = $name(this.$name.mapValues(${name}Each))"
+        else -> "$name = $name(this.$name)"
       }
     }
 
@@ -105,5 +115,15 @@ internal fun KSType.qualifiedString(): String = when (declaration) {
 internal fun KSType.listElementType(): KSType? = when {
   declaration.qualifiedName?.asString() == "kotlin.collections.List" ->
     arguments.first().type?.resolve()
+  else -> null
+}
+
+internal fun KSType.mapElementType(): Pair<KSType, KSType>? = when {
+  declaration.qualifiedName?.asString() == "kotlin.collections.Map" ->
+    arguments[0].type?.resolve()?.let {key ->
+      arguments[1].type?.resolve()?.let {value ->
+        key to value
+      }
+    }
   else -> null
 }

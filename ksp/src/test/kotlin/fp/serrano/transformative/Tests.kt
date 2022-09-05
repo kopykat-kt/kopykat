@@ -64,4 +64,17 @@ class Tests {
       |val r = p2.anns.first()
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `each for maps`() {
+    """
+      |import fp.serrano.transformative
+      |
+      |@transformative data class Person(val name: String, val age: Int, val things: Map<String, Int>)
+      |
+      |val p1: Person = Person("Alex", 1, mapOf("chair" to 1, "pencil" to 10))
+      |val p2 = p1.transform(thingsEach = { it.value + 1 })
+      |val r = p2.things["chair"]
+      """.evals("r" to 2)
+  }
 }
