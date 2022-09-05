@@ -76,7 +76,7 @@ class Transformative(private val codegen: CodeGenerator, private val logger: KSP
 
     val fullType = "${klass.simpleName.asString()}$simpleTyArgs"
 
-    return "fun $fullTyArgs $fullType.transform($args): $fullType = this.copy($body)"
+    return "inline fun $fullTyArgs $fullType.transform($args): $fullType = this.copy($body)"
   }
 }
 
