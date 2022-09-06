@@ -8,7 +8,7 @@ import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.toTypeName
 
-fun KSPropertyDeclaration.toParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
+fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
     type = type.toTypeName(typeParamResolver),
@@ -26,28 +26,19 @@ fun KSPropertyDeclaration.asPropertySpec(
   ).apply(block).build()
 
 fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit) {
-  primaryConstructor(buildConstructor(block))
+  primaryConstructor(FunSpec.constructorBuilder().apply(block).build())
 }
 
 fun FileSpec.Builder.addClass(className: ClassName, block: TypeSpec.Builder.() -> Unit) {
-  addType(buildClass(className, block))
+  addType(TypeSpec.classBuilder(className).apply(block).build())
 }
 
 fun FileSpec.Builder.addFunction(name: String, block: FunSpec.Builder.() -> Unit) {
-  addFunction(buildFunction(name, block))
+  addFunction(FunSpec.builder(name).apply(block).build())
 }
 
 fun buildFile(packageName: String, fileName: String, block: FileSpec.Builder.() -> Unit): FileSpec =
   FileSpec.builder(packageName, fileName).apply(block).build()
-
-fun buildClass(className: ClassName, block: TypeSpec.Builder.() -> Unit): TypeSpec =
-  TypeSpec.classBuilder(className).apply(block).build()
-
-fun buildConstructor(block: FunSpec.Builder.() -> Unit): FunSpec =
-  FunSpec.constructorBuilder().apply(block).build()
-
-fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSpec =
-  FunSpec.builder(name).apply(block).build()
 
 fun ClassName.parameterizedWhenNotEmpty(
   typeArguments: List<TypeName>

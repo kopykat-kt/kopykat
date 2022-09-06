@@ -35,15 +35,12 @@ class MutableCopyProcessor(private val codegen: CodeGenerator, private val logge
     val typeVariables = typeParameters.map { it.toTypeVariableName() }
     val targetClassName = ClassName(packageName, targetTypeName).parameterizedWhenNotEmpty(typeVariables)
     val mutableClassName = ClassName(packageName, mutableTypeName)
-    buildFile(
-      packageName = packageName,
-      fileName = mutableTypeName,
-    ) {
+    buildFile(packageName = packageName, fileName = mutableTypeName) {
       addClass(mutableClassName) {
         addTypeVariables(typeVariables)
         primaryConstructor {
           properties.forEach { property ->
-            addParameter(property.toParameterSpec(typeParamResolver))
+            addParameter(property.asParameterSpec(typeParamResolver))
             addProperty(property.asPropertySpec(typeParamResolver) {
               mutable(true).initializer(property.simpleName.asString())
             })
