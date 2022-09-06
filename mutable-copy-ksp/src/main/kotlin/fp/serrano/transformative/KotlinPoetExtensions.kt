@@ -33,8 +33,18 @@ fun FileSpec.Builder.addClass(className: ClassName, block: TypeSpec.Builder.() -
   addType(TypeSpec.classBuilder(className).apply(block).build())
 }
 
-fun FileSpec.Builder.addFunction(name: String, block: FunSpec.Builder.() -> Unit) {
-  addFunction(FunSpec.builder(name).apply(block).build())
+fun FileSpec.Builder.addFunction(
+  name: String,
+  receiver: TypeName? = null,
+  returns: TypeName? = null,
+  typeVariables: Iterable<TypeVariableName> = emptyList(),
+  block: FunSpec.Builder.() -> Unit = {},
+) {
+  addFunction(FunSpec.builder(name).apply {
+    receiver?.apply { receiver(receiver) }
+    returns?.apply { returns(returns) }
+    addTypeVariables(typeVariables)
+  }.apply(block).build())
 }
 
 fun buildFile(packageName: String, fileName: String, block: FileSpec.Builder.() -> Unit): FileSpec =

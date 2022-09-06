@@ -18,6 +18,35 @@ class MutableCopyTest {
   }
 
   @Test
+  fun `mutate one property on iterable`() {
+    """
+      |import fp.serrano.MutableCopy
+      |
+      |@MutableCopy data class Person(val name: String, val age: Int)
+      |
+      |val p1 = listOf(Person("Alice", 1), Person("Bob", 2))
+      |val p2 = p1.copyAll { age++ }
+      |val a = p2[0].age
+      |val b = p2[1].age
+      """.evals("a" to 2, "b" to 3)
+  }
+
+
+  @Test
+  fun `mutate one property on sequence`() {
+    """
+      |import fp.serrano.MutableCopy
+      |
+      |@MutableCopy data class Person(val name: String, val age: Int)
+      |
+      |val p1 = sequenceOf(Person("Alice", 1), Person("Bob", 2))
+      |val p2 = p1.copyAll { age++ }.toList()
+      |val a = p2[0].age
+      |val b = p2[1].age
+      """.evals("a" to 2, "b" to 3)
+  }
+
+  @Test
   fun `mutate two properties`() {
     """
       |import fp.serrano.MutableCopy
@@ -84,6 +113,33 @@ class MutableCopyTest {
       |val p1: Person<Int> = Person("Alex", 1)
       |val p2 = p1.copy { age = age + 1 }
       |val r = p2.age
+      """.evals("r" to 2)
+  }
+
+
+  @Test
+  fun `each for lists`() {
+    """
+      |import fp.serrano.MutableCopy
+      |
+      |@MutableCopy data class Person<A>(val name: String, val age: Int, val anns: List<A>)
+      |
+      |val p1: Person<Int> = Person("Alex", 1, listOf(1, 10))
+      |val p2 = p1.copy { anns = anns.map { it + 1 } }
+      |val r = p2.anns.first()
+      """.evals("r" to 2)
+  }
+
+  @Test
+  fun `each for maps`() {
+    """
+      |import fp.serrano.MutableCopy
+      |
+      |@MutableCopy data class Person(val name: String, val age: Int, val things: Map<String, Int>)
+      |
+      |val p1: Person = Person("Alex", 1, mapOf("chair" to 1, "pencil" to 10))
+      |val p2 = p1.copy { things = things.mapValues { it.value + 1 } }
+      |val r = p2.things["chair"]
       """.evals("r" to 2)
   }
 }
