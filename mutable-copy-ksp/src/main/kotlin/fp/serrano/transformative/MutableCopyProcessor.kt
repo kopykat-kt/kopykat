@@ -49,13 +49,14 @@ class MutableCopyProcessor(private val codegen: CodeGenerator, private val logge
         }
       }
       val mutableParameterized = mutableClassName.parameterizedWhenNotEmpty(typeVariables)
+      val mutableClosureType = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT)
       addFunction(
         name = "copy",
         receiver = targetClassName,
         returns = targetClassName,
         typeVariables = typeVariables,
       ) {
-        addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
+        addParameter(name = "block", type = mutableClosureType)
         addCode(
           """
           | val mutable = $mutableParameterized(${properties.joinToString { "${it.name} = ${it.name}" } }).apply(block)
@@ -63,8 +64,6 @@ class MutableCopyProcessor(private val codegen: CodeGenerator, private val logge
           """.trimMargin()
         )
       }
-      val mutableClosureType = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT)
-
       addFunction(
         name = "copyAll",
         receiver = Iterable::class.asClassName().parameterizedBy(targetClassName),
