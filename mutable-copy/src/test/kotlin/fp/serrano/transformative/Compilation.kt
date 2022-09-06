@@ -51,7 +51,7 @@ internal fun compile(text: String): KotlinCompilation.Result {
 
 fun buildCompilation(text: String) = KotlinCompilation().apply {
   classpaths = listOf(
-    "mutable-copy-runtime:$THIS_VERSION"
+    "transformative-types:$THIS_VERSION"
   ).map { classpathOf(it) }
   symbolProcessorProviders = listOf(MutableCopyProvider())
   sources = listOf(SourceFile.kotlin(SOURCE_FILENAME, text.trimMargin()))

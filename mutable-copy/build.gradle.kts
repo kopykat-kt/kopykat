@@ -30,8 +30,8 @@ dependencies {
     }
     testImplementation(libs.kotlinCompileTestingKsp)
 
-    testRuntimeOnly(projects.mutableCopyKsp)
-    testRuntimeOnly(projects.mutableCopyRuntime)
+    testRuntimeOnly(projects.mutableCopy)
+    testRuntimeOnly(projects.transformativeTypes)
 }
 
 tasks.test {
