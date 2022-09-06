@@ -18,35 +18,6 @@ class MutableCopyTest {
   }
 
   @Test
-  fun `mutate one property on iterable`() {
-    """
-      |import fp.serrano.MutableCopy
-      |
-      |@MutableCopy data class Person(val name: String, val age: Int)
-      |
-      |val p1 = listOf(Person("Alice", 1), Person("Bob", 2))
-      |val p2 = p1.copyAll { age++ }
-      |val a = p2[0].age
-      |val b = p2[1].age
-      """.evals("a" to 2, "b" to 3)
-  }
-
-
-  @Test
-  fun `mutate one property on sequence`() {
-    """
-      |import fp.serrano.MutableCopy
-      |
-      |@MutableCopy data class Person(val name: String, val age: Int)
-      |
-      |val p1 = sequenceOf(Person("Alice", 1), Person("Bob", 2))
-      |val p2 = p1.copyAll { age++ }.toList()
-      |val a = p2[0].age
-      |val b = p2[1].age
-      """.evals("a" to 2, "b" to 3)
-  }
-
-  @Test
   fun `mutate two properties`() {
     """
       |import fp.serrano.MutableCopy
@@ -62,7 +33,6 @@ class MutableCopyTest {
       |val n = p2.name
       """.evals("r" to 2, "n" to "Alex Serrano")
   }
-
 
   @Test
   fun `mutate two properties (advanced)`() {
@@ -115,7 +85,6 @@ class MutableCopyTest {
       |val r = p2.age
       """.evals("r" to 2)
   }
-
 
   @Test
   fun `each for lists`() {
