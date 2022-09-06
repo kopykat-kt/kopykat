@@ -49,6 +49,6 @@ fun buildConstructor(block: FunSpec.Builder.() -> Unit): FunSpec =
 fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSpec =
   FunSpec.builder(name).apply(block).build()
 
-fun ClassName.parameterizedByIfNotEmpty(
+fun ClassName.parameterizedWhenNotEmpty(
   typeArguments: List<TypeName>
-) = takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this
+): TypeName = takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this

@@ -33,51 +33,33 @@ class MutableCopyProcessor(private val codegen: CodeGenerator, private val logge
     val typeParameters = klass.typeParameters
     val typeParamResolver = typeParameters.toTypeParameterResolver()
     val typeVariables = typeParameters.map { it.toTypeVariableName() }
-    val targetClassName = ClassName(packageName, targetTypeName)
+    val targetClassName = ClassName(packageName, targetTypeName).parameterizedWhenNotEmpty(typeVariables)
     val mutableClassName = ClassName(packageName, mutableTypeName)
-    val supertypes = klass.superTypes.map { it.toTypeName() }
-
     buildFile(
       packageName = packageName,
       fileName = mutableTypeName,
     ) {
       addClass(mutableClassName) {
-        supertypes.forEach(::superclass)
         addTypeVariables(typeVariables)
         primaryConstructor {
-          addParameters(properties.map { property -> property.toParameterSpec(typeParamResolver) }.asIterable())
-        }
-        addProperties(properties.map { property ->
-          property.asPropertySpec(typeParamResolver) {
-            mutable(true)
-            initializer(property.simpleName.asString())
+          properties.forEach { property ->
+            addParameter(property.toParameterSpec(typeParamResolver))
+            addProperty(property.asPropertySpec(typeParamResolver) {
+              mutable(true).initializer(property.simpleName.asString())
+            })
           }
-        }.asIterable())
+        }
       }
       addFunction("copy") {
-        receiver(targetClassName.parameterizedByIfNotEmpty(typeVariables))
-        returns(targetClassName.parameterizedByIfNotEmpty(typeVariables))
+        receiver(targetClassName)
+        returns(targetClassName)
         addTypeVariables(typeVariables)
-        addParameter(
-          name = "block",
-          type = LambdaTypeName.get(
-            receiver = mutableClassName.parameterizedByIfNotEmpty(typeVariables),
-            returnType = UNIT,
-          )
-        )
-        val typeParams =
-          typeParameters
-            .takeUnless { it.isEmpty() }
-            ?.joinToString(prefix = "<", postfix = ">") { it.name.asString() }
-            .orEmpty()
+        val mutable = mutableClassName.parameterizedWhenNotEmpty(typeVariables)
+        addParameter(name = "block", type = LambdaTypeName.get(receiver = mutable, returnType = UNIT))
         addCode(
           """
-          | val mutable = $mutableTypeName$typeParams(
-          |   ${properties.map { "${it.name} = ${it.name}" }.joinToString()}
-          | ).apply(block)
-          | return $targetTypeName$typeParams(
-          |   ${properties.map { "${it.name} = mutable.${it.name}" }.joinToString()}
-          | )
+          | val mutable = $mutable(${properties.joinToString { "${it.name} = ${it.name}" } }).apply(block)
+          | return $targetClassName(${properties.joinToString { "${it.name} = mutable.${it.name}" } })
           """.trimMargin()
         )
       }
