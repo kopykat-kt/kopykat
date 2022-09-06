@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 class MutableCopyTest {
 
   @Test
-  fun `simple test`() {
+  fun `mutate one property`() {
     """
       |import fp.serrano.MutableCopy
       |
@@ -18,7 +18,7 @@ class MutableCopyTest {
   }
 
   @Test
-  fun `complex test`() {
+  fun `mutate two properties`() {
     """
       |import fp.serrano.MutableCopy
       |
@@ -28,6 +28,24 @@ class MutableCopyTest {
       |val p2 = p1.copy { 
       |  name = name + " Serrano"
       |  age = age + 1 
+      |}
+      |val r = p2.age
+      |val n = p2.name
+      """.evals("r" to 2, "n" to "Alex Serrano")
+  }
+
+
+  @Test
+  fun `mutate two properties (advanced)`() {
+    """
+      |import fp.serrano.MutableCopy
+      |
+      |@MutableCopy data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copy { 
+      |  name = "${"\$"}name Serrano"
+      |  age++ 
       |}
       |val r = p2.age
       |val n = p2.name
