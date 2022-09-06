@@ -8,3 +8,5 @@ project(":transformative-types").projectDir = file("types")
 
 include("transformative-ksp")
 project(":transformative-ksp").projectDir = file("ksp")
+
+include("mutable-copy-ksp", "mutable-copy-runtime")
