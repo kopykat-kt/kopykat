@@ -56,7 +56,7 @@ private fun buildCompilation(
   classpaths = listOf(
     "transformative-types:$THIS_VERSION"
   ).map { classpathOf(it) }
-  symbolProcessorProviders = listOf(provider)// + providers//listOf(MutableCopyProvider())
+  symbolProcessorProviders = listOf(provider)
   sources = listOf(SourceFile.kotlin(SOURCE_FILENAME, text.trimMargin()))
 }
 
