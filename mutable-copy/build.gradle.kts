@@ -10,10 +10,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlibJDK8)
-    implementation(libs.kotlinPoet)
-    implementation(libs.kotlinPoet.ksp)
     implementation(libs.ksp)
+    implementation(projects.utils.kotlinPoet)
 
     testImplementation(projects.utils.compilation)
     testImplementation(kotlin("test"))

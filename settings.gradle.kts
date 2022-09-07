@@ -12,3 +12,4 @@ project(":transformative-ksp").projectDir = file("ksp")
 include("mutable-copy")
 
 include(":utils:compilation")
+include(":utils:kotlin-poet")
