@@ -1,5 +1,6 @@
 package fp.serrano.transformative
 
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.SourceFile
@@ -11,41 +12,36 @@ import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Paths
 
-const val THIS_VERSION = "0.1-SNAPSHOT"
-const val SOURCE_FILENAME = "Source.kt"
-const val CLASS_FILENAME = "SourceKt"
+private const val THIS_VERSION = "0.1-SNAPSHOT"
+private const val SOURCE_FILENAME = "Source.kt"
 
-fun String.failsWith(check: (String) -> Boolean) {
-  val compilationResult = compile(this)
+public fun String.failsWith(provider: SymbolProcessorProvider, check: (String) -> Boolean) {
+  val compilationResult = compile(this, provider)
   Assertions.assertThat(compilationResult.exitCode).isNotEqualTo(KotlinCompilation.ExitCode.OK)
   Assertions.assertThat(check(compilationResult.messages)).isTrue
 }
 
-fun String.compilationFails() {
-  val compilationResult = compile(this)
-  Assertions.assertThat(compilationResult.exitCode).isNotEqualTo(KotlinCompilation.ExitCode.OK)
-}
-
-fun String.evals(thing: Pair<String, Any?>) {
-  val compilationResult = compile(this)
+public fun String.evals(provider: SymbolProcessorProvider, vararg things: Pair<String, Any?>) {
+  val compilationResult = compile(this, provider)
   Assertions.assertThat(compilationResult.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
   val classesDirectory = compilationResult.outputDirectory
-  val (variable, output) = thing
-  Assertions.assertThat(eval(variable, classesDirectory)).isEqualTo(output)
+  things.forEach { (variable, output) ->
+    Assertions.assertThat(eval(variable, classesDirectory)).isEqualTo(output)
+  }
 }
 
 // UTILITY FUNCTIONS COPIED FROM META-TEST
 // =======================================
 
-internal fun compile(text: String): KotlinCompilation.Result {
-  val compilation = buildCompilation(text)
+internal fun compile(text: String, provider: SymbolProcessorProvider): KotlinCompilation.Result {
+  val compilation = buildCompilation(text, provider)
   // fix problems with double compilation and KSP
   // as stated in https://github.com/tschuchortdev/kotlin-compile-testing/issues/72
   val pass1 = compilation.compile()
   // if the first pass was unsuccessful, return it
   if (pass1.exitCode != KotlinCompilation.ExitCode.OK) return pass1
   // return the results of second pass
-  return buildCompilation(text)
+  return buildCompilation(text, provider)
     .apply {
       sources = compilation.sources + compilation.kspGeneratedSourceFiles
       symbolProcessorProviders = emptyList()
@@ -53,11 +49,14 @@ internal fun compile(text: String): KotlinCompilation.Result {
     .compile()
 }
 
-fun buildCompilation(text: String) = KotlinCompilation().apply {
+private fun buildCompilation(
+  text: String,
+  provider: SymbolProcessorProvider,
+) = KotlinCompilation().apply {
   classpaths = listOf(
     "transformative-types:$THIS_VERSION"
   ).map { classpathOf(it) }
-  symbolProcessorProviders = listOf(TransformativeProvider())
+  symbolProcessorProviders = listOf(provider)// + providers//listOf(MutableCopyProvider())
   sources = listOf(SourceFile.kotlin(SOURCE_FILENAME, text.trimMargin()))
 }
 
@@ -106,15 +105,15 @@ private val KotlinCompilation.kspGeneratedSourceFiles: List<SourceFile>
 
 private fun eval(expression: String, classesDirectory: File): Any? {
   val classLoader = URLClassLoader(arrayOf(classesDirectory.toURI().toURL()))
-  val fullClassName = getFullClassName(classesDirectory, CLASS_FILENAME)
+  val fullClassName = getFullClassName(classesDirectory)
   val field = classLoader.loadClass(fullClassName).getDeclaredField(expression)
   field.isAccessible = true
   return field.get(Object())
 }
 
-private fun getFullClassName(classesDirectory: File, className: String): String =
+private fun getFullClassName(classesDirectory: File): String =
   Files.walk(Paths.get(classesDirectory.toURI()))
-    .filter { it.toFile().name == "$className.class" }
+    .filter { it.toFile().name == "SourceKt.class" }
     .toArray()[0]
     .toString()
     .removePrefix(classesDirectory.absolutePath + File.separator)

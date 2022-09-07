@@ -8,14 +8,14 @@ import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.toTypeName
 
-fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
+public fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
     type = type.toTypeName(typeParamResolver),
     modifiers = modifiers.mapNotNull { it.toKModifier() },
   )
 
-fun KSPropertyDeclaration.asPropertySpec(
+public fun KSPropertyDeclaration.asPropertySpec(
   typeParamResolver: TypeParameterResolver,
   block: PropertySpec.Builder.() -> Unit = {},
 ): PropertySpec =
@@ -25,15 +25,15 @@ fun KSPropertyDeclaration.asPropertySpec(
     modifiers = modifiers.mapNotNull { it.toKModifier() },
   ).apply(block).build()
 
-fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit) {
+public fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit) {
   primaryConstructor(FunSpec.constructorBuilder().apply(block).build())
 }
 
-fun FileSpec.Builder.addClass(className: ClassName, block: TypeSpec.Builder.() -> Unit) {
+public fun FileSpec.Builder.addClass(className: ClassName, block: TypeSpec.Builder.() -> Unit) {
   addType(TypeSpec.classBuilder(className).apply(block).build())
 }
 
-fun FileSpec.Builder.addFunction(
+public fun FileSpec.Builder.addFunction(
   name: String,
   receiver: TypeName? = null,
   returns: TypeName? = null,
@@ -47,9 +47,9 @@ fun FileSpec.Builder.addFunction(
   }.apply(block).build())
 }
 
-fun buildFile(packageName: String, fileName: String, block: FileSpec.Builder.() -> Unit): FileSpec =
+public fun buildFile(packageName: String, fileName: String, block: FileSpec.Builder.() -> Unit): FileSpec =
   FileSpec.builder(packageName, fileName).apply(block).build()
 
-fun ClassName.parameterizedWhenNotEmpty(
+public fun ClassName.parameterizedWhenNotEmpty(
   typeArguments: List<TypeName>
 ): TypeName = takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this

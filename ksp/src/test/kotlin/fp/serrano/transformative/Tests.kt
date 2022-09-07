@@ -78,3 +78,11 @@ class Tests {
       """.evals("r" to 2)
   }
 }
+
+private fun String.failsWith(check: (String) -> Boolean) {
+  failsWith(TransformativeProvider(), check)
+}
+
+private fun String.evals(vararg things: Pair<String, Any?>) {
+  evals(TransformativeProvider(), *things)
+}

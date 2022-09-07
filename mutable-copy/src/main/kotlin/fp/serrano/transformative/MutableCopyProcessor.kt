@@ -5,10 +5,9 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.*
 
-class MutableCopyProcessor(private val codegen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
-  companion object {
-    const val ANNOTATION_NAME = "fp.serrano.MutableCopy"
-  }
+internal const val ANNOTATION_NAME = "fp.serrano.MutableCopy"
+
+internal class MutableCopyProcessor(private val codegen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
     resolver

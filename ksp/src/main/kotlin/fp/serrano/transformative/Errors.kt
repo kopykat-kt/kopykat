@@ -2,7 +2,7 @@ package fp.serrano.transformative
 
 import com.google.devtools.ksp.symbol.KSDeclaration
 
-val KSDeclaration.notDataClassErrorMessage
+internal val KSDeclaration.notDataClassErrorMessage
   get() =
     """
       |${(qualifiedName ?: simpleName).asString()} cannot be annotated with @transformative

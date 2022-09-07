@@ -15,20 +15,8 @@ dependencies {
     implementation(libs.kotlinPoet.ksp)
     implementation(libs.ksp)
 
+    testImplementation(projects.utils.compilation)
     testImplementation(kotlin("test"))
-    testImplementation(libs.assertj)
-    testImplementation(libs.classgraph)
-    testImplementation(libs.kotlinCompileTesting) {
-        exclude(
-            group = libs.classgraph.get().module.group,
-            module = libs.classgraph.get().module.name
-        )
-        exclude(
-            group = libs.kotlin.stdlibJDK8.get().module.group,
-            module = libs.kotlin.stdlibJDK8.get().module.name
-        )
-    }
-    testImplementation(libs.kotlinCompileTestingKsp)
 
     testRuntimeOnly(projects.mutableCopy)
     testRuntimeOnly(projects.transformativeTypes)

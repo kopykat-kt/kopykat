@@ -9,11 +9,9 @@ import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import com.squareup.kotlinpoet.ksp.writeTo
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
+private const val ANNOTATION_NAME = "fp.serrano.transformative"
 
-class Transformative(private val codegen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
-  companion object {
-    const val ANNOTATION_NAME = "fp.serrano.transformative"
-  }
+internal class Transformative(private val codegen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
     resolver
@@ -102,9 +100,9 @@ private fun FunSpec.Builder.addListParameter(
   )
 }
 
-inline fun <reified T> TypeName.extendsFrom(): Boolean =
+private inline fun <reified T> TypeName.extendsFrom(): Boolean =
   this is ParameterizedTypeName && rawType == T::class.asTypeName()
 
-val TypeName.typeArguments get() = (this as? ParameterizedTypeName)?.typeArguments
+private val TypeName.typeArguments get() = (this as? ParameterizedTypeName)?.typeArguments
 
 private val KSDeclaration.name get() = simpleName.asString()
