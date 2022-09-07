@@ -2,8 +2,15 @@ package fp.serrano.transformative
 
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import com.squareup.kotlinpoet.ksp.toTypeVariableName
+import com.squareup.kotlinpoet.ksp.writeTo
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
-class Transformative(private val codegen: CodeGenerator, private val logger: KSPLogger): SymbolProcessor {
+
+class Transformative(private val codegen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
   companion object {
     const val ANNOTATION_NAME = "fp.serrano.transformative"
   }
@@ -23,107 +30,81 @@ class Transformative(private val codegen: CodeGenerator, private val logger: KSP
       return
     }
 
-    val writer =
-      codegen.createNewFile(
-        Dependencies(aggregating = true, *listOfNotNull(klass.containingFile).toTypedArray()),
-        klass.packageName.toString(), "${klass.simpleName}Transformative"
-      ).writer()
-    writer.write(generateTransform(klass))
-    writer.flush()
-  }
-
-  private fun generateTransform(klass: KSClassDeclaration): String {
-    val simpleTyArgs = when {
-      klass.typeParameters.isEmpty() -> ""
-      else -> klass.typeParameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { param ->
-        param.name.asString()
-      }
-    }
-    val fullTyArgs = when {
-      klass.typeParameters.isEmpty() -> ""
-      else -> klass.typeParameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { param ->
-        when {
-          param.bounds.toList().isEmpty() -> param.name.asString()
-          else -> {
-            val bounds = param.bounds.joinToString(separator = ", ") { bound ->
-              bound.resolve().qualifiedString()
+    val packageName = klass.packageName.asString()
+    val targetTypeName = klass.simpleName.asString()
+    val typeParameters = klass.typeParameters
+    val typeParamResolver = typeParameters.toTypeParameterResolver()
+    val typeVariables = typeParameters.map { it.toTypeVariableName() }
+    val targetClassName = ClassName(packageName, targetTypeName).parameterizedWhenNotEmpty(typeVariables)
+    buildFile(packageName = packageName, "${klass.simpleName.asString()}Transformative") {
+      val properties = klass.getAllProperties()
+      addFunction(
+        name = "transform",
+        receiver = targetClassName,
+        returns = targetClassName,
+        typeVariables = typeVariables,
+      ) {
+        val propertyStatements = properties.map { property ->
+          val typeName = property.type.toTypeName(typeParamResolver)
+          addParameter(
+            ParameterSpec.builder(
+              name = property.name,
+              type = LambdaTypeName.get(parameters = arrayOf(typeName), returnType = typeName)
+            ).defaultValue("{ it }").build()
+          )
+          when {
+            typeName.extendsFrom<List<*>>() -> {
+              addListParameter(typeName, property)
+              "${property.name} = ${property.name}(this.${property.name}).map(${property.name}Each)"
             }
-            "${param.name.asString()} : $bounds"
+
+            typeName.extendsFrom<Map<*, *>>() -> {
+              addMapParameter(typeName, property)
+              "${property.name} = ${property.name}(this.${property.name}).mapValues(${property.name}Each)"
+            }
+
+            else -> "${property.name} = ${property.name}(this.${property.name})"
           }
         }
+        addCode("return $targetClassName(${propertyStatements.joinToString()})")
       }
-    }
-
-    val originalParams = klass.primaryConstructor!!.parameters.map {
-      it.name!!.asString() to it.type.resolve()
-    }
-    val args = originalParams.joinToString(separator = ", ") { (name, type) ->
-      val ty = type.qualifiedString()
-      when {
-        type.listElementType() != null -> {
-          val eltTy = type.listElementType()!!.qualifiedString()
-          "${name}: ($ty) -> $ty = { it }, ${name}Each: ($eltTy) -> $eltTy"
-        }
-        type.mapElementType() != null -> {
-          val mapTy = type.mapElementType()!!
-          val keyTy = mapTy.first.qualifiedString()
-          val valTy = mapTy.second.qualifiedString()
-          val entryTy = "kotlin.collections.Map.Entry<$keyTy, $valTy>"
-          "${name}: ($ty) -> $ty = { it }, ${name}Each: ($entryTy) -> $valTy"
-        }
-        else -> "${name}: ($ty) -> $ty = { it }"
-      }
-    }
-    val body = originalParams.joinToString(separator = ", ") { (name, type) ->
-      when {
-        type.listElementType() != null ->
-          "$name = $name(this.$name.map(${name}Each))"
-        type.mapElementType() != null ->
-          "$name = $name(this.$name.mapValues(${name}Each))"
-        else -> "$name = $name(this.$name)"
-      }
-    }
-
-    val fullType = "${klass.simpleName.asString()}$simpleTyArgs"
-
-    return "inline fun $fullTyArgs $fullType.transform($args): $fullType = this.copy($body)"
+    }.writeTo(codeGenerator = codegen, aggregating = false)
   }
 }
 
-internal fun KSTypeArgument.qualifiedString(): String = when (val ty = type?.resolve()) {
-  null -> toString()
-  else -> ty.qualifiedString()
+private fun FunSpec.Builder.addMapParameter(
+  typeName: TypeName,
+  property: KSPropertyDeclaration
+) {
+  val (keyType, valueType) = typeName.typeArguments!!
+  addParameter(
+    ParameterSpec.builder(
+      name = property.name + "Each",
+      type = LambdaTypeName.get(
+        parameters = arrayOf(
+          Map.Entry::class.asTypeName().parameterizedBy(keyType, valueType)
+        ), returnType = valueType
+      )
+    ).defaultValue("{ it.value }").build()
+  )
 }
 
-internal fun KSType.qualifiedString(): String = when (declaration) {
-  is KSTypeParameter -> {
-    val n = declaration.simpleName.asString()
-    if (isMarkedNullable) "$n?" else n
-  }
-  else -> when (val qname = declaration.qualifiedName?.asString()) {
-    null -> toString()
-    else -> {
-      val withArgs = when {
-        arguments.isEmpty() -> qname
-        else -> "$qname<${arguments.joinToString(separator = ", ") { it.qualifiedString() }}>"
-      }
-      if (isMarkedNullable) "$withArgs?" else withArgs
-    }
-  }
+private fun FunSpec.Builder.addListParameter(
+  typeName: TypeName,
+  property: KSPropertyDeclaration
+) {
+  val listType = typeName.typeArguments!!.first()
+  addParameter(
+    ParameterSpec.builder(
+      name = property.name + "Each",
+      type = LambdaTypeName.get(parameters = arrayOf(listType), returnType = listType)
+    ).defaultValue("{ it }").build()
+  )
 }
 
-internal fun KSType.listElementType(): KSType? = when {
-  declaration.qualifiedName?.asString() == "kotlin.collections.List" ->
-    arguments.first().type?.resolve()
-  else -> null
-}
+inline fun <reified T> TypeName.extendsFrom(): Boolean =
+  this is ParameterizedTypeName && rawType == T::class.asTypeName()
 
-internal fun KSType.mapElementType(): Pair<KSType, KSType>? = when {
-  declaration.qualifiedName?.asString() == "kotlin.collections.Map" ->
-    arguments[0].type?.resolve()?.let {key ->
-      arguments[1].type?.resolve()?.let {value ->
-        key to value
-      }
-    }
-  else -> null
-}
+val TypeName.typeArguments get() = (this as? ParameterizedTypeName)?.typeArguments
+
+private val KSDeclaration.name get() = simpleName.asString()
