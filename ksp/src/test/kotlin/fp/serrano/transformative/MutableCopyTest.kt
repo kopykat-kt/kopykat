@@ -7,9 +7,9 @@ class MutableCopyTest {
   @Test
   fun `mutate one property`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person(val name: String, val age: Int)
+      |@Transformative data class Person(val name: String, val age: Int)
       |
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copy { age = age + 1 }
@@ -20,9 +20,9 @@ class MutableCopyTest {
   @Test
   fun `mutate two properties`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person(val name: String, val age: Int)
+      |@Transformative data class Person(val name: String, val age: Int)
       |
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copy { 
@@ -37,9 +37,9 @@ class MutableCopyTest {
   @Test
   fun `mutate two properties (advanced)`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person(val name: String, val age: Int)
+      |@Transformative data class Person(val name: String, val age: Int)
       |
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copy { 
@@ -54,18 +54,18 @@ class MutableCopyTest {
   @Test
   fun `fails on non-data class`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy class Person(val name: String, val age: Int)
-      """.failsWith { it.contains("Only data classes can be annotated with @MutableCopy") }
+      |@Transformative class Person(val name: String, val age: Int)
+      """.failsWith { it.contains("Only data classes can be annotated with @Transformative") }
   }
 
   @Test
   fun `empty transform does nothing`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person(val name: String, val age: Int)
+      |@Transformative data class Person(val name: String, val age: Int)
       |
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copy { }
@@ -76,9 +76,9 @@ class MutableCopyTest {
   @Test
   fun `works on generic classes`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person<A>(val name: String, val age: A)
+      |@Transformative data class Person<A>(val name: String, val age: A)
       |
       |val p1: Person<Int> = Person("Alex", 1)
       |val p2 = p1.copy { age = age + 1 }
@@ -89,9 +89,9 @@ class MutableCopyTest {
   @Test
   fun `each for lists`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person<A>(val name: String, val age: Int, val anns: List<A>)
+      |@Transformative data class Person<A>(val name: String, val age: Int, val anns: List<A>)
       |
       |val p1: Person<Int> = Person("Alex", 1, listOf(1, 10))
       |val p2 = p1.copy { anns = anns.map { it + 1 } }
@@ -102,21 +102,13 @@ class MutableCopyTest {
   @Test
   fun `each for maps`() {
     """
-      |import fp.serrano.MutableCopy
+      |import fp.serrano.Transformative
       |
-      |@MutableCopy data class Person(val name: String, val age: Int, val things: Map<String, Int>)
+      |@Transformative data class Person(val name: String, val age: Int, val things: Map<String, Int>)
       |
       |val p1: Person = Person("Alex", 1, mapOf("chair" to 1, "pencil" to 10))
       |val p2 = p1.copy { things = things.mapValues { it.value + 1 } }
       |val r = p2.things["chair"]
       """.evals("r" to 2)
   }
-}
-
-private fun String.failsWith(check: (String) -> Boolean) {
-  failsWith(MutableCopyProvider(), check)
-}
-
-private fun String.evals(vararg things: Pair<String, Any?>) {
-  evals(MutableCopyProvider(), *things)
 }

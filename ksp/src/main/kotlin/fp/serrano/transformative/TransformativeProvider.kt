@@ -6,5 +6,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 public class TransformativeProvider : SymbolProcessorProvider {
   override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-    Transformative(environment.codeGenerator, environment.logger)
+    TransformativeProcessor(environment.codeGenerator, environment.logger)
 }
