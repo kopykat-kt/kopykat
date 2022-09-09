@@ -2,6 +2,7 @@ package fp.serrano.transformative
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.UNIT
 import fp.serrano.transformative.utils.addGeneratedMarker
@@ -29,6 +30,7 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
         returns = targetClassName,
         typeVariables = typeVariableNames,
       ) {
+        addModifiers(KModifier.INLINE)
         addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
         addCode(
           """
