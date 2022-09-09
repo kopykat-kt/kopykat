@@ -9,8 +9,12 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import fp.serrano.transformative.utils.hasGeneratedMarker
 
-internal class TransformativeProcessor(private val codegen: CodeGenerator, private val logger: KSPLogger) :
-  SymbolProcessor {
+internal class TransformativeProcessor(
+  private val codegen: CodeGenerator,
+  private val logger: KSPLogger,
+  private val transform: Boolean,
+  private val mutableCopy: Boolean,
+) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
     with(resolver.getAllFiles()) {
@@ -29,7 +33,10 @@ internal class TransformativeProcessor(private val codegen: CodeGenerator, priva
 
   private fun KSClassDeclaration.process() {
     when {
-      isDataClass() -> listOf(TransformFunctionKt, MutableCopyKt).writeAllTo(codegen)
+      isDataClass() -> {
+        if (transform) TransformFunctionKt.writeTo(codegen)
+        if (mutableCopy) MutableCopyKt.writeTo(codegen)
+      }
     }
   }
 }

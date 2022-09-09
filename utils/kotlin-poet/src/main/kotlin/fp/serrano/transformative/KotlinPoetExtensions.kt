@@ -3,7 +3,6 @@ package fp.serrano.transformative
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toKModifier
@@ -56,6 +55,6 @@ public fun ClassName.parameterizedWhenNotEmpty(
   typeArguments: List<TypeName>
 ): TypeName = takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this
 
-public fun List<FileSpec>.writeAllTo(codegen: CodeGenerator) {
-  forEach { it.writeTo(codeGenerator = codegen, aggregating = false) }
+public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
+  writeTo(codeGenerator = codeGenerator, aggregating = false)
 }
