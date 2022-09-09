@@ -2,17 +2,15 @@ package fp.serrano.transformative
 
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
-import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.SourceFile
+import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
-import io.github.classgraph.ClassGraph
 import org.assertj.core.api.Assertions
 import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Paths
 
-private const val THIS_VERSION = "0.1-SNAPSHOT"
 private const val SOURCE_FILENAME = "Source.kt"
 
 public fun String.failsWith(provider: SymbolProcessorProvider, check: (String) -> Boolean) {
@@ -53,46 +51,10 @@ private fun buildCompilation(
   text: String,
   provider: SymbolProcessorProvider,
 ) = KotlinCompilation().apply {
-  classpaths = listOf(
-    "transformative-types:$THIS_VERSION"
-  ).map { classpathOf(it) }
   symbolProcessorProviders = listOf(provider)
   sources = listOf(SourceFile.kotlin(SOURCE_FILENAME, text.trimMargin()))
 }
 
-private fun classpathOf(dependency: String): File {
-  val file =
-    ClassGraph().classpathFiles.firstOrNull { classpath ->
-      dependenciesMatch(classpath, dependency)
-    }
-  println("classpath: ${ClassGraph().classpathFiles}")
-  Assertions.assertThat(file)
-    .`as`("$dependency not found in test runtime. Check your build configuration.")
-    .isNotNull
-  return file!!
-}
-
-private fun dependenciesMatch(classpath: File, dependency: String): Boolean {
-  val dep = classpath.name
-  val dependencyName = sanitizeClassPathFileName(dep)
-  val testdep = dependency.substringBefore(":")
-  return testdep == dependencyName
-}
-
-private fun sanitizeClassPathFileName(dep: String): String =
-  buildList<Char> {
-    var skip = false
-    add(dep.first())
-    dep.reduce { a, b ->
-      if (a == '-' && b.isDigit()) skip = true
-      if (!skip) add(b)
-      b
-    }
-    if (skip) removeLast()
-  }
-    .joinToString("")
-    .replace("-jvm.jar", "")
-    .replace("-jvm", "")
 
 private val KotlinCompilation.kspGeneratedSourceFiles: List<SourceFile>
   get() =

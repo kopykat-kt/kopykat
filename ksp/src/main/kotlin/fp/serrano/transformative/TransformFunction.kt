@@ -5,14 +5,16 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
+import fp.serrano.transformative.utils.*
 import fp.serrano.transformative.utils.extendsFrom
-import fp.serrano.transformative.utils.onClassScope
 import fp.serrano.transformative.utils.name
+import fp.serrano.transformative.utils.onClassScope
 import fp.serrano.transformative.utils.typeArguments
 
-internal fun KSClassDeclaration.toTransformFunctionKt(): FileSpec =
-  onClassScope {
-    buildFile(packageName = packageName, "${simpleName.asString()}Transformative") {
+internal val KSClassDeclaration.TransformFunctionKt: FileSpec
+  get() = onClassScope {
+    buildFile(packageName = packageName, transformativeFileName) {
+      addGeneratedMarker()
       val properties = getAllProperties()
       addFunction(
         name = "transform",

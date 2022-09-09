@@ -4,12 +4,14 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.UNIT
+import fp.serrano.transformative.utils.addGeneratedMarker
 import fp.serrano.transformative.utils.onClassScope
 import fp.serrano.transformative.utils.name
 
-internal fun KSClassDeclaration.toMutableCopyKt(): FileSpec =
-  onClassScope {
+internal val KSClassDeclaration.MutableCopyKt: FileSpec
+  get() = onClassScope {
     buildFile(packageName = packageName, fileName = mutableTypeName) {
+      addGeneratedMarker()
       addClass(mutableClassName) {
         addTypeVariables(typeVariableNames)
         primaryConstructor {

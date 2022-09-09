@@ -18,7 +18,6 @@ dependencies {
     testImplementation(kotlin("test"))
 
     testRuntimeOnly(projects.transformativeKsp)
-    testRuntimeOnly(projects.transformativeTypes)
 }
 
 tasks.test {
