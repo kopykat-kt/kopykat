@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -12,16 +11,8 @@ kotlin {
 
 dependencies {
     implementation(libs.ksp)
-    implementation(projects.utils.kotlinPoet)
-
-    testImplementation(projects.utils.compilation)
-    testImplementation(kotlin("test"))
-
-    testRuntimeOnly(projects.transformativeKsp)
-}
-
-tasks.test {
-    useJUnitPlatform()
+    api(libs.kotlinPoet)
+    api(libs.kotlinPoet.ksp)
 }
 
 tasks.withType<KotlinCompile> {
