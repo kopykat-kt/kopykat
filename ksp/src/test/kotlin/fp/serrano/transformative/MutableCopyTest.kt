@@ -57,6 +57,20 @@ class MutableCopyTest {
   }
 
   @Test
+  fun `access the old value`() {
+    """
+      |data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copy {
+      |    age++
+      |    age = old.age
+      |  }
+      |val r = p2.age
+      """.evals("r" to 1)
+  }
+
+  @Test
   fun `works on generic classes`() {
     """
       |data class Person<A>(val name: String, val age: A)

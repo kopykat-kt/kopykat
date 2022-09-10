@@ -1,10 +1,7 @@
 package fp.serrano.transformative
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LambdaTypeName
-import com.squareup.kotlinpoet.UNIT
+import com.squareup.kotlinpoet.*
 import fp.serrano.transformative.utils.addGeneratedMarker
 import fp.serrano.transformative.utils.onClassScope
 import fp.serrano.transformative.utils.name
@@ -22,6 +19,14 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
               mutable(true).initializer(property.simpleName.asString())
             })
           }
+          addParameter(ParameterSpec(
+            name = "old",
+            type = targetClassName
+          ))
+          addProperty(PropertySpec.builder(
+            name = "old",
+            type = targetClassName
+          ).mutable(false).initializer("old").build())
         }
       }
       addFunction(
@@ -32,9 +37,10 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
       ) {
         addModifiers(KModifier.INLINE)
         addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
+        val assignments = properties.map { "${it.name} = ${it.name}" } + "old = this"
         addCode(
           """
-        | val mutable = $mutableParameterized(${properties.joinToString { "${it.name} = ${it.name}" }}).apply(block)
+        | val mutable = $mutableParameterized(${assignments.joinToString()}).apply(block)
         | return $targetClassName(${properties.joinToString { "${it.name} = mutable.${it.name}" }})
         """.trimMargin()
         )
