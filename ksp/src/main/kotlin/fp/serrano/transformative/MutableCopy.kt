@@ -24,8 +24,9 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
             type = targetClassName
           ))
           addProperty(PropertySpec.builder(
-
-          ).build())
+            name = "old",
+            type = targetClassName
+          ).mutable(false).initializer("old").build())
         }
       }
       addFunction(
@@ -36,9 +37,10 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
       ) {
         addModifiers(KModifier.INLINE)
         addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
+        val assignments = properties.map { "${it.name} = ${it.name}" } + "old = this"
         addCode(
           """
-        | val mutable = $mutableParameterized(${properties.joinToString { "${it.name} = ${it.name}" }}).apply(block)
+        | val mutable = $mutableParameterized(${assignments.joinToString()}).apply(block)
         | return $targetClassName(${properties.joinToString { "${it.name} = mutable.${it.name}" }})
         """.trimMargin()
         )
