@@ -1,10 +1,7 @@
 package fp.serrano.transformative
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LambdaTypeName
-import com.squareup.kotlinpoet.UNIT
+import com.squareup.kotlinpoet.*
 import fp.serrano.transformative.utils.addGeneratedMarker
 import fp.serrano.transformative.utils.onClassScope
 import fp.serrano.transformative.utils.name
@@ -22,6 +19,13 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
               mutable(true).initializer(property.simpleName.asString())
             })
           }
+          addParameter(ParameterSpec(
+            name = "old",
+            type = targetClassName
+          ))
+          addProperty(PropertySpec.builder(
+
+          ).build())
         }
       }
       addFunction(
