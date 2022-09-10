@@ -10,7 +10,8 @@ public class TransformativeProvider : SymbolProcessorProvider {
       codegen = environment.codeGenerator,
       logger = environment.logger,
       transform = environment.options.parseBoolOrTrue("transform"),
-      mutableCopy = environment.options.parseBoolOrTrue("mutableCopy")
+      mutableCopy = environment.options.parseBoolOrTrue("mutableCopy"),
+      valueCopy = environment.options.parseBoolOrTrue("valueCopy")
     )
 }
 
