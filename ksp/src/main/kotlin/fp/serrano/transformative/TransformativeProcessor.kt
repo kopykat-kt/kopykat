@@ -14,6 +14,7 @@ internal class TransformativeProcessor(
   private val logger: KSPLogger,
   private val transform: Boolean,
   private val mutableCopy: Boolean,
+  private val valueCopy: Boolean
 ) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -37,9 +38,15 @@ internal class TransformativeProcessor(
         if (transform) TransformFunctionKt.writeTo(codegen)
         if (mutableCopy) MutableCopyKt.writeTo(codegen)
       }
+      isValueClass() -> {
+        if (valueCopy) ValueCopyFunctionKt.writeTo(codegen)
+      }
     }
   }
 }
 
 private fun KSClassDeclaration.isDataClass() =
   Modifier.DATA in modifiers && primaryConstructor != null
+
+private fun KSClassDeclaration.isValueClass() =
+  Modifier.VALUE in modifiers && primaryConstructor != null
