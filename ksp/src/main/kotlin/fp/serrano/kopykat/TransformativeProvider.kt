@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

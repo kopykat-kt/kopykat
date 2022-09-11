@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 import org.junit.jupiter.api.Test
 

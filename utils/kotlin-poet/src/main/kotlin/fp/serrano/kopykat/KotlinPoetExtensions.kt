@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration

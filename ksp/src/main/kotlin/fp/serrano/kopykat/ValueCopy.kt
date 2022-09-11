@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
@@ -6,9 +6,9 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ksp.toTypeName
-import fp.serrano.transformative.utils.addGeneratedMarker
-import fp.serrano.transformative.utils.name
-import fp.serrano.transformative.utils.onClassScope
+import fp.serrano.kopykat.utils.addGeneratedMarker
+import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.onClassScope
 
 internal val KSClassDeclaration.ValueCopyFunctionKt: FileSpec
   get() = onClassScope {

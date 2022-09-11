@@ -1,10 +1,10 @@
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 enableFeaturePreview("VERSION_CATALOGS")
 
-rootProject.name = "transformative"
+rootProject.name = "kopykat"
 
-include("transformative-ksp")
-project(":transformative-ksp").projectDir = file("ksp")
+include("kopykat-ksp")
+project(":kopykat-ksp").projectDir = file("ksp")
 
 include(":utils:compilation")
 include(":utils:kotlin-poet")
