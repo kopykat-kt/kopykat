@@ -67,6 +67,8 @@ val p1 = Person("Alex", 1, listOf("Serras"))
 val p2 = p1.transform(nicknamesEach = { it.lowercase() })
 ```
 
+⚠️ Note that if you provide both `fieldEach` and `field` transformations, the one for the elements is applied first, and the one for the entire field is applied afterwards.
+
 ## Value class `copy`
 
 [Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate different concepts, but without any overhead. A good example is wrapping an integer as an age:
