@@ -127,6 +127,6 @@ By default, the three kinds of methods are generated.
 
 ## What about optics?
 
-Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart from changing fields, optics allow uniform access to collections, possubly-null values, and hierarchies of data classes. You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ type, instead of relying on generating an implementation for each data type.
+Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart from changing fields, optics allow uniform access to collections, possibly-null values, and hierarchies of data classes. You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ type, instead of relying on generating an implementation for each data type.
 
 KopyKat, on the other hand, aims to be just a tiny step further from Kotlin's built-in `copy`. By re-using well-known idioms, the barrier to introducing this plug-in becomes much lower. Our goal is to make it easier to work with immutable data classes.
