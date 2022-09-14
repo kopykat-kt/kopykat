@@ -3,7 +3,7 @@
 _When the author figures out how to upload the artifact to Maven, instructions on how to use the library will appear here._
 
 - [Mutable `copy`](#mutable-copy)
-- [`transform`](#transform)
+- [Mapping `copyMap`](#mapping-copymap)
 - [Value class `copy`](#value-class-copy)
 - [Customizing the generation](#customizing-the-generation)
 - [What about optics?](#what-about-optics)
@@ -41,16 +41,16 @@ val p3 = p1.transform {
 }
 ```
 
-## `transform`
+## Mapping `copyMap`
 
-Instead of new *values*, `transform` takes as arguments the *transformations* that ought to be applied to each argument.
+Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
 
 ```kotlin
 val p1 = Person("Alex", 1)
-val p2 = p1.transform(age = { it + 1 })
+val p2 = p1.copyMap(age = { it + 1 })
 ```
 
-Note that you can use `transform` to simulate `copy`, by making the transformation return a constant value.
+Note that you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
 
 ```kotlin
 val p3 = p1.transform(age = { 10 })
@@ -58,13 +58,13 @@ val p3 = p1.transform(age = { 10 })
 
 ### List transformations
 
-If a field has type `List<T>`, then an additional argument is added to the `transform` function with the name `${field}Each`. The block given to that argument is applied to each element of the list. This is like an implicit `map`.
+If a field has type `List<T>`, then an additional argument is added to the `copyMap` function with the name `${field}Each`. The block given to that argument is applied to each element of the list. This is like an implicit `map`.
 
 ```kotlin
 data class Person(val name: String, val age: Int, val nicknames: List<String>)
 
 val p1 = Person("Alex", 1, listOf("Serras"))
-val p2 = p1.transform(nicknamesEach = { it.lowercase() })
+val p2 = p1.copyMap(nicknamesEach = { it.lowercase() })
 ```
 
 ⚠️ Note that if you provide both `fieldEach` and `field` transformations, the one for the elements is applied first, and the one for the entire field is applied afterwards.
@@ -86,12 +86,12 @@ val a2 = a1.copy { it + 1 }
 
 ## Customizing the generation
 
-You can disable the generation of some of these methods by [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle file. For example, the following block disables the generation of `transform`.
+You can disable the generation of some of these methods by [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle file. For example, the following block disables the generation of `copyMap`.
 
 ```kotlin
 ksp {
-  arg("transform", "false")
   arg("mutableCopy", "true")
+  arg("copyMap", "false")
   arg("valueCopy", "true")
 }
 ```

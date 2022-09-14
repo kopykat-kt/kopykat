@@ -1,20 +1,14 @@
+@file:Suppress("WildcardImport")
 package fp.serrano.kopykat
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.Modifier
-import fp.serrano.kopykat.utils.hasGeneratedMarker
+import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.symbol.*
+import fp.serrano.kopykat.utils.*
 
-internal class TransformativeProcessor(
+internal class KopyKatProcessor(
   private val codegen: CodeGenerator,
   private val logger: KSPLogger,
-  private val transform: Boolean,
-  private val mutableCopy: Boolean,
-  private val valueCopy: Boolean
+  private val options: KopyKatOptions
 ) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -35,11 +29,11 @@ internal class TransformativeProcessor(
   private fun KSClassDeclaration.process() {
     when {
       isDataClass() -> {
-        if (transform) TransformFunctionKt.writeTo(codegen)
-        if (mutableCopy) MutableCopyKt.writeTo(codegen)
+        if (options.copyMap) CopyMapFunctionKt.writeTo(codegen)
+        if (options.mutableCopy) MutableCopyKt.writeTo(codegen)
       }
       isValueClass() -> {
-        if (valueCopy) ValueCopyFunctionKt.writeTo(codegen)
+        if (options.valueCopy) ValueCopyFunctionKt.writeTo(codegen)
       }
     }
   }

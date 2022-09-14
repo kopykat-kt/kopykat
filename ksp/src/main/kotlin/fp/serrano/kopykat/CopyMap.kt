@@ -1,29 +1,24 @@
+@file:Suppress("WildcardImport")
 package fp.serrano.kopykat
 
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.KModifier.INLINE
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
 import fp.serrano.kopykat.utils.*
-import fp.serrano.kopykat.utils.extendsFrom
-import fp.serrano.kopykat.utils.name
-import fp.serrano.kopykat.utils.onClassScope
-import fp.serrano.kopykat.utils.typeArguments
 
-internal val KSClassDeclaration.TransformFunctionKt: FileSpec
+internal val KSClassDeclaration.CopyMapFunctionKt: FileSpec
   get() = onClassScope {
     buildFile(packageName = packageName, transformativeFileName) {
       addGeneratedMarker()
       val properties = getAllProperties()
       addFunction(
-        name = "transform",
+        name = "copyMap",
         receiver = targetClassName,
         returns = targetClassName,
         typeVariables = typeVariableNames,
       ) {
-        addModifiers(INLINE)
+        addModifiers(KModifier.INLINE)
         val propertyStatements = properties.map { property ->
           val typeName = property.type.toTypeName(typeParamResolver)
           addParameter(

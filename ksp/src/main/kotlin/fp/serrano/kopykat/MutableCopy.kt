@@ -1,10 +1,9 @@
+@file:Suppress("WildcardImport")
 package fp.serrano.kopykat
 
-import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
-import fp.serrano.kopykat.utils.addGeneratedMarker
-import fp.serrano.kopykat.utils.onClassScope
-import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.*
 
 internal val KSClassDeclaration.MutableCopyKt: FileSpec
   get() = onClassScope {
