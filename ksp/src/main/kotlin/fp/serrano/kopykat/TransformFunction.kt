@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -6,11 +6,11 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.KModifier.INLINE
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
-import fp.serrano.transformative.utils.*
-import fp.serrano.transformative.utils.extendsFrom
-import fp.serrano.transformative.utils.name
-import fp.serrano.transformative.utils.onClassScope
-import fp.serrano.transformative.utils.typeArguments
+import fp.serrano.kopykat.utils.*
+import fp.serrano.kopykat.utils.extendsFrom
+import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.onClassScope
+import fp.serrano.kopykat.utils.typeArguments
 
 internal val KSClassDeclaration.TransformFunctionKt: FileSpec
   get() = onClassScope {

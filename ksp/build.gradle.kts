@@ -17,7 +17,7 @@ dependencies {
     testImplementation(projects.utils.compilation)
     testImplementation(kotlin("test"))
 
-    testRuntimeOnly(projects.transformativeKsp)
+    testRuntimeOnly(projects.kopykatKsp)
 }
 
 tasks.test {

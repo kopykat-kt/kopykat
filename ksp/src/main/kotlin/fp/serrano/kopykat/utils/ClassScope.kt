@@ -1,10 +1,10 @@
-package fp.serrano.transformative.utils
+package fp.serrano.kopykat.utils
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
-import fp.serrano.transformative.parameterizedWhenNotEmpty
+import fp.serrano.kopykat.parameterizedWhenNotEmpty
 
 @JvmInline
 internal value class ClassScope(private val classDeclaration: KSClassDeclaration) {

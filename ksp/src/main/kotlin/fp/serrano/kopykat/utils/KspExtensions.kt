@@ -1,4 +1,4 @@
-package fp.serrano.transformative.utils
+package fp.serrano.kopykat.utils
 
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.kotlinpoet.ParameterizedTypeName

@@ -1,4 +1,4 @@
-package fp.serrano.transformative
+package fp.serrano.kopykat
 
 internal fun String.failsWith(check: (String) -> Boolean) {
   failsWith(TransformativeProvider(), check)
