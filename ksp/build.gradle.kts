@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -17,7 +16,7 @@ dependencies {
     testImplementation(projects.utils.compilation)
     testImplementation(kotlin("test"))
 
-    testRuntimeOnly(projects.kopykatKsp)
+    testRuntimeOnly(projects.ksp)
 }
 
 tasks.test {

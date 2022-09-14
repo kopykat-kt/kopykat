@@ -3,8 +3,6 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 rootProject.name = "kopykat"
 
-include("kopykat-ksp")
-project(":kopykat-ksp").projectDir = file("ksp")
-
+include(":ksp")
 include(":utils:compilation")
 include(":utils:kotlin-poet")
