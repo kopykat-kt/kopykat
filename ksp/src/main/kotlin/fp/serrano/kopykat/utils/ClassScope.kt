@@ -11,8 +11,10 @@ internal value class ClassScope(private val classDeclaration: KSClassDeclaration
   val packageName get() = classDeclaration.packageName.asString()
   val targetTypeName get() = classDeclaration.simpleName.asString()
   val typeVariableNames get() = classDeclaration.typeParameters.map { it.toTypeVariableName() }
+  val kopyKatFileName get() = "${targetTypeName}KopyKat"
+  val annotationTypeName get() = "${targetTypeName}CopyDslMarker"
+  val annotationClassName get() = ClassName(packageName, annotationTypeName)
   val mutableTypeName get() = "Mutable$targetTypeName"
-  val transformativeFileName get() = "${targetTypeName}Transformative"
   val mutableClassName get() = ClassName(packageName, mutableTypeName)
   val mutableParameterized get() = mutableClassName.parameterizedWhenNotEmpty(typeVariableNames)
   val properties get() = classDeclaration.getAllProperties()

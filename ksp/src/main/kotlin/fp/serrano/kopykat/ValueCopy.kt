@@ -8,7 +8,7 @@ import fp.serrano.kopykat.utils.*
 
 internal val KSClassDeclaration.ValueCopyFunctionKt: FileSpec
   get() = onClassScope {
-    buildFile(packageName = packageName, transformativeFileName) {
+    buildFile(packageName = packageName, kopyKatFileName) {
       addGeneratedMarker()
       val properties = getAllProperties()
       addFunction(

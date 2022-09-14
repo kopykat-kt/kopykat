@@ -9,7 +9,12 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
   get() = onClassScope {
     buildFile(packageName = packageName, fileName = mutableTypeName) {
       addGeneratedMarker()
+      addClass(annotationClassName) {
+        addAnnotation(DslMarker::class)
+        addModifiers(KModifier.ANNOTATION)
+      }
       addClass(mutableClassName) {
+        addAnnotation(annotationClassName)
         addTypeVariables(typeVariableNames)
         primaryConstructor {
           properties.forEach { property ->
