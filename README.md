@@ -79,6 +79,8 @@ val a2 = a1.copy { it + 1 }
 
 ## Using KopyKat in your project
 
+> This [demo project](https://github.com/serras/kopykat-demo) showcases the use of KopyKat alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
+
 KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
 1. Add [JitPack](https://jitpack.io/) to the list of repositories. 
@@ -108,7 +110,6 @@ KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from w
     ```
 
 4. (Optional) If you are using IntelliJ as your IDE, we recommend you to [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it aware of the new code.
-
 
 ### Customizing the generation
 
