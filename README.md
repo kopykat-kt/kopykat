@@ -2,10 +2,12 @@
 
 _When the author figures out how to upload the artifact to Maven, instructions on how to use the library will appear here._
 
-- [Mutable `copy`](#mutable-copy)
-- [Mapping `copyMap`](#mapping-copymap)
-- [Value class `copy`](#value-class-copy)
-- [Customizing the generation](#customizing-the-generation)
+- [The Three Methods](#the-three-methods)
+  - [Mutable `copy`](#mutable-copy)
+  - [Mapping `copyMap`](#mapping-copymap)
+  - [Value class `copy`](#value-class-copy)
+- [Using KopyKat in your project](#using-kopykat-in-your-project)
+  - [Customizing the generation](#customizing-the-generation)
 - [What about optics?](#what-about-optics)
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is their [`copy` method](https://kotlinlang.org/docs/data-classes.html#copying). But using it can become cumbersome very quickly, because you need to repeat the name of the field before and after.
@@ -17,9 +19,13 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 ```
 
+## The Three Methods
+
 This plug-in generates a couple of new methods that make working with immutable data classes much easier.
 
-## Mutable `copy`
+![IntelliJ showing the methods](https://github.com/serras/kopykat/blob/main/intellij.png?raw=true)
+
+### Mutable `copy`
 
 This new version of `copy` takes a *block* as parameter. Within that block mutability is simulated; the final assignment of each (mutable) variable becomes the value of the new copy.
 
@@ -41,7 +47,7 @@ val p3 = p1.copy {
 }
 ```
 
-## Mapping `copyMap`
+### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
 
@@ -56,7 +62,7 @@ Note that you can use `copyMap` to simulate `copy`, by making the transformation
 val p3 = p1.copyMap(age = { 10 })
 ```
 
-## Value class `copy`
+### Value class `copy`
 
 [Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate different concepts, but without any overhead. A good example is wrapping an integer as an age:
 
@@ -71,7 +77,40 @@ val a1 = Age(1)
 val a2 = a1.copy { it + 1 }
 ```
 
-## Customizing the generation
+## Using KopyKat in your project
+
+KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
+
+1. Add [JitPack](https://jitpack.io/) to the list of repositories. 
+
+    ```kotlin
+    repositories {
+      mavenCentral()
+      maven(url = "https://jitpack.io")
+    }
+    ```
+
+2. Add KSP to the list of plug-ins. You can check the latest version in their [releases](https://github.com/google/ksp/releases/).
+
+    ```kotlin
+    plugins {
+      id("com.google.devtools.ksp") version "1.7.10-1.0.6"
+    }
+    ```
+
+3. Add a KSP dependency on KopyKat.
+
+    ```kotlin
+    dependencies {
+      // other dependencies
+      ksp("com.github.serras.kopykat:ksp:0.1")
+    }
+    ```
+
+4. (Optional) If you are using IntelliJ as your IDE, we recommend you to [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it aware of the new code.
+
+
+### Customizing the generation
 
 You can disable the generation of some of these methods by [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle file. For example, the following block disables the generation of `copyMap`.
 

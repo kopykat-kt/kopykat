@@ -4,7 +4,7 @@ allprojects {
   }
 
   group = "com.github.serras.kopykat"
-  version = "0.1-SNAPSHOT"
+  version = "0.1"
 }
 
 subprojects {
