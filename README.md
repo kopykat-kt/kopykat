@@ -56,19 +56,6 @@ Note that you can use `copyMap` to simulate `copy`, by making the transformation
 val p3 = p1.copyMap(age = { 10 })
 ```
 
-### List transformations
-
-If a field has type `List<T>`, then an additional argument is added to the `copyMap` function with the name `${field}Each`. The block given to that argument is applied to each element of the list. This is like an implicit `map`.
-
-```kotlin
-data class Person(val name: String, val age: Int, val nicknames: List<String>)
-
-val p1 = Person("Alex", 1, listOf("Serras"))
-val p2 = p1.copyMap(nicknamesEach = { it.lowercase() })
-```
-
-⚠️ Note that if you provide both `fieldEach` and `field` transformations, the one for the elements is applied first, and the one for the entire field is applied afterwards.
-
 ## Value class `copy`
 
 [Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate different concepts, but without any overhead. A good example is wrapping an integer as an age:
