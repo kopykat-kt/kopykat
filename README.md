@@ -25,7 +25,7 @@ This new version of `copy` takes a *block* as parameter. Within that block mutab
 
 ```kotlin
 val p1 = Person("Alex", 1)
-val p2 = p1.transform { 
+val p2 = p1.copy { 
   age++
 }
 ```
@@ -33,7 +33,7 @@ val p2 = p1.transform {
 You can use `old` to access the previous (immutable) value, before any changes.
 
 ```kotlin
-val p3 = p1.transform { 
+val p3 = p1.copy { 
   age++
   if (notTheirBirthday) {
     age = old.age  // get the previous value
@@ -53,7 +53,7 @@ val p2 = p1.copyMap(age = { it + 1 })
 Note that you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
 
 ```kotlin
-val p3 = p1.transform(age = { 10 })
+val p3 = p1.copyMap(age = { 10 })
 ```
 
 ### List transformations
