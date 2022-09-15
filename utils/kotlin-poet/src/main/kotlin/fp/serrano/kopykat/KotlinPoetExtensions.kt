@@ -4,25 +4,23 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toKModifier
-import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 
-public fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
+public fun KSPropertyDeclaration.asParameterSpec(typeName: TypeName): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
-    type = type.toTypeName(typeParamResolver),
+    type = typeName,
     modifiers = modifiers.mapNotNull { it.toKModifier() },
   )
 
 public fun KSPropertyDeclaration.asPropertySpec(
-  typeParamResolver: TypeParameterResolver,
+  typeName: TypeName,
   block: PropertySpec.Builder.() -> Unit = {},
 ): PropertySpec =
   PropertySpec.builder(
     name = simpleName.asString(),
-    type = type.toTypeName(typeParamResolver),
+    type = typeName,
     modifiers = modifiers.mapNotNull { it.toKModifier() },
   ).apply(block).build()
 

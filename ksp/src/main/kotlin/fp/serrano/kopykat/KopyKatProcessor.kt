@@ -14,23 +14,23 @@ internal class KopyKatProcessor(
   override fun process(resolver: Resolver): List<KSAnnotated> {
     with(resolver.getAllFiles()) {
       if (none { file -> file.hasGeneratedMarker() }) {
-        flatMap { file -> file.declarations }
+        val targets = flatMap { file -> file.declarations }
           .filterIsInstance<KSClassDeclaration>()
-          .forEach {
-            logger.logging("Processing ${it.simpleName}", it)
-            it.process()
-          }
+          .filter { it.isDataClass() || it.isValueClass() }
+        val mutableCandidates = targets.map { it.asStarProjectedType() }
+        targets
+          .onEach { logger.logging("Processing ${it.simpleName}", it) }
+          .forEach { it.process(mutableCandidates) }
       }
     }
     return emptyList()
   }
 
-
-  private fun KSClassDeclaration.process() {
+  private fun KSClassDeclaration.process(mutableCandidates: Sequence<KSType>) {
     when {
       isDataClass() -> {
         if (options.copyMap) CopyMapFunctionKt.writeTo(codegen)
-        if (options.mutableCopy) MutableCopyKt.writeTo(codegen)
+        if (options.mutableCopy) mutableCopyKt(mutableCandidates).writeTo(codegen)
       }
       isValueClass() -> {
         if (options.valueCopy) ValueCopyFunctionKt.writeTo(codegen)
