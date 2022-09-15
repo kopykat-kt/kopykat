@@ -2,18 +2,29 @@ package fp.serrano.kopykat
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.squareup.kotlinpoet.*
+import com.google.devtools.ksp.symbol.Modifier
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 
+private val notWantedModifiers: List<Modifier> =
+  listOf(Modifier.OVERRIDE, Modifier.OPEN)
+
 public fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
     type = type.toTypeName(typeParamResolver),
-    modifiers = modifiers.mapNotNull { it.toKModifier() },
+    modifiers = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() },
   )
 
 public fun KSPropertyDeclaration.asPropertySpec(
@@ -23,7 +34,7 @@ public fun KSPropertyDeclaration.asPropertySpec(
   PropertySpec.builder(
     name = simpleName.asString(),
     type = type.toTypeName(typeParamResolver),
-    modifiers = modifiers.mapNotNull { it.toKModifier() },
+    modifiers = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() },
   ).apply(block).build()
 
 public fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit) {
@@ -58,3 +69,6 @@ public fun ClassName.parameterizedWhenNotEmpty(
 public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
   writeTo(codeGenerator = codeGenerator, aggregating = false)
 }
+
+public fun FunSpec.Builder.addReturn(expr: String, vararg args: Any?): FunSpec.Builder =
+  addCode("return $expr", args)

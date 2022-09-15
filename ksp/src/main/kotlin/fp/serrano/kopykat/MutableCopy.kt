@@ -42,10 +42,11 @@ internal val KSClassDeclaration.MutableCopyKt: FileSpec
         addModifiers(KModifier.INLINE)
         addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
         val assignments = properties.map { "${it.name} = ${it.name}" } + "old = this"
+        val returns = repeatOnSubclasses("copy(${properties.joinToString { "${it.name} = mutable.${it.name}" }})")
         addCode(
           """
         | val mutable = $mutableParameterized(${assignments.joinToString()}).apply(block)
-        | return $targetClassName(${properties.joinToString { "${it.name} = mutable.${it.name}" }})
+        | return $returns
         """.trimMargin()
         )
       }

@@ -28,6 +28,11 @@ internal class KopyKatProcessor(
 
   private fun KSClassDeclaration.process() {
     when {
+      options.hierarchyCopy && isSealedDataHierarchy() -> {
+        HierarchyCopyFunctionKt.writeTo(codegen)
+        if (options.copyMap) CopyMapFunctionKt.writeTo(codegen)
+        if (options.mutableCopy) MutableCopyKt.writeTo(codegen)
+      }
       isDataClass() -> {
         if (options.copyMap) CopyMapFunctionKt.writeTo(codegen)
         if (options.mutableCopy) MutableCopyKt.writeTo(codegen)
@@ -39,8 +44,3 @@ internal class KopyKatProcessor(
   }
 }
 
-private fun KSClassDeclaration.isDataClass() =
-  Modifier.DATA in modifiers && primaryConstructor != null
-
-private fun KSClassDeclaration.isValueClass() =
-  Modifier.VALUE in modifiers && primaryConstructor != null
