@@ -18,7 +18,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 
 private val notWantedModifiers: List<Modifier> =
-  listOf(Modifier.OVERRIDE, Modifier.OPEN)
+  listOf(Modifier.OVERRIDE, Modifier.OPEN, Modifier.ABSTRACT)
 
 public fun KSPropertyDeclaration.asParameterSpec(typeParamResolver: TypeParameterResolver): ParameterSpec =
   ParameterSpec(

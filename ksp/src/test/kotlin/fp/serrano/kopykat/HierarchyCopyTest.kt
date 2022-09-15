@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 
 class HierarchyCopyTest {
   @Test
-  fun `execute on one element`() {
+  fun `open property`() {
     """
       |sealed abstract class User(open val name: String)
       |data class Person(override val name: String, val age: Int): User(name)
@@ -17,7 +17,37 @@ class HierarchyCopyTest {
   }
 
   @Test
-  fun `mutable on one element`() {
+  fun `abstract property`() {
+    """
+      |sealed abstract class User {
+      |  abstract val name: String
+      |}
+      |data class Person(override val name: String, val age: Int): User()
+      |data class Company(override val name: String, val address: String): User()
+      |
+      |val p1: User = Person("Alex", 1)
+      |val p2 = p1.copy(name = "Pepe")
+      |val r = (p2 as Person).name
+      """.evals("r" to "Pepe")
+  }
+
+  @Test
+  fun `interface`() {
+    """
+      |sealed interface User {
+      |  val name: String
+      |}
+      |data class Person(override val name: String, val age: Int): User
+      |data class Company(override val name: String, val address: String): User
+      |
+      |val p1: User = Person("Alex", 1)
+      |val p2 = p1.copy(name = "Pepe")
+      |val r = (p2 as Person).name
+      """.evals("r" to "Pepe")
+  }
+
+  @Test
+  fun `open property, mutable`() {
     """
       |sealed abstract class User(open val name: String)
       |data class Person(override val name: String, val age: Int): User(name)
@@ -30,7 +60,7 @@ class HierarchyCopyTest {
   }
 
   @Test
-  fun `execute map on one element`() {
+  fun `open property, mapping`() {
     """
       |sealed abstract class User(open val name: String)
       |data class Person(override val name: String, val age: Int): User(name)
