@@ -6,6 +6,7 @@ _When the author figures out how to upload the artifact to Maven, instructions o
   - [Mutable `copy`](#mutable-copy)
   - [Mapping `copyMap`](#mapping-copymap)
   - [Value class `copy`](#value-class-copy)
+  - [`copy` for hierarchies](#copy-for-hierarchies)
 - [Using KopyKat in your project](#using-kopykat-in-your-project)
   - [Customizing the generation](#customizing-the-generation)
 - [What about optics?](#what-about-optics)
@@ -77,6 +78,23 @@ val a1 = Age(1)
 val a2 = a1.copy { it + 1 }
 ```
 
+### `copy` for hierarchies
+
+KopyKat also works with sealed hierarchies. It generates regular `copy`, `copyMap`, and mutable `copy` for the common properties, which ought to be declared in the parent class.
+
+```kotlin
+abstract sealed class User(open val name: String)
+data class Person(override val name: String, val age: Int): User(name)
+data class Company(override val name: String, val address: String): User(name)
+```
+
+This means that the following code works directly, without requiring an intermediate `when`.
+
+```kotlin
+fun User.takeOver() = copy { name = "Me" }
+```
+
+
 ## Using KopyKat in your project
 
 > This [demo project](https://github.com/serras/kopykat-demo) showcases the use of KopyKat alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
@@ -120,6 +138,7 @@ ksp {
   arg("mutableCopy", "true")
   arg("copyMap", "false")
   arg("valueCopy", "true")
+  arg("hierarchyCopy", "true")
 }
 ```
 

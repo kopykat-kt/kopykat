@@ -6,26 +6,27 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.toTypeName
 import fp.serrano.kopykat.utils.*
 
-internal val KSClassDeclaration.copyMapFunctionKt: FileSpec
+internal val KSClassDeclaration.HierarchyCopyFunctionKt: FileSpec
   get() = onClassScope {
-    buildFile(packageName = packageName, kopyKatFileName) {
+    buildFile(packageName = packageName, kopyKatMapFileName) {
       addGeneratedMarker()
       val properties = getAllProperties()
       addFunction(
-        name = "copyMap",
+        name = "copy",
         receiver = targetClassName,
         returns = targetClassName,
         typeVariables = typeVariableNames,
       ) {
+        addModifiers(KModifier.INLINE)
         val propertyStatements = properties.map { property ->
           val typeName = property.type.toTypeName(typeParamResolver)
           addParameter(
             ParameterSpec.builder(
               name = property.name,
-              type = LambdaTypeName.get(parameters = arrayOf(typeName), returnType = typeName)
-            ).defaultValue("{ it }").build()
+              type = typeName,
+            ).defaultValue("this.${property.name}").build()
           )
-          "${property.name} = ${property.name}(this.${property.name})"
+          "${property.name} = ${property.name}"
         }
         addReturn(
           repeatOnSubclasses("copy(${propertyStatements.joinToString()})")
@@ -33,3 +34,10 @@ internal val KSClassDeclaration.copyMapFunctionKt: FileSpec
       }
     }
   }
+
+public fun KSClassDeclaration.repeatOnSubclasses(line: String): String = when {
+  isDataClass() -> line
+  else -> getSealedSubclasses().map { klass ->
+    "is ${klass.name} -> $line"
+  }.joinToString(prefix = "when (this) {\n", separator = "\n  ", postfix = "\n}")
+}

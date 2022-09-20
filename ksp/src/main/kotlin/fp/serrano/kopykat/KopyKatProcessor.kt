@@ -26,16 +26,18 @@ internal class KopyKatProcessor(
     return emptyList()
   }
 
+
   private fun KSClassDeclaration.process(mutableCandidates: Sequence<KSClassDeclaration>) {
     when {
+      options.hierarchyCopy && isSealedDataHierarchy() -> {
+        HierarchyCopyFunctionKt.writeTo(codegen)
+        if (options.copyMap) CopyMapFunctionKt.writeTo(codegen)
+        if (options.mutableCopy) MutableCopyKt.writeTo(codegen)
+      }
       isDataClass() || isValueClass() -> {
         if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
         if (options.mutableCopy) mutableCopyKt(mutableCandidates).writeTo(codegen)
       }
-//       -> {
-//        if (options.valueCopy) copyMapFunctionKt.writeTo(codegen)
-//        if (options.mutableCopy) mutableCopyKt(mutableCandidates).writeTo(codegen)
-//      }
     }
   }
 }

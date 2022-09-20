@@ -2,16 +2,20 @@ package fp.serrano.kopykat
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.writeTo
 
+private val notWantedModifiers: List<Modifier> =
+  listOf(Modifier.OVERRIDE, Modifier.OPEN, Modifier.ABSTRACT)
+
 public fun KSPropertyDeclaration.asParameterSpec(typeName: TypeName): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
     type = typeName,
-    modifiers = modifiers.mapNotNull { it.toKModifier() },
+    modifiers = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() },
   )
 
 public fun KSPropertyDeclaration.asPropertySpec(
@@ -21,7 +25,7 @@ public fun KSPropertyDeclaration.asPropertySpec(
   PropertySpec.builder(
     name = simpleName.asString(),
     type = typeName,
-    modifiers = modifiers.mapNotNull { it.toKModifier() },
+    modifiers = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() },
   ).apply(block).build()
 
 public fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit) {
@@ -58,3 +62,6 @@ public fun ClassName.parameterizedWhenNotEmpty(
 public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
   writeTo(codeGenerator = codeGenerator, aggregating = false)
 }
+
+public fun FunSpec.Builder.addReturn(expr: String, vararg args: Any?): FunSpec.Builder =
+  addCode("return $expr", args)
