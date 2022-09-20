@@ -7,6 +7,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KModifier.ANNOTATION
 import com.squareup.kotlinpoet.ksp.toTypeName
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.name
@@ -25,7 +26,7 @@ internal fun KSClassDeclaration.mutableCopyKt(
     addGeneratedMarker()
     addClass(annotationClassName) {
       addAnnotation(DslMarker::class)
-      addModifiers(KModifier.ANNOTATION)
+      addModifiers(ANNOTATION)
     }
     addClass(mutableClassName) {
       addAnnotation(annotationClassName)

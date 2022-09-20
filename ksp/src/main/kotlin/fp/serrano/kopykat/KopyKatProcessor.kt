@@ -18,10 +18,9 @@ internal class KopyKatProcessor(
         val targets = flatMap { file -> file.declarations }
           .filterIsInstance<KSClassDeclaration>()
           .filter { it.isConstructable() && (it.isDataClass() || it.isValueClass()) }
-        val mutableCandidates = targets//.map { it.asStarProjectedType() }
         targets
           .onEach { logger.logging("Processing ${it.simpleName}", it) }
-          .forEach { it.process(mutableCandidates) }
+          .forEach { it.process(mutableCandidates = targets) }
       }
     }
     return emptyList()
@@ -29,13 +28,14 @@ internal class KopyKatProcessor(
 
   private fun KSClassDeclaration.process(mutableCandidates: Sequence<KSClassDeclaration>) {
     when {
-      isDataClass() -> {
-        if (options.copyMap) copyMapFunctionKt().writeTo(codegen)
+      isDataClass() || isValueClass() -> {
+        if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
         if (options.mutableCopy) mutableCopyKt(mutableCandidates).writeTo(codegen)
       }
-      isValueClass() -> {
-        if (options.valueCopy) ValueCopyFunctionKt.writeTo(codegen)
-      }
+//       -> {
+//        if (options.valueCopy) copyMapFunctionKt.writeTo(codegen)
+//        if (options.mutableCopy) mutableCopyKt(mutableCandidates).writeTo(codegen)
+//      }
     }
   }
 }
