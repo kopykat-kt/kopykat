@@ -2,7 +2,9 @@
 
 package fp.serrano.kopykat
 
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -10,7 +12,15 @@ import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.name
 import fp.serrano.kopykat.utils.onClassScope
 
-internal fun KSClassDeclaration.mutableCopyKt(mutableCandidates: Sequence<KSType>): FileSpec = onClassScope {
+internal fun KSClassDeclaration.mutableCopyKt(
+  mutableCandidates: Sequence<KSClassDeclaration>,
+): FileSpec = onClassScope {
+
+  fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
+  fun KSPropertyDeclaration.hasMutableCopy(): Boolean = type.resolve().hasMutableCopy()
+  fun KSPropertyDeclaration.toAssignment(mutablePostfix: String, source: String? = null): String =
+    "$name = ${source ?: ""}$name${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
+
   buildFile(packageName = packageName, fileName = mutableTypeName) {
     addGeneratedMarker()
     addClass(annotationClassName) {
@@ -26,8 +36,8 @@ internal fun KSClassDeclaration.mutableCopyKt(mutableCandidates: Sequence<KSType
           val type = property.type.resolve()
           val declaration = type.declaration
 
-          val typeName = type.takeIf { it in mutableCandidates }
-            ?.let { ClassName(declaration.packageName.asString(), "Mutable${declaration.simpleName.asString()}") }
+          val typeName = type.takeIf { it.hasMutableCopy() }
+            ?.let { ClassName(declaration.packageName.asString(), "Mutable${declaration.name}") }
             ?: originalName
 
           addParameter(property.asParameterSpec(typeName))
@@ -46,34 +56,23 @@ internal fun KSClassDeclaration.mutableCopyKt(mutableCandidates: Sequence<KSType
     }
     addFunction(
       name = "freeze",
-      receiver = mutableClassName,
+      receiver = mutableParameterized,
       returns = targetClassName,
       typeVariables = typeVariableNames,
+      inlined = false,
     ) {
-      addModifiers(KModifier.INLINE)
-      val assignments = properties.map {
-        if(it.type.resolve() in mutableCandidates) {
-          "${it.name} = ${it.name}.freeze()"
-        } else {
-          "${it.name} = ${it.name}"
-        }
-      }
+      val assignments = properties.map { it.toAssignment(".freeze()") }
       addCode("return $targetTypeName(${assignments.joinToString()})")
     }
+
     addFunction(
       name = "toMutable",
       receiver = targetClassName,
-      returns = mutableClassName,
+      returns = mutableParameterized,
       typeVariables = typeVariableNames,
+      inlined = false,
     ) {
-      addModifiers(KModifier.INLINE)
-      val assignments = properties.map {
-        if(it.type.resolve() in mutableCandidates) {
-          "${it.name} = ${it.name}.toMutable()"
-        } else {
-          "${it.name} = ${it.name}"
-        }
-      } + "old = this"
+      val assignments = properties.map { it.toAssignment(".toMutable()") } + "old = this"
       addCode("return $mutableParameterized(${assignments.joinToString()})")
     }
     addFunction(
@@ -82,23 +81,10 @@ internal fun KSClassDeclaration.mutableCopyKt(mutableCandidates: Sequence<KSType
       returns = targetClassName,
       typeVariables = typeVariableNames,
     ) {
-      addModifiers(KModifier.INLINE)
       addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
-      val mutableAssignments = properties.map {
-        if(it.type.resolve() in mutableCandidates) {
-          "${it.name} = ${it.name}.toMutable()"
-        } else {
-          "${it.name} = ${it.name}"
-        }
-      } + "old = this"
+      val mutableAssignments = properties.map { it.toAssignment(".toMutable()") } + "old = this"
 
-      val compileAssignment = properties.map {
-        if(it.type.resolve() in mutableCandidates) {
-          "${it.name} = mutable.${it.name}.freeze()"
-        } else {
-          "${it.name} = mutable.${it.name}"
-        }
-      }
+      val compileAssignment = properties.map { it.toAssignment(mutablePostfix = ".freeze()", source = "mutable.") }
 
       addCode(
         """

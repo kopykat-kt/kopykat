@@ -37,9 +37,11 @@ public fun FileSpec.Builder.addFunction(
   receiver: TypeName? = null,
   returns: TypeName? = null,
   typeVariables: Iterable<TypeVariableName> = emptyList(),
+  inlined: Boolean = true,
   block: FunSpec.Builder.() -> Unit = {},
 ) {
   addFunction(FunSpec.builder(name).apply {
+    if (inlined) addModifiers(KModifier.INLINE)
     receiver?.apply { receiver(receiver) }
     returns?.apply { returns(returns) }
     addTypeVariables(typeVariables)

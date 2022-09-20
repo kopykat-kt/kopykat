@@ -17,7 +17,6 @@ internal val KSClassDeclaration.ValueCopyFunctionKt: FileSpec
         returns = targetClassName,
         typeVariables = typeVariableNames,
       ) {
-        addModifiers(KModifier.INLINE)
         // properties should be a singleton list,
         // but this allows sharing logic with 'transform'
         val propertyStatements = properties.map { property ->
