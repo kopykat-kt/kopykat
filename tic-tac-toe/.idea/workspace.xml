@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dcb8079-ef1b-4376-85d3-bbdbaaf2afba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../ksp/src/test/kotlin/fp/serrano/kopykat/ValueCopyMapTest.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/CopyMap.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/CopyMap.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/HierarchyCopy.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/HierarchyCopy.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/KopyKatProcessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/KopyKatProcessor.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/ValueCopy.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ksp/src/test/kotlin/fp/serrano/kopykat/ValueCopyTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ksp/src/test/kotlin/fp/serrano/kopykat/ValueCopyTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/utils/ClassUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ksp/src/main/kotlin/fp/serrano/kopykat/utils/ClassUtils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
