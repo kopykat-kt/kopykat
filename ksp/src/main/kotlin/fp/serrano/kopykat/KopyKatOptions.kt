@@ -3,7 +3,6 @@ package fp.serrano.kopykat
 internal data class KopyKatOptions(
   val copyMap: Boolean,
   val mutableCopy: Boolean,
-  val valueCopy: Boolean,
   val hierarchyCopy: Boolean
 ) {
   companion object {
@@ -11,7 +10,6 @@ internal data class KopyKatOptions(
       KopyKatOptions(
         copyMap = options.parseBoolOrTrue("copyMap"),
         mutableCopy = options.parseBoolOrTrue("mutableCopy"),
-        valueCopy = options.parseBoolOrTrue("valueCopy"),
         hierarchyCopy = options.parseBoolOrTrue("hierarchyCopy")
       )
   }
