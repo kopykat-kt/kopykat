@@ -3,14 +3,19 @@ package fp.serrano.kopykat.utils
 
 import com.google.devtools.ksp.*
 import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.symbol.Modifier.DATA
+import com.google.devtools.ksp.symbol.Modifier.SEALED
+import com.google.devtools.ksp.symbol.Modifier.VALUE
 
-internal fun KSClassDeclaration.isDataClass() =
-  Modifier.DATA in modifiers && primaryConstructor != null
+internal fun KSClassDeclaration.isConstructable() = primaryConstructor?.isPublic() == true
 
-internal fun KSClassDeclaration.isValueClass() =
-  Modifier.VALUE in modifiers && primaryConstructor != null
+internal fun KSClassDeclaration.isDataClass() = isConstructable() && DATA in modifiers
+
+internal fun KSClassDeclaration.isValueClass() = isConstructable() && VALUE in modifiers
 
 internal fun KSClassDeclaration.isSealedDataHierarchy() =
-  Modifier.SEALED in modifiers
-          && isAbstract()
-          && getSealedSubclasses().all { it.isDataClass() }
+  SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
+
+// TODO: value classes
+private fun KSClassDeclaration.hasOnlyDataClassChildren() =
+  getSealedSubclasses().all { it.isDataClass() }

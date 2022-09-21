@@ -1,43 +1,109 @@
 @file:Suppress("WildcardImport")
+
 package fp.serrano.kopykat
 
-import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.ksp.toTypeName
-import fp.serrano.kopykat.utils.*
+import fp.serrano.kopykat.utils.ClassScope
+import fp.serrano.kopykat.utils.addGeneratedMarker
+import fp.serrano.kopykat.utils.name
 
-internal val KSClassDeclaration.HierarchyCopyFunctionKt: FileSpec
-  get() = onClassScope {
-    buildFile(packageName = packageName, kopyKatMapFileName) {
-      addGeneratedMarker()
-      val properties = getAllProperties()
-      addFunction(
-        name = "copy",
-        receiver = targetClassName,
-        returns = targetClassName,
-        typeVariables = typeVariableNames,
-      ) {
-        addModifiers(KModifier.INLINE)
-        val propertyStatements = properties.map { property ->
-          val typeName = property.type.toTypeName(typeParamResolver)
-          addParameter(
-            ParameterSpec.builder(
-              name = property.name,
-              type = typeName,
-            ).defaultValue("this.${property.name}").build()
-          )
-          "${property.name} = ${property.name}"
+internal fun ClassScope.hierarchyCopyFunctionKt(): FileSpec =
+  buildFile(packageName = packageName.asString(), kopyKatCopyFileName) {
+    addGeneratedMarker()
+
+    addClass(annotationClassName) {
+      addAnnotation(DslMarker::class)
+      addModifiers(KModifier.ANNOTATION)
+    }
+    addClass(mutableClassName) {
+      addAnnotation(annotationClassName)
+      addTypeVariables(typeVariableNames)
+      primaryConstructor {
+        properties.forEach { property ->
+          val originalName = property.type.toTypeName(typeParamResolver)
+          val type = property.type.resolve()
+          val declaration = type.declaration
+
+          val typeName = type.takeIf { it.hasMutableCopy() }
+            ?.let { ClassName(declaration.packageName.asString(), "Mutable${declaration.name}") }
+            ?: originalName
+
+          addParameter(property.asParameterSpec(typeName))
+          addProperty(property.asPropertySpec(typeName) {
+            mutable(true).initializer(property.name)
+          })
         }
-        addReturn(
-          repeatOnSubclasses("copy(${propertyStatements.joinToString()})")
-        )
+        addParameter(name = "old", type = targetClassName)
+        addProperty(PropertySpec.builder(name = "old", type = targetClassName).initializer("old").build())
       }
     }
-  }
+    addFunction(
+      name = "freeze",
+      receiver = mutableParameterized,
+      returns = targetClassName,
+      typeVariables = typeVariableNames,
+      inlined = false,
+    ) {
+      val assignments = properties
+        .map { it.toAssignment(".freeze()") }
+        .joinToString()
 
-public fun KSClassDeclaration.repeatOnSubclasses(line: String): String = when {
-  isDataClass() -> line
-  else -> getSealedSubclasses().map { klass ->
-    "is ${klass.name} -> $line"
-  }.joinToString(prefix = "when (this) {\n", separator = "\n  ", postfix = "\n}")
-}
+      addReturn(
+        getSealedSubclasses()
+          .map { "is ${it.name} -> old.copy(${assignments})" }
+          .joinWithWhen(subject = "old"),
+      )
+    }
+
+    addFunction(
+      name = "toMutable",
+      receiver = targetClassName,
+      returns = mutableParameterized,
+      typeVariables = typeVariableNames,
+      inlined = false,
+    ) {
+      val assignments = properties.map { it.toAssignment(".toMutable()") } + "old = this"
+      addReturn("${mutableTypeName}(${assignments.joinToString()})")
+    }
+
+    addFunction(
+      name = "copy",
+      receiver = targetClassName,
+      returns = targetClassName,
+      typeVariables = typeVariableNames,
+    ) {
+      addParameter(
+        name = "block",
+        type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT),
+      )
+      addReturn("toMutable().apply(block).freeze()")
+    }
+
+    addFunction(
+      name = "copy",
+      receiver = targetClassName,
+      returns = targetClassName,
+      typeVariables = typeVariableNames,
+    ) {
+      val propertyStatements = properties.map { property ->
+        val typeName = property.type.toTypeName(typeParamResolver)
+        addParameter(
+          ParameterSpec.builder(name = property.name, type = typeName).defaultValue("this.${property.name}").build()
+        )
+        "${property.name} = ${property.name}"
+      }.toList()
+
+      addReturn(
+        getSealedSubclasses()
+          .map { "is ${it.name} -> this.copy(${propertyStatements.joinToString()})" }
+          .joinWithWhen()
+      )
+    }
+  }

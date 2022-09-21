@@ -10,10 +10,9 @@ import fp.serrano.kopykat.utils.ClassScope
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.name
 
-internal val ClassScope.copyMapFunctionKt: FileSpec
-  get() = buildFile(packageName = packageName.asString(), kopyKatFileName) {
+internal val ClassScope.HierarchyCopyMapFunctionKt: FileSpec
+  get() = buildFile(packageName = packageName.asString(), kopyKatCopyMapFileName) {
     addGeneratedMarker()
-    val properties = getAllProperties()
     addFunction(
       name = "copyMap",
       receiver = targetClassName,
@@ -25,7 +24,7 @@ internal val ClassScope.copyMapFunctionKt: FileSpec
         addParameter(
           ParameterSpec.builder(
             name = property.name,
-            type = LambdaTypeName.get(parameters = arrayOf(typeName), returnType = typeName)
+            type = LambdaTypeName.get(parameters = arrayOf(typeName), returnType = typeName),
           ).defaultValue("{ it }").build()
         )
         "${property.name} = ${property.name}(this.${property.name})"
