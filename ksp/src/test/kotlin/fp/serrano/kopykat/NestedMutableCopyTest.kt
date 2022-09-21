@@ -25,8 +25,8 @@ class NestedMutableCopyTest {
       |@JvmInline value class Level(val value: Int)
       |
       |val p1 = Person("Alex", Job("Developer", Level(1)))
-      |val p2 = p1.copy { job.level.value++ }
-      |val r = p2.level.value
+      |val p2: Person = p1.copy { job.level.value++ }
+      |val r = p2.job.level.value
       """.evals("r" to 2)
   }
 }

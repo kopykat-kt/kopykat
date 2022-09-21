@@ -16,6 +16,5 @@ internal fun KSClassDeclaration.isValueClass() = isConstructable() && VALUE in m
 internal fun KSClassDeclaration.isSealedDataHierarchy() =
   SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
 
-// TODO: value classes
 private fun KSClassDeclaration.hasOnlyDataClassChildren() =
-  getSealedSubclasses().all { it.isDataClass() }
+  getSealedSubclasses().all { it.isDataClass() || it.isValueClass() }
