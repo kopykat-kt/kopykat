@@ -11,6 +11,10 @@ import fp.serrano.kopykat.utils.hasGeneratedMarker
 import fp.serrano.kopykat.utils.isDataClass
 import fp.serrano.kopykat.utils.isSealedDataHierarchy
 import fp.serrano.kopykat.utils.isValueClass
+import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
+import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
+import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
+import fp.serrano.kopykat.utils.ksp.onKnownCategory
 import fp.serrano.kopykat.utils.onClassScope
 
 internal class KopyKatProcessor(
@@ -27,22 +31,21 @@ internal class KopyKatProcessor(
           .filter { it.requiresProcessing() }
         targets
           .onEach { logger.logging("Processing ${it.simpleName}", it) }
-          .forEach { it.onClassScope(targets) { process() } }
+          .forEach { it.onClassScope(targets, logger) { process() } }
       }
     }
     return emptyList()
   }
 
   private fun TypeCompileScope.process() {
-    when {
-      options.hierarchyCopy && isSealedDataHierarchy() -> {
-        if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
-        if (options.mutableCopy) hierarchyCopyFunctionKt().writeTo(codegen)
-      }
-
-      isDataClass() || isValueClass() -> {
-        if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
-        if (options.mutableCopy) mutableCopyKt().writeTo(codegen)
+    fun generate() {
+      if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
+      if (options.mutableCopy) mutableCopyKt().writeTo(codegen)
+    }
+    onKnownCategory { category ->
+      when (category) {
+        Data, Value -> generate()
+        Sealed -> if (options.hierarchyCopy) generate()
       }
     }
   }

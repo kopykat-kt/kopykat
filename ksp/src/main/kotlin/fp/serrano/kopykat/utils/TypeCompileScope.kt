@@ -1,6 +1,7 @@
 package fp.serrano.kopykat.utils
 
 import com.google.devtools.ksp.closestClassDeclaration
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -13,6 +14,7 @@ import fp.serrano.kopykat.utils.kotlin.poet.className
 internal sealed interface TypeCompileScope : KSClassDeclaration {
 
   val mutableCandidates: Sequence<KSClassDeclaration>
+  val logger: KSPLogger
 
   val targetTypeName get() = simpleName.asString()
   val typeVariableNames get() = typeParameters.map { it.toTypeVariableName() }
@@ -35,21 +37,22 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 internal class ClassCompileScope(
   private val classDeclaration: KSClassDeclaration,
   override val mutableCandidates: Sequence<KSClassDeclaration>,
+  override val logger: KSPLogger,
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope =
-    FileCompilerScope(classDeclaration = classDeclaration, mutableCandidates = mutableCandidates, file = file)
+    FileCompilerScope(this, file = file)
 }
 
 internal class FileCompilerScope(
-  classDeclaration: KSClassDeclaration,
-  override val mutableCandidates: Sequence<KSClassDeclaration>,
+  parent: TypeCompileScope,
   val file: FileSpec.Builder,
-) : TypeCompileScope, KSClassDeclaration by classDeclaration {
-  override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = this
+) : TypeCompileScope by parent {
+  override fun toFileScope(file: FileSpec.Builder) = this
 }
 
 internal fun <R> KSClassDeclaration.onClassScope(
   mutableCandidates: Sequence<KSClassDeclaration>,
+  logger: KSPLogger,
   block: TypeCompileScope.() -> R,
 ): R =
-  ClassCompileScope(this, mutableCandidates).block()
+  ClassCompileScope(this, mutableCandidates, logger).block()
