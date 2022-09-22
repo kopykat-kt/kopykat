@@ -6,8 +6,6 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addGeneratedMarker
-import fp.serrano.kopykat.utils.kotlin.poet.asTransformLambda
-import fp.serrano.kopykat.utils.kotlin.poet.buildFile
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value

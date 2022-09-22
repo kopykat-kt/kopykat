@@ -2,18 +2,16 @@
 
 package fp.serrano.kopykat
 
-import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.ksp.toClassName
 import fp.serrano.kopykat.utils.FileCompilerScope
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addDslMarkerClass
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.annotationClassName
-import fp.serrano.kopykat.utils.asReceiverConsumer
-import fp.serrano.kopykat.utils.kotlin.poet.buildFile
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
@@ -44,8 +42,7 @@ internal fun FileCompilerScope.addMutableCopy() {
     primaryConstructor {
       properties.forEach { property ->
         val typeName = property.type.resolve().takeIf { it.hasMutableCopy() }
-          ?.run { ClassName(declaration.packageName.asString(), "Mutable${declaration.name}") }
-          ?: property.typeName
+          ?.toClassName()?.map { "Mutable$it" } ?: property.typeName
 
         addParameter(property.asParameterSpec(typeName))
         addProperty(property.asPropertySpec(typeName) { mutable(true).initializer(property.name) })

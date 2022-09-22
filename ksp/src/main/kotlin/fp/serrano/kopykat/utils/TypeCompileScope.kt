@@ -14,9 +14,9 @@ import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
+import fp.serrano.kopykat.className
+import fp.serrano.kopykat.map
 import fp.serrano.kopykat.parameterizedWhenNotEmpty
-import fp.serrano.kopykat.utils.kotlin.poet.className
-import fp.serrano.kopykat.utils.kotlin.poet.map
 
 internal sealed interface TypeCompileScope : KSClassDeclaration {
 
@@ -39,6 +39,11 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 
   val KSPropertyDeclaration.typeName: TypeName get() = type.toTypeName(this@TypeCompileScope.typeParameters.toTypeParameterResolver())
 
+  fun className(first: String, vararg rest: String) =
+    ClassName(packageName = packageName.asString(), listOf(first) + rest)
+
+  fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
+    FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
 
@@ -57,14 +62,14 @@ internal class ClassCompileScope(
 
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
 
-  override fun toFileScope(file: FileSpec.Builder): FileCompilerScope =
-    FileCompilerScope(this, file = file)
+  override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
 }
 
 internal class FileCompilerScope(
   parent: TypeCompileScope,
   val file: FileSpec.Builder,
 ) : TypeCompileScope by parent {
+
   override fun toFileScope(file: FileSpec.Builder) = this
 
   fun addFunction(
