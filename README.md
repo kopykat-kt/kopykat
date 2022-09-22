@@ -1,13 +1,22 @@
-- [The Three Methods](#the-three-methods)
-  - [Mutable `copy`](#mutable-copy)
-  - [Mapping `copyMap`](#mapping-copymap)
-  - [Value class `copy`](#value-class-copy)
-  - [`copy` for hierarchies](#copy-for-hierarchies)
-- [Using KopyKat in your project](#using-kopykat-in-your-project)
-  - [Customizing the generation](#customizing-the-generation)
-- [What about optics?](#what-about-optics)
+<!-- TOC -->
 
-One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is their [`copy` method](https://kotlinlang.org/docs/data-classes.html#copying). But using it can become cumbersome very quickly, because you need to repeat the name of the field before and after.
+* [What can KopyKat do?](#what-can-kopykat-do)
+    * [Mutable `copy`](#mutable-copy)
+        * [Nested mutation](#nested-mutation)
+    * [Mapping `copyMap`](#mapping-copymap)
+    * [Value classes](#value-classes)
+        * [The `copyMap` function](#the-copymap-function)
+        * [The `copy` function](#the-copy-function)
+    * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
+* [Using KopyKat in your project](#using-kopykat-in-your-project)
+    * [Customizing the generation](#customizing-the-generation)
+* [What about optics?](#what-about-optics)
+
+<!-- TOC -->
+
+One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
+their [`copy` method](https://kotlinlang.org/docs/data-classes.html#copying). But using it can become cumbersome very
+quickly, because you need to repeat the name of the field before and after.
 
 ```kotlin
 data class Person(val name: String, val age: Int)
@@ -16,15 +25,16 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 ```
 
-## The Three Methods
+## What can KopyKat do?
 
-This plug-in generates a couple of new methods that make working with immutable data classes much easier.
+This plug-in generates a couple of new methods that make working with immutable (AKA read only) types more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
 
 ### Mutable `copy`
 
-This new version of `copy` takes a *block* as parameter. Within that block mutability is simulated; the final assignment of each (mutable) variable becomes the value of the new copy.
+This new version of `copy` takes a *block* as a parameter. Within that block, mutability is simulated; the final
+assignment of each (mutable) variable becomes the value of the new copy.
 
 ```kotlin
 val p1 = Person("Alex", 1)
@@ -44,6 +54,35 @@ val p3 = p1.copy {
 }
 ```
 
+#### Nested mutation
+
+If you have a data class that contains another data class (or value class) as a property, you can also make changes to
+inner types. Let's say we have these types:
+
+```kotlin
+data class Person(val name: String, val job: Job)
+data class Job(val title: String)
+
+val p1 = Person(name = "John", job = Job("Developer"))
+```
+
+Currently, to do mutate inner types you have to do the following:
+
+```kotlin
+val p2 = p1.copy(job = p1.job.copy(title = "Señor Developer"))
+
+```
+
+With KopyKat you can do this in a more readble way:
+
+```kotlin
+val p2 = p1.copy { job.title = "Señor Developer" }
+```
+
+> **Warning**
+> For now, this doesn't work with types that are external to the source code (i.e. dependencies). We are working on
+> supporting this in the future.
+
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
@@ -53,30 +92,45 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copyMap(age = { it + 1 })
 ```
 
-Note that you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
+> **Note**
+> you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
 
 ```kotlin
 val p3 = p1.copyMap(age = { 10 })
 ```
 
-### Value class `copy`
+### Value classes
 
-[Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate different concepts, but without any overhead. A good example is wrapping an integer as an age:
+[Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate
+different concepts, but without any overhead. A good example is wrapping an integer as an age:
+
+#### The `copyMap` function
 
 ```kotlin
 value class Age(val age: Int)
 ```
 
-The plug-in generates a `copy` method which takes the transformation to apply to the _single_ field as parameter.
+The plug-in generates a `copyMap` method which takes the transformation to apply to the _single_ field as parameter.
 
 ```kotlin
 val a1 = Age(1)
-val a2 = a1.copy { it + 1 }
+val a2 = a1.copyMap { it + 1 }
 ```
 
-### `copy` for hierarchies
+#### The `copy` function
 
-KopyKat also works with sealed hierarchies. It generates regular `copy`, `copyMap`, and mutable `copy` for the common properties, which ought to be declared in the parent class.
+KopyKat also generates a `copy` method similar to data classes. It allows to change the value of the class as if it was
+mutable:
+
+```kotlin
+val a1 = Age(1)
+val a2 = a1.copy { age++ } // or age += 1
+```
+
+### `copy` for sealed hierarchies
+
+KopyKat also works with sealed hierarchies. These are both sealed classes and sealed interfaces. It generates
+regular `copy`, `copyMap`, and mutable `copy` for the common properties, which ought to be declared in the parent class.
 
 ```kotlin
 abstract sealed class User(open val name: String)
@@ -90,14 +144,31 @@ This means that the following code works directly, without requiring an intermed
 fun User.takeOver() = copy { name = "Me" }
 ```
 
+Equally, you can use `copyMap` in a similar fashion:
+
+```kotlin
+fun User.takeOver() = copyMap(name = { "Me" })
+```
+
+Or, you can use a more familiar copy function:
+
+```kotlin
+fun User.takeOver() = copy(name = "Me")
+```
+
+> **Note**
+> KopyKat only generates these if all the subclasses are data or value classes. We can't mutate object types without
+> breaking the world underneath them. And cause a lot of pain.
 
 ## Using KopyKat in your project
 
-> This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
+> This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat
+> alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
 
-KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
+KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with
+Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
-1. Add [JitPack](https://jitpack.io/) to the list of repositories. 
+1. Add [JitPack](https://jitpack.io/) to the list of repositories.
 
     ```kotlin
     repositories {
