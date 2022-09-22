@@ -1,5 +1,3 @@
-# 😸 KopyKat
-
 - [The Three Methods](#the-three-methods)
   - [Mutable `copy`](#mutable-copy)
   - [Mapping `copyMap`](#mapping-copymap)
