@@ -19,7 +19,7 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
   val mutableTypeName get() = "Mutable$targetTypeName"
   val mutableClassName get() = className(mutableTypeName)
   val mutableParameterized get() = mutableClassName.parameterizedWhenNotEmpty(typeVariableNames)
-  val properties get() = getAllProperties()
+  val properties get() = getPrimaryConstructorProperties()
   val typeParamResolver get() = typeParameters.toTypeParameterResolver()
   val targetClassName get() = className(targetTypeName).parameterizedWhenNotEmpty(typeVariableNames)
 

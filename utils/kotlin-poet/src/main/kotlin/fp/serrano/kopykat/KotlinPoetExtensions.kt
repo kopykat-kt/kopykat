@@ -11,11 +11,14 @@ import com.squareup.kotlinpoet.ksp.writeTo
 private val notWantedModifiers: List<Modifier> =
   listOf(Modifier.OVERRIDE, Modifier.OPEN, Modifier.ABSTRACT)
 
+private val modifiersAllowedInParams: List<Modifier> =
+  listOf(Modifier.VARARG, Modifier.NOINLINE, Modifier.CROSSINLINE)
+
 public fun KSPropertyDeclaration.asParameterSpec(typeName: TypeName): ParameterSpec =
   ParameterSpec(
     name = simpleName.asString(),
     type = typeName,
-    modifiers = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() },
+    modifiers = modifiers.mapNotNull { it.takeIf { it in modifiersAllowedInParams }?.toKModifier() },
   )
 
 public fun KSPropertyDeclaration.asPropertySpec(

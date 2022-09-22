@@ -18,3 +18,17 @@ internal fun KSClassDeclaration.isSealedDataHierarchy() =
 
 private fun KSClassDeclaration.hasOnlyDataClassChildren() =
   sealedTypes.all { it.isDataClass() || it.isValueClass() }
+
+/**
+ * Obtains those properties which are defined in the primary constructor,
+ * or in every primary constructor of their children.
+ */
+internal fun KSClassDeclaration.getPrimaryConstructorProperties() =
+  getAllProperties().filter { property ->
+    hasPrimaryProperty(property) || (sealedTypes.any() && sealedTypes.all { it.hasPrimaryProperty(property) })
+  }
+
+internal fun KSClassDeclaration.hasPrimaryProperty(property: KSPropertyDeclaration) =
+  primaryConstructor?.parameters.orEmpty().any { param ->
+    (param.isVal || param.isVar) && param.name?.asString() == property.name
+  }

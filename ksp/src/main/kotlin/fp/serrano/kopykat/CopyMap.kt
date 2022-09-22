@@ -8,12 +8,13 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ksp.toTypeName
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addGeneratedMarker
+import fp.serrano.kopykat.utils.getPrimaryConstructorProperties
 import fp.serrano.kopykat.utils.name
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
   get() = buildFile(packageName = packageName.asString(), kopyKatFileName) {
     addGeneratedMarker()
-    val properties = getAllProperties()
+    val properties = getPrimaryConstructorProperties()
     addFunction(
       name = "copyMap",
       receiver = targetClassName,
