@@ -6,10 +6,8 @@ import fp.serrano.kopykat.addClass
 internal val TypeCompileScope.annotationClassName get() = className("${target.simpleName}CopyDslMarker")
 
 internal fun FileCompilerScope.addDslMarkerClass() {
-  with(file) {
-    addClass(annotationClassName) {
-      addAnnotation(DslMarker::class)
-      addModifiers(KModifier.ANNOTATION)
-    }
+  file.addClass(annotationClassName) {
+    addAnnotation(DslMarker::class)
+    addModifiers(KModifier.ANNOTATION)
   }
 }

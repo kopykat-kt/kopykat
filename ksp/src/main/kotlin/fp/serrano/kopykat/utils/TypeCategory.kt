@@ -1,16 +1,13 @@
-package fp.serrano.kopykat.utils.ksp
+package fp.serrano.kopykat.utils
 
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
-import fp.serrano.kopykat.utils.TypeCompileScope
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Unknown
-import fp.serrano.kopykat.utils.name
-import fp.serrano.kopykat.utils.sealedTypes
+import fp.serrano.kopykat.utils.TypeCategory.Known
+import fp.serrano.kopykat.utils.TypeCategory.Unknown
 
-internal val KSClassDeclaration.category: TypeCategory
+internal val KSClassDeclaration.typeCategory: TypeCategory
   get() = when {
     isDataClass() -> Known.Data
     isValueClass() -> Known.Value
@@ -19,7 +16,7 @@ internal val KSClassDeclaration.category: TypeCategory
   }
 
 internal inline fun TypeCompileScope.onKnownCategory(block: (Known) -> Unit) {
-  (category as? Known)?.apply(block) ?: logger.error("Type $name is not supported by KopyKat")
+  (typeCategory as? Known)?.apply(block) ?: logger.error("Type $name is not supported by KopyKat")
 }
 
 internal sealed interface TypeCategory {

@@ -7,14 +7,15 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import fp.serrano.kopykat.utils.ClassCompileScope
+import fp.serrano.kopykat.utils.TypeCategory.Known
+import fp.serrano.kopykat.utils.TypeCategory.Known.Data
+import fp.serrano.kopykat.utils.TypeCategory.Known.Sealed
+import fp.serrano.kopykat.utils.TypeCategory.Known.Value
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.hasGeneratedMarker
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
-import fp.serrano.kopykat.utils.ksp.category
-import fp.serrano.kopykat.utils.ksp.onKnownCategory
+import fp.serrano.kopykat.utils.lang.withEach
+import fp.serrano.kopykat.utils.onKnownCategory
+import fp.serrano.kopykat.utils.typeCategory
 
 internal class KopyKatProcessor(
   private val codegen: CodeGenerator,
@@ -25,19 +26,18 @@ internal class KopyKatProcessor(
   override fun process(resolver: Resolver): List<KSAnnotated> {
     resolver.getAllFiles().let { files ->
       if (files.none { it.hasGeneratedMarker() }) {
-        val targets = files.flatMap { it.declarations }
+        files.flatMap { it.declarations }
           .filterIsInstance<KSClassDeclaration>()
-          .filter { it.category is Known }
-        targets
-          .onEach { logger.logging("Processing ${it.simpleName}", it) }
-          .map { ClassCompileScope(it, targets, logger) }
-          .forEach { scope -> with(scope) { process() } }
+          .filter { it.typeCategory is Known }
+          .let { targets -> targets.map { ClassCompileScope(it, targets, logger) } }
+          .withEach { process() }
       }
     }
     return emptyList()
   }
 
   private fun TypeCompileScope.process() {
+    logger.logging("Processing $simpleName")
     fun generate() {
       if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
       if (options.mutableCopy) mutableCopyKt.writeTo(codegen)

@@ -4,33 +4,32 @@ package fp.serrano.kopykat
 
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import fp.serrano.kopykat.utils.FileCompilerScope
+import fp.serrano.kopykat.utils.TypeCategory.Known.Data
+import fp.serrano.kopykat.utils.TypeCategory.Known.Sealed
+import fp.serrano.kopykat.utils.TypeCategory.Known.Value
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addDslMarkerClass
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.annotationClassName
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
-import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
-import fp.serrano.kopykat.utils.ksp.category
-import fp.serrano.kopykat.utils.ksp.onKnownCategory
+import fp.serrano.kopykat.utils.lang.joinWithWhen
+import fp.serrano.kopykat.utils.lang.withEach
 import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.onKnownCategory
 import fp.serrano.kopykat.utils.sealedTypes
+import fp.serrano.kopykat.utils.typeCategory
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
   get() = buildFile(mutable.simpleName) {
-    file.addGeneratedMarker()
-
+    addGeneratedMarker()
     addDslMarkerClass()
     addMutableCopy()
     addFreezeFunction()
     addToMutateFunction()
     addCopyClosure()
 
-    if (category is Sealed) {
+    if (typeCategory is Sealed) {
       addRetrofittedCopyFunction()
     }
   }
@@ -40,15 +39,13 @@ internal fun FileCompilerScope.addMutableCopy() {
     addAnnotation(annotationClassName)
     addTypeVariables(typeVariableNames)
     primaryConstructor {
-      properties.forEach { property ->
-        val typeName = property.type.resolve().takeIf { it.hasMutableCopy() }
-          ?.toClassName()?.map { "Mutable$it" } ?: property.typeName
-
-        addParameter(property.asParameterSpec(typeName))
-        addProperty(property.asPropertySpec(typeName) { mutable(true).initializer(property.name) })
+      properties.withEach {
+        val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
+        addParameter(name = name, type = typeName, modifiers = propertyModifiers)
+        addMutableProperty(name = name, type = typeName, modifiers = propertyModifiers, initializer = name)
       }
       addParameter(name = "old", type = target.parameterized)
-      addProperty(PropertySpec.builder(name = "old", type = target.parameterized).initializer("old").build())
+      addProperty(name = "old", type = target.parameterized, initializer = "old")
     }
   }
 }
@@ -83,12 +80,7 @@ internal fun FileCompilerScope.addCopyClosure() {
 
 private fun FileCompilerScope.addRetrofittedCopyFunction() {
   addCopyFunction {
-    properties.forEach { property ->
-      addParameter(
-        ParameterSpec.builder(name = property.name, type = property.typeName)
-          .defaultValue("this.${property.name}").build()
-      )
-    }
+    properties.withEach { addParameter(name = name, type = typeName, defaultValue = "this.$name") }
     addReturn(sealedTypes.joinWithWhen { type ->
       "is ${type.name} -> this.copy(${properties.joinToString { "${it.name} = ${it.name}" }})"
     })

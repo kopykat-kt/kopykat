@@ -20,7 +20,6 @@ import fp.serrano.kopykat.parameterizedWhenNotEmpty
 
 internal sealed interface TypeCompileScope : KSClassDeclaration {
 
-  val mutableCandidates: Sequence<KSClassDeclaration>
   val logger: KSPLogger
   val typeVariableNames: List<TypeVariableName>
   val target: ClassName
@@ -29,7 +28,7 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 
   val ClassName.parameterized: TypeName
 
-  fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
+  fun KSType.hasMutableCopy(): Boolean
   fun KSPropertyDeclaration.hasMutableCopy(): Boolean = type.resolve().hasMutableCopy()
   fun KSPropertyDeclaration.toAssignment(mutablePostfix: String, source: String? = null): String =
     "$name = ${source ?: ""}$name${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
@@ -51,7 +50,7 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 
 internal class ClassCompileScope(
   private val classDeclaration: KSClassDeclaration,
-  override val mutableCandidates: Sequence<KSClassDeclaration>,
+  private val mutableCandidates: Sequence<KSClassDeclaration>,
   override val logger: KSPLogger,
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
 
@@ -61,6 +60,7 @@ internal class ClassCompileScope(
   override val properties: Sequence<KSPropertyDeclaration> = getAllProperties()
 
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
+  override fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
 
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
 }
