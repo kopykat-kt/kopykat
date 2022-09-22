@@ -6,6 +6,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import fp.serrano.kopykat.utils.ClassCompileScope
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.hasGeneratedMarker
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known
@@ -14,7 +15,6 @@ import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
 import fp.serrano.kopykat.utils.ksp.category
 import fp.serrano.kopykat.utils.ksp.onKnownCategory
-import fp.serrano.kopykat.utils.onClassScope
 
 internal class KopyKatProcessor(
   private val codegen: CodeGenerator,
@@ -30,7 +30,8 @@ internal class KopyKatProcessor(
           .filter { it.category is Known }
         targets
           .onEach { logger.logging("Processing ${it.simpleName}", it) }
-          .forEach { it.onClassScope(targets, logger) { process() } }
+          .map { ClassCompileScope(it, targets, logger) }
+          .forEach { scope -> with(scope) { process() } }
       }
     }
     return emptyList()

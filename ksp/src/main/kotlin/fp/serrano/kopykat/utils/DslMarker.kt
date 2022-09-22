@@ -4,7 +4,7 @@ import com.squareup.kotlinpoet.KModifier
 import fp.serrano.kopykat.addClass
 import fp.serrano.kopykat.utils.kotlin.poet.className
 
-internal val TypeCompileScope.annotationClassName get() = className("${targetTypeName}CopyDslMarker")
+internal val TypeCompileScope.annotationClassName get() = className("${target.simpleName}CopyDslMarker")
 
 internal fun FileCompilerScope.addDslMarkerClass() {
   with(file) {

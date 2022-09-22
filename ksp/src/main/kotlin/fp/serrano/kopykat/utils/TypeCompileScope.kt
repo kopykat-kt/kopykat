@@ -5,33 +5,40 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeVariableName
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import fp.serrano.kopykat.parameterizedWhenNotEmpty
 import fp.serrano.kopykat.utils.kotlin.poet.className
+import fp.serrano.kopykat.utils.kotlin.poet.map
 
 internal sealed interface TypeCompileScope : KSClassDeclaration {
 
   val mutableCandidates: Sequence<KSClassDeclaration>
   val logger: KSPLogger
+  val typeVariableNames: List<TypeVariableName>
+  val target: ClassName
+  val mutable: ClassName
+  val properties: Sequence<KSPropertyDeclaration>
 
-  val targetTypeName get() = simpleName.asString()
-  val typeVariableNames get() = typeParameters.map { it.toTypeVariableName() }
-  val mutableTypeName get() = "Mutable$targetTypeName"
-  val mutableClassName get() = className(mutableTypeName)
-  val mutableParameterized get() = mutableClassName.parameterizedWhenNotEmpty(typeVariableNames)
-  val properties get() = getAllProperties()
-  val typeParamResolver get() = typeParameters.toTypeParameterResolver()
-  val targetClassName get() = className(targetTypeName).parameterizedWhenNotEmpty(typeVariableNames)
+  val ClassName.parameterized: TypeName
 
   fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
   fun KSPropertyDeclaration.hasMutableCopy(): Boolean = type.resolve().hasMutableCopy()
   fun KSPropertyDeclaration.toAssignment(mutablePostfix: String, source: String? = null): String =
     "$name = ${source ?: ""}$name${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
+
+  fun Sequence<KSPropertyDeclaration>.joinAsAssignments(mutablePostfix: String, source: String? = null) =
+    joinToString { it.toAssignment(mutablePostfix, source) }
+
+  val KSPropertyDeclaration.typeName: TypeName get() = type.toTypeName(this@TypeCompileScope.typeParameters.toTypeParameterResolver())
+
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
 
@@ -42,6 +49,14 @@ internal class ClassCompileScope(
   override val mutableCandidates: Sequence<KSClassDeclaration>,
   override val logger: KSPLogger,
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
+
+  override val typeVariableNames: List<TypeVariableName> = typeParameters.map { it.toTypeVariableName() }
+  override val target: ClassName = className
+  override val mutable: ClassName = target.map { "Mutable$simpleName" }
+  override val properties: Sequence<KSPropertyDeclaration> = getAllProperties()
+
+  override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
+
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope =
     FileCompilerScope(this, file = file)
 }
@@ -73,10 +88,3 @@ internal class FileCompilerScope(
     block()
   }
 }
-
-internal fun <R> KSClassDeclaration.onClassScope(
-  mutableCandidates: Sequence<KSClassDeclaration>,
-  logger: KSPLogger,
-  block: TypeCompileScope.() -> R,
-): R =
-  ClassCompileScope(this, mutableCandidates, logger).block()
