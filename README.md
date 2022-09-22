@@ -73,7 +73,7 @@ val p2 = p1.copy(job = p1.job.copy(title = "Señor Developer"))
 
 ```
 
-With KopyKat you can do this in a more readble way:
+With KopyKat you can do this in a more readable way:
 
 ```kotlin
 val p2 = p1.copy { job.title = "Señor Developer" }
