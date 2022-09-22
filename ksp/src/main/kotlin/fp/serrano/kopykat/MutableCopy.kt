@@ -41,7 +41,7 @@ internal fun FileCompilerScope.addMutableCopy() {
     primaryConstructor {
       properties.withEach {
         val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
-        addParameter(name = name, type = typeName, modifiers = propertyModifiers)
+        addParameter(name = name, type = typeName, modifiers = parameterModifiers)
         addMutableProperty(name = name, type = typeName, modifiers = propertyModifiers, initializer = name)
       }
       addParameter(name = "old", type = target.parameterized)

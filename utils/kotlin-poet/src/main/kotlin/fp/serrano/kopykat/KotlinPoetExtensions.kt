@@ -17,8 +17,14 @@ import com.squareup.kotlinpoet.ksp.writeTo
 private val notWantedModifiers: List<Modifier> =
   listOf(Modifier.OVERRIDE, Modifier.OPEN, Modifier.ABSTRACT)
 
+private val modifiersAllowedInParams: List<Modifier> =
+  listOf(Modifier.VARARG, Modifier.NOINLINE, Modifier.CROSSINLINE)
+
 public val KSPropertyDeclaration.propertyModifiers: List<KModifier>
   get() = modifiers.mapNotNull { it.takeIf { it !in notWantedModifiers }?.toKModifier() }
+
+public val KSPropertyDeclaration.parameterModifiers: List<KModifier>
+  get() = modifiers.mapNotNull { it.takeIf { it in modifiersAllowedInParams }?.toKModifier() }
 
 public fun ClassName.parameterizedWhenNotEmpty(typeArguments: List<TypeName>): TypeName =
   takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this
