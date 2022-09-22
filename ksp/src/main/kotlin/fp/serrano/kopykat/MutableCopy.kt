@@ -14,17 +14,17 @@ import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addDslMarkerClass
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.annotationClassName
-import fp.serrano.kopykat.utils.isSealedDataHierarchy
 import fp.serrano.kopykat.utils.kotlin.poet.buildFile
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Data
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
+import fp.serrano.kopykat.utils.ksp.category
 import fp.serrano.kopykat.utils.ksp.onKnownCategory
 import fp.serrano.kopykat.utils.mapSealedSubclasses
 import fp.serrano.kopykat.utils.name
 
-internal fun TypeCompileScope.mutableCopyKt(): FileSpec =
-  buildFile(mutableTypeName) {
+internal val TypeCompileScope.mutableCopyKt: FileSpec
+  get() = buildFile(mutableTypeName) {
     file.addGeneratedMarker()
 
     addDslMarkerClass()
@@ -33,7 +33,7 @@ internal fun TypeCompileScope.mutableCopyKt(): FileSpec =
     addToMutateFunction()
     addCopyClosure()
 
-    if (isSealedDataHierarchy()) {
+    if (category is Sealed) {
       addRetrofittedCopyFunction()
     }
   }
