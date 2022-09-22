@@ -20,7 +20,7 @@ val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 
 This plug-in generates a couple of new methods that make working with immutable data classes much easier.
 
-![IntelliJ showing the methods](https://github.com/serras/kopykat/blob/main/intellij.png?raw=true)
+![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
 
 ### Mutable `copy`
 
@@ -93,7 +93,7 @@ fun User.takeOver() = copy { name = "Me" }
 
 ## Using KopyKat in your project
 
-> This [demo project](https://github.com/serras/kopykat-demo) showcases the use of KopyKat alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
+> This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat alongside [version catalogs](https://docs.gradle.org/7.0-rc-1/release-notes.html#centralized-versions).
 
 KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
@@ -119,7 +119,7 @@ KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from w
     ```kotlin
     dependencies {
       // other dependencies
-      ksp("com.github.serras.kopykat:ksp:0.1")
+      ksp("com.github.kopykat-kt.kopykat:ksp:0.1")
     }
     ```
 
