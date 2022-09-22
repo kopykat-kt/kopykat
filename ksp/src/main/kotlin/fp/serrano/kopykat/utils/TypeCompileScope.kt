@@ -6,6 +6,9 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import fp.serrano.kopykat.parameterizedWhenNotEmpty
@@ -48,6 +51,27 @@ internal class FileCompilerScope(
   val file: FileSpec.Builder,
 ) : TypeCompileScope by parent {
   override fun toFileScope(file: FileSpec.Builder) = this
+
+  fun addFunction(
+    name: String,
+    receives: TypeName? = null,
+    returns: TypeName? = null,
+    block: FunSpec.Builder.() -> Unit = {},
+  ) = file.addFunction(FunSpec.builder(name).apply {
+    receives?.apply { receiver(receives) }
+    returns?.apply { returns(returns) }
+    addTypeVariables(typeVariableNames)
+  }.apply(block).build())
+
+  fun addInlinedFunction(
+    name: String,
+    receives: TypeName? = null,
+    returns: TypeName? = null,
+    block: FunSpec.Builder.() -> Unit = {},
+  ) = addFunction(name, receives, returns) {
+    addModifiers(KModifier.INLINE)
+    block()
+  }
 }
 
 internal fun <R> KSClassDeclaration.onClassScope(

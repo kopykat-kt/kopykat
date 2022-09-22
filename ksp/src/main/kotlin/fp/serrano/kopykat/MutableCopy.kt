@@ -21,8 +21,8 @@ import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.ksp.TypeCategory.Known.Value
 import fp.serrano.kopykat.utils.ksp.category
 import fp.serrano.kopykat.utils.ksp.onKnownCategory
-import fp.serrano.kopykat.utils.mapSealedSubclasses
 import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.sealedTypes
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
   get() = buildFile(mutableTypeName) {
@@ -66,18 +66,16 @@ internal fun FileCompilerScope.addMutableCopy() {
 
 internal fun FileCompilerScope.addFreezeFunction() {
   onKnownCategory { category ->
-    file.addFunction(
+    addFunction(
       name = "freeze",
-      receiver = mutableParameterized,
+      receives = mutableParameterized,
       returns = targetClassName,
-      typeVariables = typeVariableNames,
-      inlined = false,
     ) {
       val assignments = properties.map { it.toAssignment(".freeze()") }.joinToString()
       addReturn(
         when (category) {
           Data, Value -> "$targetTypeName($assignments)"
-          Sealed -> mapSealedSubclasses { "is ${it.name} -> old.copy($assignments)" }.joinWithWhen(subject = "old")
+          Sealed -> sealedTypes.joinWithWhen(subject = "old") { "is ${it.name} -> old.copy($assignments)" }
         }
       )
     }
@@ -85,12 +83,10 @@ internal fun FileCompilerScope.addFreezeFunction() {
 }
 
 internal fun FileCompilerScope.addToMutateFunction() {
-  file.addFunction(
+  addFunction(
     name = "toMutable",
-    receiver = targetClassName,
+    receives = targetClassName,
     returns = mutableParameterized,
-    typeVariables = typeVariableNames,
-    inlined = false,
   ) {
     val assignments = properties.map { it.toAssignment(".toMutable()") } + "old = this"
     addReturn("$mutableParameterized(${assignments.joinToString()})")
@@ -117,18 +113,10 @@ private fun FileCompilerScope.addRetrofittedCopyFunction() {
       "${property.name} = ${property.name}"
     }.toList()
 
-    addReturn(mapSealedSubclasses {
-      "is ${it.name} -> this.copy(${propertyStatements.joinToString()})"
-    }.joinWithWhen())
+    addReturn(sealedTypes.joinWithWhen { "is ${it.name} -> this.copy(${propertyStatements.joinToString()})" })
   }
 }
 
 internal fun FileCompilerScope.addCopyFunction(block: FunSpec.Builder.() -> Unit) {
-  file.addFunction(
-    name = "copy",
-    receiver = targetClassName,
-    returns = targetClassName,
-    typeVariables = typeVariableNames,
-    block = block,
-  )
+  addInlinedFunction(name = "copy", receives = targetClassName, returns = targetClassName, block = block)
 }
