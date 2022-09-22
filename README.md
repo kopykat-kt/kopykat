@@ -27,7 +27,7 @@ val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 
 ## What can KopyKat do?
 
-This plug-in generates a couple of new methods that make working with immutable (AKA read only) types more convenient.
+This plug-in generates a couple of new methods that make working with immutable (read-only) types more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
 
