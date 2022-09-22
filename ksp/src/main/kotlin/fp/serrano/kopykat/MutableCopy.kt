@@ -4,6 +4,7 @@ package fp.serrano.kopykat
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
@@ -97,12 +98,7 @@ internal fun FileCompilerScope.addToMutateFunction() {
 }
 
 internal fun FileCompilerScope.addCopyClosure() {
-  file.addFunction(
-    name = "copy",
-    receiver = targetClassName,
-    returns = targetClassName,
-    typeVariables = typeVariableNames,
-  ) {
+  addCopyFunction {
     addParameter(
       name = "block",
       type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT),
@@ -112,12 +108,7 @@ internal fun FileCompilerScope.addCopyClosure() {
 }
 
 private fun FileCompilerScope.addRetrofittedCopyFunction() {
-  file.addFunction(
-    name = "copy",
-    receiver = targetClassName,
-    returns = targetClassName,
-    typeVariables = typeVariableNames,
-  ) {
+  addCopyFunction {
     val propertyStatements = properties.map { property ->
       val typeName = property.type.toTypeName(typeParamResolver)
       addParameter(
@@ -130,4 +121,14 @@ private fun FileCompilerScope.addRetrofittedCopyFunction() {
       "is ${it.name} -> this.copy(${propertyStatements.joinToString()})"
     }.joinWithWhen())
   }
+}
+
+internal fun FileCompilerScope.addCopyFunction(block: FunSpec.Builder.() -> Unit) {
+  file.addFunction(
+    name = "copy",
+    receiver = targetClassName,
+    returns = targetClassName,
+    typeVariables = typeVariableNames,
+    block = block,
+  )
 }
