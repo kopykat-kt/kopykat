@@ -52,7 +52,7 @@ internal class ClassCompileScope(
 
   override val typeVariableNames: List<TypeVariableName> = typeParameters.map { it.toTypeVariableName() }
   override val target: ClassName = className
-  override val mutable: ClassName = target.map { "Mutable$simpleName" }
+  override val mutable: ClassName = target.map { "Mutable$it" }
   override val properties: Sequence<KSPropertyDeclaration> = getAllProperties()
 
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
