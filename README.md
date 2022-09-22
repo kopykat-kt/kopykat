@@ -171,7 +171,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     ```kotlin
     dependencies {
       // other dependencies
-      ksp("com.github.kopykat-kt.kopykat:ksp:0.1")
+      ksp("com.github.kopykat-kt.kopykat:ksp:1.0-dev")
     }
     ```
 
