@@ -1,7 +1,5 @@
 # 😸 KopyKat
 
-_When the author figures out how to upload the artifact to Maven, instructions on how to use the library will appear here._
-
 - [The Three Methods](#the-three-methods)
   - [Mutable `copy`](#mutable-copy)
   - [Mapping `copyMap`](#mapping-copymap)
