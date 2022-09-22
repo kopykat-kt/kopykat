@@ -54,7 +54,6 @@ internal fun FileCompilerScope.addMutableCopy() {
       addProperty(PropertySpec.builder(name = "old", type = targetClassName).initializer("old").build())
     }
   }
-
 }
 
 internal fun FileCompilerScope.addFreezeFunction(block: FunSpec.Builder.() -> Unit) {

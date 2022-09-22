@@ -36,7 +36,7 @@ internal class KopyKatProcessor(
   private fun TypeCompileScope.process() {
     when {
       options.hierarchyCopy && isSealedDataHierarchy() -> {
-        if (options.copyMap) HierarchyCopyMapFunctionKt.writeTo(codegen)
+        if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
         if (options.mutableCopy) hierarchyCopyFunctionKt().writeTo(codegen)
       }
 
