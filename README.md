@@ -4,14 +4,13 @@
     * [Mutable `copy`](#mutable-copy)
         * [Nested mutation](#nested-mutation)
     * [Mapping `copyMap`](#mapping-copymap)
+    * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
     * [Value classes](#value-classes)
         * [The `copyMap` function](#the-copymap-function)
         * [The `copy` function](#the-copy-function)
-    * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Customizing the generation](#customizing-the-generation)
 * [What about optics?](#what-about-optics)
-
 <!-- TOC -->
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
@@ -99,34 +98,6 @@ val p2 = p1.copyMap(age = { it + 1 })
 val p3 = p1.copyMap(age = { 10 })
 ```
 
-### Value classes
-
-[Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate
-different concepts, but without any overhead. A good example is wrapping an integer as an age:
-
-#### The `copyMap` function
-
-```kotlin
-value class Age(val age: Int)
-```
-
-The plug-in generates a `copyMap` method which takes the transformation to apply to the _single_ field as parameter.
-
-```kotlin
-val a1 = Age(1)
-val a2 = a1.copyMap { it + 1 }
-```
-
-#### The `copy` function
-
-KopyKat also generates a `copy` method similar to data classes. It allows to change the value of the class as if it was
-mutable:
-
-```kotlin
-val a1 = Age(1)
-val a2 = a1.copy { age++ } // or age += 1
-```
-
 ### `copy` for sealed hierarchies
 
 KopyKat also works with sealed hierarchies. These are both sealed classes and sealed interfaces. It generates
@@ -154,6 +125,34 @@ Or, you can use a more familiar copy function:
 
 ```kotlin
 fun User.takeOver() = copy(name = "Me")
+```
+
+### Value classes
+
+[Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate
+different concepts, but without any overhead. A good example is wrapping an integer as an age:
+
+#### The `copyMap` function
+
+```kotlin
+value class Age(val age: Int)
+```
+
+The plug-in generates a `copyMap` method which takes the transformation to apply to the _single_ field as parameter.
+
+```kotlin
+val a1 = Age(1)
+val a2 = a1.copyMap { it + 1 }
+```
+
+#### The `copy` function
+
+KopyKat also generates a `copy` method similar to data classes. It allows to change the value of the class as if it was
+mutable:
+
+```kotlin
+val a1 = Age(1)
+val a2 = a1.copy { age++ } // or age += 1
 ```
 
 > **Note**
@@ -204,7 +203,6 @@ You can disable the generation of some of these methods by [passing options to K
 ksp {
   arg("mutableCopy", "true")
   arg("copyMap", "false")
-  arg("valueCopy", "true")
   arg("hierarchyCopy", "true")
 }
 ```
