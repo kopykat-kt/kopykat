@@ -112,19 +112,19 @@ data class Company(override val name: String, val address: String): User(name)
 This means that the following code works directly, without requiring an intermediate `when`.
 
 ```kotlin
-fun User.takeOver() = copy { name = "Me" }
+fun User.takeOver() = this.copy { name = "Me" }
 ```
 
 Equally, you can use `copyMap` in a similar fashion:
 
 ```kotlin
-fun User.takeOver() = copyMap(name = { "Me" })
+fun User.takeOver() = this.copyMap(name = { "Me" })
 ```
 
 Or, you can use a more familiar copy function:
 
 ```kotlin
-fun User.takeOver() = copy(name = "Me")
+fun User.takeOver() = this.copy(name = "Me")
 ```
 
 ### Value classes
