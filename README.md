@@ -5,9 +5,6 @@
         * [Nested mutation](#nested-mutation)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-    * [Value classes](#value-classes)
-        * [The `copyMap` function](#the-copymap-function)
-        * [The `copy` function](#the-copy-function)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Customizing the generation](#customizing-the-generation)
 * [What about optics?](#what-about-optics)
@@ -26,14 +23,16 @@ val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 
 ## What can KopyKat do?
 
-This plug-in generates a couple of new methods that make working with immutable (read-only) types more convenient.
+This plug-in generates a couple of new methods that make working with immutable (read-only) types, like data classes and
+value classes, more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
 
 ### Mutable `copy`
 
 This new version of `copy` takes a *block* as a parameter. Within that block, mutability is simulated; the final
-assignment of each (mutable) variable becomes the value of the new copy.
+assignment of each (mutable) variable becomes the value of the new copy. These are generated for both data classes and
+value classes.
 
 ```kotlin
 val p1 = Person("Alex", 1)
@@ -98,6 +97,17 @@ val p2 = p1.copyMap(age = { it + 1 })
 val p3 = p1.copyMap(age = { 10 })
 ```
 
+> **Note**
+> When using value classes, given that you only have one property, you can skip the name of the property:
+
+```kotlin
+@JvInline value class Age(ageValue: Int)
+
+val a = Age(39)
+
+val b = a.copyMap { it + 1 }
+```
+
 ### `copy` for sealed hierarchies
 
 KopyKat also works with sealed hierarchies. These are both sealed classes and sealed interfaces. It generates
@@ -127,35 +137,7 @@ Or, you can use a more familiar copy function:
 fun User.takeOver() = this.copy(name = "Me")
 ```
 
-### Value classes
-
-[Value-based classes](https://kotlinlang.org/docs/inline-classes.html) are useful to create wrapper that separate
-different concepts, but without any overhead. A good example is wrapping an integer as an age:
-
-#### The `copyMap` function
-
-```kotlin
-value class Age(val age: Int)
-```
-
-The plug-in generates a `copyMap` method which takes the transformation to apply to the _single_ field as parameter.
-
-```kotlin
-val a1 = Age(1)
-val a2 = a1.copyMap { it + 1 }
-```
-
-#### The `copy` function
-
-KopyKat also generates a `copy` method similar to data classes. It allows to change the value of the class as if it was
-mutable:
-
-```kotlin
-val a1 = Age(1)
-val a2 = a1.copy { age++ } // or age += 1
-```
-
-> **Note**
+> **Warning**
 > KopyKat only generates these if all the subclasses are data or value classes. We can't mutate object types without
 > breaking the world underneath them. And cause a lot of pain.
 
