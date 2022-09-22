@@ -17,4 +17,4 @@ internal fun KSClassDeclaration.isSealedDataHierarchy() =
   SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
 
 private fun KSClassDeclaration.hasOnlyDataClassChildren() =
-  getSealedSubclasses().all { it.isDataClass() || it.isValueClass() }
+  sealedTypes.all { it.isDataClass() || it.isValueClass() }

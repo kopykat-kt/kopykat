@@ -6,11 +6,11 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ksp.toTypeName
-import fp.serrano.kopykat.utils.ClassScope
+import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.name
 
-internal val ClassScope.HierarchyCopyMapFunctionKt: FileSpec
+internal val TypeCompileScope.HierarchyCopyMapFunctionKt: FileSpec
   get() = buildFile(packageName = packageName.asString(), kopyKatCopyMapFileName) {
     addGeneratedMarker()
     addFunction(
@@ -32,3 +32,5 @@ internal val ClassScope.HierarchyCopyMapFunctionKt: FileSpec
       addReturn(repeatOnSubclasses(propertyStatements.joinToString(), "copy"))
     }
   }
+
+private val TypeCompileScope.kopyKatCopyMapFileName get() = "${targetTypeName}CopyMapKopyKat"

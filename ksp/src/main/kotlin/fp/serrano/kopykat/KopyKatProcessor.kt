@@ -6,7 +6,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import fp.serrano.kopykat.utils.ClassScope
+import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.hasGeneratedMarker
 import fp.serrano.kopykat.utils.isDataClass
 import fp.serrano.kopykat.utils.isSealedDataHierarchy
@@ -33,7 +33,7 @@ internal class KopyKatProcessor(
     return emptyList()
   }
 
-  private fun ClassScope.process() {
+  private fun TypeCompileScope.process() {
     when {
       options.hierarchyCopy && isSealedDataHierarchy() -> {
         if (options.copyMap) HierarchyCopyMapFunctionKt.writeTo(codegen)

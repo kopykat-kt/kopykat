@@ -3,6 +3,7 @@ package fp.serrano.kopykat
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import fp.serrano.kopykat.utils.isDataClass
 import fp.serrano.kopykat.utils.isValueClass
+import fp.serrano.kopykat.utils.mapSealedSubclasses
 import fp.serrano.kopykat.utils.name
 
 internal fun KSClassDeclaration.repeatOnSubclasses(
@@ -11,7 +12,7 @@ internal fun KSClassDeclaration.repeatOnSubclasses(
 ): String = when {
   isValueClass() -> "${name}($line)"
   isDataClass() -> "$functionName(${line})"
-  else -> getSealedSubclasses().map { "is ${it.name} -> $functionName($line)" }.joinWithWhen()
+  else -> mapSealedSubclasses { "is ${it.name} -> $functionName($line)" }.joinWithWhen()
 }
 
 internal fun Sequence<String>.joinWithWhen(subject: String = "this") =
