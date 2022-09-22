@@ -47,4 +47,18 @@ class CopyMapTest {
       |val r = p2.age
       """.failsWith { it.contains("Unresolved reference: copyMap") }
   }
+
+
+  @Test
+  fun `simple test with additional property`() {
+    """
+      |data class Person(val name: String, val age: Int) {
+      |  public var address: String = ""
+      |}
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { it + 1 })
+      |val r = p2.age
+      """.evals("r" to 2)
+  }
 }

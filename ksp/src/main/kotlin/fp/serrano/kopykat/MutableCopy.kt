@@ -1,54 +1,92 @@
 @file:Suppress("WildcardImport")
+
 package fp.serrano.kopykat
 
-import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.*
-import fp.serrano.kopykat.utils.*
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ksp.toClassName
+import fp.serrano.kopykat.utils.FileCompilerScope
+import fp.serrano.kopykat.utils.TypeCategory.Known.Data
+import fp.serrano.kopykat.utils.TypeCategory.Known.Sealed
+import fp.serrano.kopykat.utils.TypeCategory.Known.Value
+import fp.serrano.kopykat.utils.TypeCompileScope
+import fp.serrano.kopykat.utils.addDslMarkerClass
+import fp.serrano.kopykat.utils.addGeneratedMarker
+import fp.serrano.kopykat.utils.annotationClassName
+import fp.serrano.kopykat.utils.lang.forEachRun
+import fp.serrano.kopykat.utils.lang.joinWithWhen
+import fp.serrano.kopykat.utils.name
+import fp.serrano.kopykat.utils.onKnownCategory
+import fp.serrano.kopykat.utils.sealedTypes
+import fp.serrano.kopykat.utils.typeCategory
 
-internal val KSClassDeclaration.MutableCopyKt: FileSpec
-  get() = onClassScope {
-    buildFile(packageName = packageName, fileName = mutableTypeName) {
-      addGeneratedMarker()
-      addClass(annotationClassName) {
-        addAnnotation(DslMarker::class)
-        addModifiers(KModifier.ANNOTATION)
-      }
-      addClass(mutableClassName) {
-        addAnnotation(annotationClassName)
-        addTypeVariables(typeVariableNames)
-        primaryConstructor {
-          properties.forEach { property ->
-            addParameter(property.asParameterSpec(typeParamResolver))
-            addProperty(property.asPropertySpec(typeParamResolver) {
-              mutable(true).initializer(property.simpleName.asString())
-            })
-          }
-          addParameter(ParameterSpec(
-            name = "old",
-            type = targetClassName
-          ))
-          addProperty(PropertySpec.builder(
-            name = "old",
-            type = targetClassName
-          ).mutable(false).initializer("old").build())
-        }
-      }
-      addFunction(
-        name = "copy",
-        receiver = targetClassName,
-        returns = targetClassName,
-        typeVariables = typeVariableNames,
-      ) {
-        addModifiers(KModifier.INLINE)
-        addParameter(name = "block", type = LambdaTypeName.get(receiver = mutableParameterized, returnType = UNIT))
-        val assignments = properties.map { "${it.name} = ${it.name}" } + "old = this"
-        val returns = repeatOnSubclasses("copy(${properties.joinToString { "${it.name} = mutable.${it.name}" }})")
-        addCode(
-          """
-        | val mutable = $mutableParameterized(${assignments.joinToString()}).apply(block)
-        | return $returns
-        """.trimMargin()
-        )
-      }
+internal val TypeCompileScope.mutableCopyKt: FileSpec
+  get() = buildFile(mutable.simpleName) {
+    addGeneratedMarker()
+    addDslMarkerClass()
+    addMutableCopy()
+    addFreezeFunction()
+    addToMutateFunction()
+    addCopyClosure()
+
+    if (typeCategory is Sealed) {
+      addRetrofittedCopyFunction()
     }
   }
+
+internal fun FileCompilerScope.addMutableCopy() {
+  file.addClass(mutable) {
+    addAnnotation(annotationClassName)
+    addTypeVariables(typeVariableNames)
+    primaryConstructor {
+      properties.forEachRun {
+        val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
+        addParameter(name = name, type = typeName, modifiers = parameterModifiers)
+        addMutableProperty(name = name, type = typeName, modifiers = propertyModifiers, initializer = name)
+      }
+      addParameter(name = "old", type = target.parameterized)
+      addProperty(name = "old", type = target.parameterized, initializer = "old")
+    }
+  }
+}
+
+internal fun FileCompilerScope.addFreezeFunction() {
+  onKnownCategory { category ->
+    addFunction(name = "freeze", receives = mutable.parameterized, returns = target.parameterized) {
+      addReturn(
+        when (category) {
+          Data, Value -> "${target.simpleName}(${properties.joinAsAssignments(".freeze()")})"
+          Sealed -> sealedTypes.joinWithWhen(subject = "old") {
+            "is ${it.name} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
+          }
+        }
+      )
+    }
+  }
+}
+
+internal fun FileCompilerScope.addToMutateFunction() {
+  addFunction(name = "toMutable", receives = target.parameterized, returns = mutable.parameterized) {
+    addReturn("${mutable.parameterized}(old = this, ${properties.joinAsAssignments(".toMutable()")})")
+  }
+}
+
+internal fun FileCompilerScope.addCopyClosure() {
+  addCopyFunction {
+    addParameter(name = "block", type = mutable.parameterized.asReceiverConsumer())
+    addReturn("toMutable().apply(block).freeze()")
+  }
+}
+
+private fun FileCompilerScope.addRetrofittedCopyFunction() {
+  addCopyFunction {
+    properties.forEachRun { addParameter(name = name, type = typeName, defaultValue = "this.$name") }
+    addReturn(sealedTypes.joinWithWhen { type ->
+      "is ${type.name} -> this.copy(${properties.joinToString { "${it.name} = ${it.name}" }})"
+    })
+  }
+}
+
+internal fun FileCompilerScope.addCopyFunction(block: FunSpec.Builder.() -> Unit) {
+  addInlinedFunction(name = "copy", receives = target.parameterized, returns = target.parameterized, block = block)
+}

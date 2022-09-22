@@ -21,9 +21,14 @@ class HierarchyCopyTest {
     """
       |sealed abstract class User {
       |  abstract val name: String
+      |  abstract val other: Int
       |}
-      |data class Person(override val name: String, val age: Int): User()
-      |data class Company(override val name: String, val address: String): User()
+      |data class Person(override val name: String, val age: Int): User() {
+      |  override val other = 1
+      |}
+      |data class Company(override val name: String, val address: String): User() {
+      |  override val other = 2
+      |}
       |
       |val p1: User = Person("Alex", 1)
       |val p2 = p1.copy(name = "Pepe")
