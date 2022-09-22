@@ -4,6 +4,7 @@ import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.Modifier.SEALED
 import fp.serrano.kopykat.utils.TypeCategory.Known
 import fp.serrano.kopykat.utils.TypeCategory.Unknown
 
@@ -36,7 +37,7 @@ private fun KSClassDeclaration.isDataClass() = isConstructable() && Modifier.DAT
 private fun KSClassDeclaration.isValueClass() = isConstructable() && Modifier.VALUE in modifiers
 
 private fun KSClassDeclaration.isSealedDataHierarchy() =
-  Modifier.SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
+  SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
 
 private fun KSClassDeclaration.hasOnlyDataClassChildren() =
-  sealedTypes.all { it.isDataClass() || it.isValueClass() }
+  sealedTypes.any() && sealedTypes.all { it.isDataClass() || it.isValueClass() }

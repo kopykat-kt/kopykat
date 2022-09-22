@@ -27,16 +27,15 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
   val properties: Sequence<KSPropertyDeclaration>
 
   val ClassName.parameterized: TypeName
-
+  val KSPropertyDeclaration.typeName: TypeName
   fun KSType.hasMutableCopy(): Boolean
+
   fun KSPropertyDeclaration.hasMutableCopy(): Boolean = type.resolve().hasMutableCopy()
   fun KSPropertyDeclaration.toAssignment(mutablePostfix: String, source: String? = null): String =
     "$name = ${source ?: ""}$name${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
 
   fun Sequence<KSPropertyDeclaration>.joinAsAssignments(mutablePostfix: String, source: String? = null) =
     joinToString { it.toAssignment(mutablePostfix, source) }
-
-  val KSPropertyDeclaration.typeName: TypeName get() = type.toTypeName(this@TypeCompileScope.typeParameters.toTypeParameterResolver())
 
   fun className(first: String, vararg rest: String) =
     ClassName(packageName = packageName.asString(), listOf(first) + rest)
@@ -62,6 +61,9 @@ internal class ClassCompileScope(
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
   override fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
 
+  override val KSPropertyDeclaration.typeName: TypeName
+    get() = type.toTypeName(classDeclaration.typeParameters.toTypeParameterResolver())
+
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
 }
 
@@ -74,22 +76,26 @@ internal class FileCompilerScope(
 
   fun addFunction(
     name: String,
-    receives: TypeName? = null,
-    returns: TypeName? = null,
+    receives: TypeName,
+    returns: TypeName,
     block: FunSpec.Builder.() -> Unit = {},
-  ) = file.addFunction(FunSpec.builder(name).apply {
-    receives?.apply { receiver(receives) }
-    returns?.apply { returns(returns) }
-    addTypeVariables(typeVariableNames)
-  }.apply(block).build())
+  ) {
+    file.addFunction(FunSpec.builder(name).apply {
+      receiver(receives)
+      returns(returns)
+      addTypeVariables(typeVariableNames)
+    }.apply(block).build())
+  }
 
   fun addInlinedFunction(
     name: String,
-    receives: TypeName? = null,
-    returns: TypeName? = null,
+    receives: TypeName,
+    returns: TypeName,
     block: FunSpec.Builder.() -> Unit = {},
-  ) = addFunction(name, receives, returns) {
-    addModifiers(KModifier.INLINE)
-    block()
+  ) {
+    addFunction(name, receives, returns) {
+      addModifiers(KModifier.INLINE)
+      block()
+    }
   }
 }

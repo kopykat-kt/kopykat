@@ -28,6 +28,4 @@ class ValueCopyMapTest {
       """.evals("r" to 1)
   }
 
-
-
 }

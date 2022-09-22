@@ -13,8 +13,8 @@ import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.addDslMarkerClass
 import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.annotationClassName
+import fp.serrano.kopykat.utils.lang.forEachRun
 import fp.serrano.kopykat.utils.lang.joinWithWhen
-import fp.serrano.kopykat.utils.lang.withEach
 import fp.serrano.kopykat.utils.name
 import fp.serrano.kopykat.utils.onKnownCategory
 import fp.serrano.kopykat.utils.sealedTypes
@@ -39,7 +39,7 @@ internal fun FileCompilerScope.addMutableCopy() {
     addAnnotation(annotationClassName)
     addTypeVariables(typeVariableNames)
     primaryConstructor {
-      properties.withEach {
+      properties.forEachRun {
         val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
         addParameter(name = name, type = typeName, modifiers = parameterModifiers)
         addMutableProperty(name = name, type = typeName, modifiers = propertyModifiers, initializer = name)
@@ -80,7 +80,7 @@ internal fun FileCompilerScope.addCopyClosure() {
 
 private fun FileCompilerScope.addRetrofittedCopyFunction() {
   addCopyFunction {
-    properties.withEach { addParameter(name = name, type = typeName, defaultValue = "this.$name") }
+    properties.forEachRun { addParameter(name = name, type = typeName, defaultValue = "this.$name") }
     addReturn(sealedTypes.joinWithWhen { type ->
       "is ${type.name} -> this.copy(${properties.joinToString { "${it.name} = ${it.name}" }})"
     })

@@ -13,7 +13,7 @@ import fp.serrano.kopykat.utils.TypeCategory.Known.Sealed
 import fp.serrano.kopykat.utils.TypeCategory.Known.Value
 import fp.serrano.kopykat.utils.TypeCompileScope
 import fp.serrano.kopykat.utils.hasGeneratedMarker
-import fp.serrano.kopykat.utils.lang.withEach
+import fp.serrano.kopykat.utils.lang.forEachRun
 import fp.serrano.kopykat.utils.onKnownCategory
 import fp.serrano.kopykat.utils.typeCategory
 
@@ -30,7 +30,7 @@ internal class KopyKatProcessor(
           .filterIsInstance<KSClassDeclaration>()
           .filter { it.typeCategory is Known }
           .let { targets -> targets.map { ClassCompileScope(it, targets, logger) } }
-          .withEach { process() }
+          .forEachRun { process() }
       }
     }
     return emptyList()
