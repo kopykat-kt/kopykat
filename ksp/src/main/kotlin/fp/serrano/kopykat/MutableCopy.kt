@@ -92,7 +92,7 @@ internal fun FileCompilerScope.addCopyFunction(block: FunSpec.Builder.() -> Unit
   addInlinedFunction(name = "copy", receives = target.parameterized, returns = target.parameterized, block = block)
 }
 
-internal fun FileCompilerScope.addDslMarkerClass() {
+private fun FileCompilerScope.addDslMarkerClass() {
   file.addClass(target.dslMarker) {
     addAnnotation(DslMarker::class)
     addModifiers(KModifier.ANNOTATION)
