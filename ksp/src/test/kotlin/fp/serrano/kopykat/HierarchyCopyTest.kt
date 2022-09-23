@@ -17,6 +17,20 @@ class HierarchyCopyTest {
   }
 
   @Test
+  fun `open property, nested`() {
+    """
+      |sealed abstract class User(open val name: String) {
+      |  data class Person(override val name: String, val age: Int): User(name)
+      |  data class Company(override val name: String, val address: String): User(name)
+      |}
+      |
+      |val p1: User = User.Person("Alex", 1)
+      |val p2 = p1.copy(name = "Pepe")
+      |val r = (p2 as User.Person).name
+      """.evals("r" to "Pepe")
+  }
+
+  @Test
   fun `abstract property`() {
     """
       |sealed abstract class User {

@@ -17,7 +17,7 @@ internal val KSClassDeclaration.typeCategory: TypeCategory
   }
 
 internal inline fun TypeCompileScope.onKnownCategory(block: (Known) -> Unit) {
-  (typeCategory as? Known)?.apply(block) ?: logger.error("Type $name is not supported by KopyKat")
+  (typeCategory as? Known)?.apply(block) ?: logger.error("Type $qfName is not supported by KopyKat")
 }
 
 internal sealed interface TypeCategory {

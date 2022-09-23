@@ -16,6 +16,19 @@ class CopyMapTest {
   }
 
   @Test
+  fun `simple test on nested class`() {
+    """
+      |class Things {
+      |  data class Person(val name: String, val age: Int)
+      |}
+      |
+      |val p1 = Things.Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { it + 1 })
+      |val r = p2.age
+      """.evals("r" to 2)
+  }
+
+  @Test
   fun `empty transform does nothing`() {
     """
       |data class Person(val name: String, val age: Int)

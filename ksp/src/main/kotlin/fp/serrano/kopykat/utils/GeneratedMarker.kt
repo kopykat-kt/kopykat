@@ -8,12 +8,12 @@ import com.squareup.kotlinpoet.asTypeName
 
 internal fun FileCompilerScope.addGeneratedMarker() {
   file.addProperty(
-    PropertySpec.builder(Marker, UnitTypeName).addModifiers(PRIVATE).initializer("Unit").build()
+    PropertySpec.builder(MARKER, UnitTypeName).addModifiers(PRIVATE).initializer("Unit").build()
   )
 }
 
 internal fun KSFile.hasGeneratedMarker(): Boolean =
-  declarations.filterIsInstance<KSPropertyDeclaration>().any { it.name == Marker }
+  declarations.filterIsInstance<KSPropertyDeclaration>().any { it.simpleName.asString() == MARKER }
 
-private const val Marker = "transformativeGenerated"
+private const val MARKER = "transformativeGenerated"
 private val UnitTypeName = Unit::class.asTypeName()

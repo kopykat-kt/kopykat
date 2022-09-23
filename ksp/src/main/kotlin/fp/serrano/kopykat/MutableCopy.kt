@@ -5,6 +5,7 @@ package fp.serrano.kopykat
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.toClassName
+import fp.serrano.kopykat.utils.*
 import fp.serrano.kopykat.utils.FileCompilerScope
 import fp.serrano.kopykat.utils.TypeCategory.Known.Data
 import fp.serrano.kopykat.utils.TypeCategory.Known.Sealed
@@ -15,13 +16,12 @@ import fp.serrano.kopykat.utils.addGeneratedMarker
 import fp.serrano.kopykat.utils.annotationClassName
 import fp.serrano.kopykat.utils.lang.forEachRun
 import fp.serrano.kopykat.utils.lang.joinWithWhen
-import fp.serrano.kopykat.utils.name
 import fp.serrano.kopykat.utils.onKnownCategory
 import fp.serrano.kopykat.utils.sealedTypes
 import fp.serrano.kopykat.utils.typeCategory
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
-  get() = buildFile(mutable.simpleName) {
+  get() = buildFile(mutable.reflectionName()) {
     addGeneratedMarker()
     addDslMarkerClass()
     addMutableCopy()
@@ -41,8 +41,8 @@ internal fun FileCompilerScope.addMutableCopy() {
     primaryConstructor {
       properties.forEachRun {
         val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
-        addParameter(name = name, type = typeName, modifiers = parameterModifiers)
-        addMutableProperty(name = name, type = typeName, modifiers = propertyModifiers, initializer = name)
+        addParameter(name = baseName, type = typeName, modifiers = parameterModifiers)
+        addMutableProperty(name = baseName, type = typeName, modifiers = propertyModifiers, initializer = baseName)
       }
       addParameter(name = "old", type = target.parameterized)
       addProperty(name = "old", type = target.parameterized, initializer = "old")
@@ -55,9 +55,9 @@ internal fun FileCompilerScope.addFreezeFunction() {
     addFunction(name = "freeze", receives = mutable.parameterized, returns = target.parameterized) {
       addReturn(
         when (category) {
-          Data, Value -> "${target.simpleName}(${properties.joinAsAssignments(".freeze()")})"
+          Data, Value -> "${target.canonicalName}(${properties.joinAsAssignments(".freeze()")})"
           Sealed -> sealedTypes.joinWithWhen(subject = "old") {
-            "is ${it.name} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
+            "is ${it.qfName} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
           }
         }
       )
@@ -80,9 +80,9 @@ internal fun FileCompilerScope.addCopyClosure() {
 
 private fun FileCompilerScope.addRetrofittedCopyFunction() {
   addCopyFunction {
-    properties.forEachRun { addParameter(name = name, type = typeName, defaultValue = "this.$name") }
+    properties.forEachRun { addParameter(name = baseName, type = typeName, defaultValue = "this.$baseName") }
     addReturn(sealedTypes.joinWithWhen { type ->
-      "is ${type.name} -> this.copy(${properties.joinToString { "${it.name} = ${it.name}" }})"
+      "is ${type.qfName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
     })
   }
 }
