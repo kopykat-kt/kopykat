@@ -22,7 +22,6 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
   val logger: KSPLogger
   val typeVariableNames: List<TypeVariableName>
   val target: ClassName
-  val mutable: ClassName
   val properties: Sequence<KSPropertyDeclaration>
 
   val ClassName.parameterized: TypeName
@@ -46,6 +45,12 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 
 }
 
+internal val ClassName.mutableVersion: ClassName
+  get() {
+    val mutableSimpleName = (simpleNames + "Mutable").joinToString(separator = "$")
+    return ClassName(packageName, mutableSimpleName)
+  }
+
 internal class ClassCompileScope(
   private val classDeclaration: KSClassDeclaration,
   private val mutableCandidates: Sequence<KSClassDeclaration>,
@@ -54,11 +59,6 @@ internal class ClassCompileScope(
 
   override val typeVariableNames: List<TypeVariableName> = typeParameters.map { it.toTypeVariableName() }
   override val target: ClassName = className
-  override val mutable: ClassName
-    get() {
-      val mutableSimpleName = (target.simpleNames + "Mutable").joinToString(separator = "$")
-      return ClassName(target.packageName, mutableSimpleName)
-    }
   override val properties: Sequence<KSPropertyDeclaration> = getPrimaryConstructorProperties()
 
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)

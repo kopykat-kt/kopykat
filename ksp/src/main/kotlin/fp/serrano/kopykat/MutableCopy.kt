@@ -21,7 +21,7 @@ import fp.serrano.kopykat.utils.sealedTypes
 import fp.serrano.kopykat.utils.typeCategory
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
-  get() = buildFile(mutable.reflectionName()) {
+  get() = buildFile(target.mutableVersion.reflectionName()) {
     addGeneratedMarker()
     addDslMarkerClass()
     addMutableCopy()
@@ -35,12 +35,12 @@ internal val TypeCompileScope.mutableCopyKt: FileSpec
   }
 
 internal fun FileCompilerScope.addMutableCopy() {
-  file.addClass(mutable) {
+  file.addClass(target.mutableVersion) {
     addAnnotation(annotationClassName)
     addTypeVariables(typeVariableNames)
     primaryConstructor {
       properties.forEachRun {
-        val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.map { "Mutable$it" } ?: typeName
+        val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.mutableVersion ?: typeName
         addParameter(name = baseName, type = typeName, modifiers = parameterModifiers)
         addMutableProperty(name = baseName, type = typeName, modifiers = propertyModifiers, initializer = baseName)
       }
@@ -52,7 +52,7 @@ internal fun FileCompilerScope.addMutableCopy() {
 
 internal fun FileCompilerScope.addFreezeFunction() {
   onKnownCategory { category ->
-    addFunction(name = "freeze", receives = mutable.parameterized, returns = target.parameterized) {
+    addFunction(name = "freeze", receives = target.mutableVersion.parameterized, returns = target.parameterized) {
       addReturn(
         when (category) {
           Data, Value -> "${target.canonicalName}(${properties.joinAsAssignments(".freeze()")})"
@@ -66,14 +66,16 @@ internal fun FileCompilerScope.addFreezeFunction() {
 }
 
 internal fun FileCompilerScope.addToMutateFunction() {
-  addFunction(name = "toMutable", receives = target.parameterized, returns = mutable.parameterized) {
-    addReturn("${mutable.parameterized}(old = this, ${properties.joinAsAssignments(".toMutable()")})")
+  val parameterized = target.mutableVersion.parameterized
+  addFunction(name = "toMutable", receives = target.parameterized, returns = parameterized) {
+    addReturn("$parameterized(old = this, ${properties.joinAsAssignments(".toMutable()")})")
   }
 }
 
 internal fun FileCompilerScope.addCopyClosure() {
+  val parameterized = target.mutableVersion.parameterized
   addCopyFunction {
-    addParameter(name = "block", type = mutable.parameterized.asReceiverConsumer())
+    addParameter(name = "block", type = parameterized.asReceiverConsumer())
     addReturn("toMutable().apply(block).freeze()")
   }
 }
