@@ -12,13 +12,10 @@ internal val KSDeclaration.qfName get() = qualifiedName?.asString() ?: simpleNam
 internal val KSClassDeclaration.sealedTypes get() = getSealedSubclasses()
 
 internal fun KSDeclarationContainer.allNestedDeclarations(): Sequence<KSDeclaration> =
-  declarations.flatMap {
-    sequence {
-      yield(it)
-      if (it is KSDeclarationContainer)
-        yieldAll(it.allNestedDeclarations())
-    }
-  }
+internal fun KSDeclarationContainer.allNestedDeclarations(): Sequence<KSDeclaration> =
+  declarations + declarations
+    .filterIsInstance<KSDeclarationContainer>()
+    .flatMap { it.allNestedDeclarations() }
 
 /**
  * Obtains those properties which are defined in the primary constructor,
