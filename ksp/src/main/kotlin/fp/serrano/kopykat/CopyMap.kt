@@ -16,7 +16,7 @@ import fp.serrano.kopykat.utils.sealedTypes
 import fp.serrano.kopykat.utils.typeCategory
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
-  get() = buildFile(fileName = "${target.reflectionName()}KopyKat") {
+  get() = buildFile(fileName = target.append("CopyMap").reflectionName()) {
     addGeneratedMarker()
     addInlinedFunction(name = "copyMap", receives = target.parameterized, returns = target.parameterized) {
       properties

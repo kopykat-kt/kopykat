@@ -35,21 +35,12 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
   fun Sequence<KSPropertyDeclaration>.joinAsAssignments(mutablePostfix: String, source: String? = null) =
     joinToString { it.toAssignment(mutablePostfix, source) }
 
-  fun className(first: String, vararg rest: String) =
-    ClassName(packageName = packageName.asString(), listOf(first) + rest)
-
   fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
     FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
 
 }
-
-internal val ClassName.mutableVersion: ClassName
-  get() {
-    val mutableSimpleName = (simpleNames + "Mutable").joinToString(separator = "$")
-    return ClassName(packageName, mutableSimpleName)
-  }
 
 internal class ClassCompileScope(
   private val classDeclaration: KSClassDeclaration,

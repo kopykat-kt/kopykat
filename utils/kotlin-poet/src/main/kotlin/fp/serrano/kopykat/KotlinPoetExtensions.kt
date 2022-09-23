@@ -52,3 +52,8 @@ public fun TypeName.asTransformLambda(): LambdaTypeName =
 
 public fun TypeName.asReceiverConsumer(): LambdaTypeName =
   LambdaTypeName.get(receiver = this, returnType = UNIT)
+
+public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
+  val mutableSimpleName = (simpleNames + suffix).joinToString(separator = "$")
+  return ClassName(packageName, mutableSimpleName)
+}
