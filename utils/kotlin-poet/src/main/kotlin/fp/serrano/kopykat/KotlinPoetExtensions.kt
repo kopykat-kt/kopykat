@@ -42,8 +42,8 @@ public fun ClassName.append(name: String): ClassName =
 
 public val KSDeclaration.className: ClassName
   get() =
-    when (parentDeclaration) {
-      is KSClassDeclaration -> parentDeclaration!!.className.append(simpleName.asString())
+    when (val parent = parentDeclaration) {
+      is KSClassDeclaration -> parent.className.append(simpleName.asString())
       else -> ClassName(packageName = packageName.asString(), simpleName.asString())
     }
 

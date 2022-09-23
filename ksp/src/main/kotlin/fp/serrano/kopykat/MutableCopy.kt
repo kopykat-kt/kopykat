@@ -56,7 +56,7 @@ internal fun FileCompilerScope.addFreezeFunction() {
         when (category) {
           Data, Value -> "${target.canonicalName}(${properties.joinAsAssignments(".freeze()")})"
           Sealed -> sealedTypes.joinWithWhen(subject = "old") {
-            "is ${it.qfName} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
+            "is ${it.fullName} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
           }
         }
       )
@@ -83,7 +83,7 @@ private fun FileCompilerScope.addRetrofittedCopyFunction() {
   addCopyFunction {
     properties.forEachRun { addParameter(name = baseName, type = typeName, defaultValue = "this.$baseName") }
     addReturn(sealedTypes.joinWithWhen { type ->
-      "is ${type.qfName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
+      "is ${type.fullName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
     })
   }
 }

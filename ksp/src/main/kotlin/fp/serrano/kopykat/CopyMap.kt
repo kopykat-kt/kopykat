@@ -30,8 +30,8 @@ private fun TypeCompileScope.repeatOnSubclasses(
   line: String,
   functionName: String,
 ): String = when (typeCategory) {
-  Value -> "$qfName($line)"
+  Value -> "$fullName($line)"
   Data -> "$functionName($line)"
-  Sealed -> sealedTypes.joinWithWhen { "is ${it.qfName} -> $functionName($line)" }
+  Sealed -> sealedTypes.joinWithWhen { "is ${it.fullName} -> $functionName($line)" }
   else -> error("Unknown type category for ${target.canonicalName}")
 }

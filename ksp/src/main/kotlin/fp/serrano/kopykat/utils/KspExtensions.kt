@@ -7,11 +7,10 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
 internal val KSDeclaration.baseName get() = simpleName.asString()
 
-internal val KSDeclaration.qfName get() = qualifiedName?.asString() ?: simpleName.asString()
+internal val KSDeclaration.fullName get() = qualifiedName?.asString() ?: simpleName.asString()
 
 internal val KSClassDeclaration.sealedTypes get() = getSealedSubclasses()
 
-internal fun KSDeclarationContainer.allNestedDeclarations(): Sequence<KSDeclaration> =
 internal fun KSDeclarationContainer.allNestedDeclarations(): Sequence<KSDeclaration> =
   declarations + declarations
     .filterIsInstance<KSDeclarationContainer>()
