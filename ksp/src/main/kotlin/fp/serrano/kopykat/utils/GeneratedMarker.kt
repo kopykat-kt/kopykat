@@ -13,7 +13,8 @@ internal fun FileCompilerScope.addGeneratedMarker() {
 }
 
 internal fun KSFile.hasGeneratedMarker(): Boolean =
-  declarations.filterIsInstance<KSPropertyDeclaration>().any { it.name == Marker }
+  declarations.filterIsInstance<KSPropertyDeclaration>().any { it.baseName == Marker }
 
-private const val Marker = "transformativeGenerated"
+@Suppress("TopLevelPropertyNaming")
+private const val Marker = "generatedByKopyKat"
 private val UnitTypeName = Unit::class.asTypeName()

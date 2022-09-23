@@ -15,7 +15,6 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import fp.serrano.kopykat.className
-import fp.serrano.kopykat.map
 import fp.serrano.kopykat.parameterizedWhenNotEmpty
 
 internal sealed interface TypeCompileScope : KSClassDeclaration {
@@ -23,7 +22,6 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
   val logger: KSPLogger
   val typeVariableNames: List<TypeVariableName>
   val target: ClassName
-  val mutable: ClassName
   val properties: Sequence<KSPropertyDeclaration>
 
   val ClassName.parameterized: TypeName
@@ -32,13 +30,10 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
 
   fun KSPropertyDeclaration.hasMutableCopy(): Boolean = type.resolve().hasMutableCopy()
   fun KSPropertyDeclaration.toAssignment(mutablePostfix: String, source: String? = null): String =
-    "$name = ${source ?: ""}$name${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
+    "$baseName = ${source ?: ""}$baseName${mutablePostfix.takeIf { hasMutableCopy() } ?: ""}"
 
   fun Sequence<KSPropertyDeclaration>.joinAsAssignments(mutablePostfix: String, source: String? = null) =
     joinToString { it.toAssignment(mutablePostfix, source) }
-
-  fun className(first: String, vararg rest: String) =
-    ClassName(packageName = packageName.asString(), listOf(first) + rest)
 
   fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
     FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
@@ -55,7 +50,6 @@ internal class ClassCompileScope(
 
   override val typeVariableNames: List<TypeVariableName> = typeParameters.map { it.toTypeVariableName() }
   override val target: ClassName = className
-  override val mutable: ClassName = target.map { "Mutable$it" }
   override val properties: Sequence<KSPropertyDeclaration> = getPrimaryConstructorProperties()
 
   override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)

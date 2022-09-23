@@ -16,6 +16,19 @@ class MutableCopyTest {
   }
 
   @Test
+  fun `mutate one property, nested class`() {
+    """
+      |class Things {
+      |  data class Person(val name: String, val age: Int)
+      |}
+      |
+      |val p1 = Things.Person("Alex", 1)
+      |val p2 = p1.copy { age = age + 1 }
+      |val r = p2.age
+      """.evals("r" to 2)
+  }
+
+  @Test
   fun `mutate two properties`() {
     """
       |data class Person(val name: String, val age: Int)

@@ -1,6 +1,7 @@
 package fp.serrano.kopykat
 
 import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
@@ -36,11 +37,23 @@ public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
 public fun ClassName.map(name: (String) -> String): ClassName =
   ClassName(packageName, simpleNames.run { dropLast(1) + name(last()) })
 
+public fun ClassName.append(name: String): ClassName =
+  ClassName(packageName, simpleNames + name)
+
 public val KSDeclaration.className: ClassName
-  get() = ClassName(packageName = packageName.asString(), simpleName.asString())
+  get() =
+    when (val parent = parentDeclaration) {
+      is KSClassDeclaration -> parent.className.append(simpleName.asString())
+      else -> ClassName(packageName = packageName.asString(), simpleName.asString())
+    }
 
 public fun TypeName.asTransformLambda(): LambdaTypeName =
   LambdaTypeName.get(parameters = arrayOf(this), returnType = this)
 
 public fun TypeName.asReceiverConsumer(): LambdaTypeName =
   LambdaTypeName.get(receiver = this, returnType = UNIT)
+
+public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
+  val mutableSimpleName = (simpleNames + suffix).joinToString(separator = "$")
+  return ClassName(packageName, mutableSimpleName)
+}
