@@ -14,6 +14,9 @@ dependencies {
 
 kotlin {
     explicitApi()
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of("11"))
+    }
 }
 
 tasks.test {

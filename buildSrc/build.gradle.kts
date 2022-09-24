@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm") version embeddedKotlinVersion
 }
 
-val gradleJvmTarget = "11"
+val gradleJvmTarget = "8"
 val gradleKotlinTarget = "1.6"
 
 val kotlinVersion = "1.7.10"
@@ -36,6 +36,7 @@ kotlin {
         (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(gradleJvmTarget))
     }
 }
+
 
 kotlinDslPluginOptions {
     jvmTarget.set(gradleJvmTarget)
