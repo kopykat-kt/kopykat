@@ -14,11 +14,11 @@ dependencies {
 // https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers
 // As a quick fix, rename the group and create another plugin with a suitable ID
 
-group = "com.github.aSemy.kopykat-gradle-plugin"
+group = "com.github.aSemy.kopykat-gradle-plugin-jitpack"
 
 gradlePlugin {
     val kopyKatGradlePluginJitpack by plugins.creating {
-        id = "com.github.aSemy.kopykat-gradle-plugin"
+        id = "com.github.aSemy.kopykat-gradle-plugin-jitpack"
         implementationClass = "fp.serrano.kopykat.KopyKatPlugin"
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
