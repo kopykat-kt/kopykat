@@ -17,6 +17,12 @@ gradlePlugin {
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
     }
+    val kopyKatGradlePluginJitpack by plugins.creating {
+        id = "com.github.aSemy.kopykat"
+        implementationClass = kopyKatGradlePlugin.implementationClass
+        displayName = kopyKatGradlePlugin.displayName
+        description = kopyKatGradlePlugin.description
+    }
 }
 
 pluginBundle {
