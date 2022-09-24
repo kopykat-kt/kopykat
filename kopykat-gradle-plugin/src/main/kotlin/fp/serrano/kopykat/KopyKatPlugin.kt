@@ -9,7 +9,6 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.gradle.plugins.ide.idea.model.IdeaModule
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 
@@ -76,7 +75,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
 
         plugins.withType<IdeaPlugin> {
             extensions.configure<IdeaModel> {
-                extensions.configure<IdeaModule> {
+                module {
                     sourceDirs.plusAssign(file(kspGeneratedMain)) // or tasks["kspKotlin"].destination
                     generatedSourceDirs.plusAssign(file(kspGeneratedMain))
 
