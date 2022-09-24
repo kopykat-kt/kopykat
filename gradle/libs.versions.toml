@@ -7,6 +7,7 @@ assertj = "3.23.1"
 classgraph = "4.8.149"
 
 [libraries]
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-stdlibCommon = { module = "org.jetbrains.kotlin:kotlin-stdlib-common" }
 kotlin-stdlibJDK8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 kotlinPoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
@@ -17,6 +18,12 @@ kotlinCompileTestingKsp = { module = "com.github.tschuchortdev:kotlin-compile-te
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 
+### Plugins ###
+# the *Maven coodinates* of Gradle plugins. Use in ./buildSrc/build.gradle.kts.
+
+gradlePlugin-kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+
+# import plugins using Maven coordinates (see above), not the Gradle plugin ID
