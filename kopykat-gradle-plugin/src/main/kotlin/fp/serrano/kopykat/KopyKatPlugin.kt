@@ -41,7 +41,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
 
             target.configureSourceSets()
 
-            target.configurations.matching { it.name == "ksp" }.configureEach {
+            target.configurations.named(KspGradleSubplugin.KSP_MAIN_CONFIGURATION_NAME).configure {
                 defaultDependencies {
                     add(target.dependencies.create("com.github.kopykat-kt.kopykat:ksp:1.0-rc1"))
                 }
@@ -82,7 +82,6 @@ abstract class KopyKatPlugin : Plugin<Project> {
 
                     testSourceDirs.plusAssign(file(kspGeneratedTest))
                     generatedSourceDirs.plusAssign(file(kspGeneratedTest))
-
                 }
             }
         }
