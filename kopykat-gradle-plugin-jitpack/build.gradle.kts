@@ -24,12 +24,6 @@ gradlePlugin {
     }
 }
 
-pluginBundle {
-    website = "https://github.com/kopykat-kt/kopykat"
-    vcsUrl = "https://github.com/kopykat-kt/kopykat.git"
-    tags = listOf("kotlin", "data class", "immutable", "ksp")
-}
-
 // might fix JitPack compatibility?
 publishing {
     publications {
