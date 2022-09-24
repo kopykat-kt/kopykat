@@ -37,11 +37,11 @@ abstract class KopyKatPlugin : Plugin<Project> {
     }
 
     private fun configureKsp(target: Project, kkSettings: KopyKatSettings) {
-        target.plugins.withType<KspGradleSubplugin>().configureEach {
+        target.plugins.withType<KspGradleSubplugin> {
 
             target.configureSourceSets()
 
-            target.configurations.named(KspGradleSubplugin.KSP_MAIN_CONFIGURATION_NAME).configure {
+            target.configurations.matching { it.name == KspGradleSubplugin.KSP_MAIN_CONFIGURATION_NAME }.configureEach {
                 defaultDependencies {
                     add(target.dependencies.create("com.github.kopykat-kt.kopykat:ksp:1.0-rc1"))
                 }
@@ -82,6 +82,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
 
                     testSourceDirs.plusAssign(file(kspGeneratedTest))
                     generatedSourceDirs.plusAssign(file(kspGeneratedTest))
+
                 }
             }
         }
