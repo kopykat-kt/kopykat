@@ -18,11 +18,15 @@ abstract class KopyKatPlugin : Plugin<Project> {
 
         val kkSettings = createKopyKatSettings(target)
 
-        if (kkSettings.applyKspPlugin.getOrElse(false)) {
-            target.pluginManager.apply("com.google.devtools.ksp")
-        }
-
         configureKsp(target, kkSettings)
+
+        target.afterEvaluate {
+            // normally afterEvaluate should be avoided, but it's necessary here to allow KopyKatSettings to be
+            // configured otherwise applyKspPlugin will always be the default value.
+            if (kkSettings.applyKspPlugin.getOrElse(false)) {
+                target.pluginManager.apply("com.google.devtools.ksp")
+            }
+        }
     }
 
     private fun createKopyKatSettings(target: Project): KopyKatSettings {
