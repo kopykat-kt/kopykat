@@ -3,6 +3,10 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 rootProject.name = "kopykat"
 
-include(":ksp")
-include(":utils:compilation")
-include(":utils:kotlin-poet")
+apply(from = "./buildSrc/repositories.settings.gradle.kts")
+
+include(
+  ":ksp",
+  ":utils:compilation",
+  ":utils:kotlin-poet",
+)

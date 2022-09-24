@@ -1,12 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-}
-
-kotlin {
-    explicitApi()
+    buildsrc.conventions.`kotlin-jvm`
+    buildsrc.conventions.`maven-publish`
 }
 
 dependencies {
@@ -17,12 +11,4 @@ dependencies {
     testImplementation(kotlin("test"))
 
     testRuntimeOnly(projects.ksp)
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
 }
