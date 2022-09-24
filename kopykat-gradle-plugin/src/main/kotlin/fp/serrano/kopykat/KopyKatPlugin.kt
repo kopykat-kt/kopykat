@@ -63,7 +63,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
         val kspGeneratedMain = "build/generated/ksp/main/kotlin"
         val kspGeneratedTest = "build/generated/ksp/main/test"
 
-        plugins.withType<KotlinBasePlugin>().configureEach {
+        plugins.withType<KotlinBasePlugin> {
             kotlinExtension.apply {
                 sourceSets.matching { it.name == "main" }.configureEach {
                     kotlin.srcDirs(kspGeneratedMain)
@@ -74,7 +74,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
             }
         }
 
-        plugins.withType<IdeaPlugin>().configureEach {
+        plugins.withType<IdeaPlugin> {
             extensions.configure<IdeaModel> {
                 extensions.configure<IdeaModule> {
                     sourceDirs.plusAssign(file(kspGeneratedMain)) // or tasks["kspKotlin"].destination
