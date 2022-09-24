@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm") version embeddedKotlinVersion
 }
 
-val gradleJvmTarget = "8"
+val gradleJvmTarget = "11"
 val gradleKotlinTarget = "1.6"
 
 val kotlinVersion = "1.7.10"
