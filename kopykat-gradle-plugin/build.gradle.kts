@@ -24,12 +24,3 @@ pluginBundle {
     vcsUrl = "https://github.com/kopykat-kt/kopykat.git"
     tags = listOf("kotlin", "data class", "immutable", "ksp")
 }
-
-// might fix JitPack compatibility?
-publishing {
-    publications {
-        register<MavenPublication>("mavenJava") {
-            from(components["java"])
-        }
-    }
-}
