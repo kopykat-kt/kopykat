@@ -2,6 +2,7 @@ plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     buildsrc.conventions.`maven-publish`
+    buildsrc.conventions.`kotlin-jvm`
 }
 
 dependencies {
@@ -17,7 +18,7 @@ group = "com.github.aSemy.kopykat-gradle-plugin"
 
 gradlePlugin {
     val kopyKatGradlePluginJitpack by plugins.creating {
-        id = project.group.toString()
+        id = "com.github.aSemy.kopykat-gradle-plugin"
         implementationClass = "fp.serrano.kopykat.KopyKatPlugin"
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
