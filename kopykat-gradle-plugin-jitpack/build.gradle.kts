@@ -1,28 +1,22 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    id("com.gradle.plugin-publish")
     buildsrc.conventions.`maven-publish`
 }
 
 dependencies {
-    implementation(libs.gradlePlugin.kotlinJvm)
-    implementation(libs.gradlePlugin.ksp)
+    api(projects.kopykatGradlePlugin)
 }
 
+project.group = "com.github.aSemy.kopykat"
+
 gradlePlugin {
-    val kopyKatGradlePlugin by plugins.creating {
-        id = "fp.serrano.kopykat"
+    val kopyKatGradlePluginJitpack by plugins.creating {
+        id = "com.github.aSemy.kopykat"
         implementationClass = "fp.serrano.kopykat.KopyKatPlugin"
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
     }
-}
-
-pluginBundle {
-    website = "https://github.com/kopykat-kt/kopykat"
-    vcsUrl = "https://github.com/kopykat-kt/kopykat.git"
-    tags = listOf("kotlin", "data class", "immutable", "ksp")
 }
 
 // might fix JitPack compatibility?
