@@ -8,6 +8,7 @@ apply(from = "./buildSrc/repositories.settings.gradle.kts")
 include(
     ":ksp",
     ":kopykat-gradle-plugin",
+    ":kopykat-gradle-plugin-jitpack",
     ":utils:compilation",
     ":utils:kotlin-poet",
 )

@@ -1,18 +1,23 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    id("com.gradle.plugin-publish")
     buildsrc.conventions.`maven-publish`
 }
 
 dependencies {
-    implementation(libs.gradlePlugin.kotlinJvm)
-    implementation(libs.gradlePlugin.ksp)
+    api(projects.kopykatGradlePlugin)
 }
 
+// Manual re-name of the ID + group, because JitPack renames the package, which means the
+// auto-generated Gradle plugin marker doesn't match.
+// https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers
+// As a quick fix, rename the group and create another plugin with a suitable ID
+
+group = "com.github.aSemy.kopykat-gradle-plugin"
+
 gradlePlugin {
-    val kopyKatGradlePlugin by plugins.creating {
-        id = "fp.serrano.kopykat"
+    val kopyKatGradlePluginJitpack by plugins.creating {
+        id = project.group.toString()
         implementationClass = "fp.serrano.kopykat.KopyKatPlugin"
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
