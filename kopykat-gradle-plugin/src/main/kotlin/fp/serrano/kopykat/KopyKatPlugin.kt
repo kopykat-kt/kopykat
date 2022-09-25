@@ -4,6 +4,8 @@ import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspGradleSubplugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
@@ -14,24 +16,24 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 
 abstract class KopyKatPlugin : Plugin<Project> {
 
+    private val logger: Logger = Logging.getLogger(this::class.java)
+
     override fun apply(target: Project) {
 
         val kkSettings = createKopyKatSettings(target)
 
-        configureKsp(target, kkSettings)
-
-        target.afterEvaluate {
-            // normally afterEvaluate should be avoided, but it's necessary here to allow KopyKatSettings to be
-            // configured otherwise applyKspPlugin will always be the default value.
-            if (kkSettings.applyKspPlugin.getOrElse(false)) {
-                target.pluginManager.apply("com.google.devtools.ksp")
+        target.plugins.withType<KspGradleSubplugin> {
+            target.afterEvaluate {
+                // normally afterEvaluate should be avoided, but it's necessary here so the KopyKat settings can be
+                // applied *after* the user has configured the KopyKat settings in a build script.
+                configureKsp(target, kkSettings)
             }
         }
     }
 
     private fun createKopyKatSettings(target: Project): KopyKatSettings {
         return target.extensions.create<KopyKatSettings>(KOPYKAT_EXTENSION_NAME).apply {
-            applyKspPlugin.convention(true)
+            configureGeneratedSourceSets.convention(true)
 
             mutableCopy.convention(true)
             copyMap.convention(true)
@@ -40,28 +42,23 @@ abstract class KopyKatPlugin : Plugin<Project> {
     }
 
     private fun configureKsp(target: Project, kkSettings: KopyKatSettings) {
-        target.plugins.withType<KspGradleSubplugin> {
 
-            if (kkSettings.configureGeneratedSourceSets.orNull == true) {
-                target.configureSourceSets()
+        if (kkSettings.configureGeneratedSourceSets.orNull == true) {
+            target.configureSourceSets()
+        }
+
+        target.extensions.configure<KspExtension> {
+            kkSettings.mutableCopy.orNull?.let { value ->
+                logger.debug("setting kopykat.mutableCopy to $value")
+                arg("mutableCopy", "$value")
             }
-
-            target.configurations.matching { it.name == KspGradleSubplugin.KSP_MAIN_CONFIGURATION_NAME }.configureEach {
-                defaultDependencies {
-                    add(target.dependencies.create("com.github.kopykat-kt.kopykat:ksp:1.0-rc1"))
-                }
+            kkSettings.hierarchyCopy.orNull?.let { value ->
+                logger.debug("setting kopykat.hierarchyCopy to $value")
+                arg("hierarchyCopy", "$value")
             }
-
-            target.extensions.configure<KspExtension> {
-                kkSettings.mutableCopy.orNull?.let { value ->
-                    arg("mutableCopy", "$value")
-                }
-                kkSettings.hierarchyCopy.orNull?.let { value ->
-                    arg("hierarchyCopy", "$value")
-                }
-                kkSettings.copyMap.orNull?.let { value ->
-                    arg("copyMap", "$value")
-                }
+            kkSettings.copyMap.orNull?.let { value ->
+                logger.debug("setting kopykat.copyMap to $value")
+                arg("copyMap", "$value")
             }
         }
     }
@@ -70,6 +67,7 @@ abstract class KopyKatPlugin : Plugin<Project> {
      * Apply the configuration from https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code
      */
     private fun Project.configureSourceSets() {
+        logger.debug("configuring KSP generated source sets")
 
         val kspGeneratedMain = "build/generated/ksp/main/kotlin"
         val kspGeneratedTest = "build/generated/ksp/main/test"

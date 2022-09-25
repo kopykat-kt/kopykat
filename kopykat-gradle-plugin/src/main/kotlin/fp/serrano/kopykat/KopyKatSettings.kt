@@ -4,13 +4,9 @@ import org.gradle.api.provider.Property
 
 interface KopyKatSettings {
 
-    /** If `true`, the KSP Gradle Plugin will be applied. Else, the KSP plugin can be applied manually. */
-    val applyKspPlugin: Property<Boolean>
-
     /**
-     * If `true`, the KSP generated source sets will be registered.
-     *
-     * Else, they can be [configured manually.](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code)
+     * If `true`, the KSP generated source sets will be registered as part of the `main` source set.
+     * Otherwise, they can be [configured manually.](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code)
      */
     val configureGeneratedSourceSets: Property<Boolean>
 
