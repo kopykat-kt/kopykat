@@ -42,7 +42,9 @@ abstract class KopyKatPlugin : Plugin<Project> {
     private fun configureKsp(target: Project, kkSettings: KopyKatSettings) {
         target.plugins.withType<KspGradleSubplugin> {
 
-            target.configureSourceSets()
+            if (kkSettings.configureGeneratedSourceSets.orNull == true) {
+                target.configureSourceSets()
+            }
 
             target.configurations.matching { it.name == KspGradleSubplugin.KSP_MAIN_CONFIGURATION_NAME }.configureEach {
                 defaultDependencies {
@@ -86,12 +88,11 @@ abstract class KopyKatPlugin : Plugin<Project> {
         plugins.withType<IdeaPlugin> {
             extensions.configure<IdeaModel> {
                 module {
-                    sourceDirs.plusAssign(file(kspGeneratedMain)) // or tasks["kspKotlin"].destination
+                    sourceDirs.plusAssign(file(kspGeneratedMain))
                     generatedSourceDirs.plusAssign(file(kspGeneratedMain))
 
                     testSourceDirs.plusAssign(file(kspGeneratedTest))
                     generatedSourceDirs.plusAssign(file(kspGeneratedTest))
-
                 }
             }
         }
