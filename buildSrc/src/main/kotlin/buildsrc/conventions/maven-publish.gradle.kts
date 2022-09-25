@@ -9,7 +9,7 @@ publishing {
     publications.withType<MavenPublication>().configureEach {
         pom {
             description.set("Little utilities for more pleasant immutable data in Kotlin")
-            url.set("https://github.com/serras/kopykat")
+            url.set("https://kopy.at")
             licenses {
                 license {
                     name.set("The Apache License, Version 2.0")
@@ -23,9 +23,9 @@ publishing {
                 }
             }
             scm {
-                connection.set("scm:git:git://github.com/serras/kopykat.git")
-                developerConnection.set("scm:git:ssh://git@github.com/serras/kopykat.git")
-                url.set("https://github.com/serras/kopykat")
+                connection.set("scm:git:git://github.com/kopykat-kt/kopykat.git")
+                developerConnection.set("scm:git:ssh://git@github.com/kopykat-kt/kopykat.git")
+                url.set("https://github.com/kopykat-kt/kopykat")
             }
         }
     }
