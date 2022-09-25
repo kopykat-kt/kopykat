@@ -20,7 +20,7 @@ jobs:
       - name: Publish package
         uses: gradle/gradle-build-action@v2.3.0
         with:
-          arguments: -Pversion=${{ env.GITHUB_REF_NAME }} publish
+          arguments: -Pversion='${{ github.ref_name }}' publish
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
