@@ -2,5 +2,5 @@ plugins {
   buildsrc.conventions.`kopykat-base`
 }
 
-group = "com.github.serras.kopykat"
+group = "at.kopyk"
 version = "0.1"
