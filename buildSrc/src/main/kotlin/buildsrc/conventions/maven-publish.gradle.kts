@@ -1,5 +1,7 @@
 package buildsrc.conventions
 
+import java.net.URI
+
 plugins {
     `maven-publish`
 }
@@ -26,6 +28,17 @@ publishing {
                 connection.set("scm:git:git://github.com/kopykat-kt/kopykat.git")
                 developerConnection.set("scm:git:ssh://git@github.com/kopykat-kt/kopykat.git")
                 url.set("https://github.com/kopykat-kt/kopykat")
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = URI("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }

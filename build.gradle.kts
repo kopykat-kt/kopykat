@@ -3,4 +3,4 @@ plugins {
 }
 
 group = "at.kopyk"
-version = "0.1"
+version = "1.0-SNAPSHOT"
