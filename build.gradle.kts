@@ -3,4 +3,4 @@ plugins {
 }
 
 group = "at.kopyk"
-version = "1.0-SNAPSHOT"
+version = System.getenv("RELEASE_TAG") ?: "1.0-SNAPSHOT"
