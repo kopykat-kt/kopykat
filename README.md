@@ -101,7 +101,7 @@ val p3 = p1.copyMap(age = { 10 })
 > When using value classes, given that you only have one property, you can skip the name of the property:
 
 ```kotlin
-@JvInline value class Age(ageValue: Int)
+@JvmInline value class Age(ageValue: Int)
 
 val a = Age(39)
 
