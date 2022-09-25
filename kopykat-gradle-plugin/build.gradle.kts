@@ -12,8 +12,8 @@ dependencies {
 
 gradlePlugin {
     val kopyKatGradlePlugin by plugins.creating {
-        id = "fp.serrano.kopykat"
-        implementationClass = "fp.serrano.kopykat.KopyKatPlugin"
+        id = "at.kopykat"
+        implementationClass = "at.kopykat.KopyKatPlugin"
         displayName = "KopyKat"
         description = "Little utilities for more pleasant immutable data in Kotlin"
     }

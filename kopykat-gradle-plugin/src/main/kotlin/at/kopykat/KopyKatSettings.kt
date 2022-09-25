@@ -1,4 +1,4 @@
-package fp.serrano.kopykat
+package at.kopykat
 
 import org.gradle.api.provider.Property
 

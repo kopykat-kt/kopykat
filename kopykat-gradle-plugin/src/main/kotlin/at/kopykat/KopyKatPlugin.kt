@@ -1,4 +1,4 @@
-package fp.serrano.kopykat
+package at.kopykat
 
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspGradleSubplugin
