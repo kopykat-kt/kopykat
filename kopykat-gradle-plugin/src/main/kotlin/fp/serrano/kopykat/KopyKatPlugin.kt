@@ -51,9 +51,15 @@ abstract class KopyKatPlugin : Plugin<Project> {
             }
 
             target.extensions.configure<KspExtension> {
-                arg("mutableCopy", "${kkSettings.mutableCopy.getOrElse(false)}")
-                arg("copyMap", "${kkSettings.copyMap.getOrElse(false)}")
-                arg("hierarchyCopy", "${kkSettings.hierarchyCopy.getOrElse(false)}")
+                kkSettings.mutableCopy.orNull?.let { value ->
+                    arg("mutableCopy", "$value")
+                }
+                kkSettings.hierarchyCopy.orNull?.let { value ->
+                    arg("hierarchyCopy", "$value")
+                }
+                kkSettings.copyMap.orNull?.let { value ->
+                    arg("copyMap", "$value")
+                }
             }
         }
     }
