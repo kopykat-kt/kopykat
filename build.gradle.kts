@@ -2,5 +2,5 @@ plugins {
   buildsrc.conventions.`kopykat-base`
 }
 
-group = "com.github.serras.kopykat"
-version = "0.1"
+group = "at.kopyk"
+version = System.getenv("RELEASE_TAG") ?: "1.0-SNAPSHOT"
