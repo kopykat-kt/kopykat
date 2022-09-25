@@ -4,6 +4,7 @@ import java.net.URI
 
 plugins {
     `maven-publish`
+    signing
 }
 
 publishing {
@@ -12,6 +13,7 @@ publishing {
         pom {
             description.set("Little utilities for more pleasant immutable data in Kotlin")
             url.set("https://kopy.at")
+            name.set("KopyKat")
             licenses {
                 license {
                     name.set("The Apache License, Version 2.0")
@@ -53,4 +55,11 @@ plugins.withType<JavaPlugin>().configureEach {
             }
         }
     }
+}
+
+signing {
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["maven"])
 }

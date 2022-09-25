@@ -26,3 +26,8 @@ tasks.test {
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
