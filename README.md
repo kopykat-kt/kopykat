@@ -149,12 +149,11 @@ fun User.takeOver() = this.copy(name = "Me")
 KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with
 Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
-1. Add [JitPack](https://jitpack.io/) to the list of repositories.
+1. Add [Mvaen Central](https://search.maven.org/) to the list of repositories.
 
     ```kotlin
     repositories {
       mavenCentral()
-      maven(url = "https://jitpack.io")
     }
     ```
 
@@ -171,7 +170,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     ```kotlin
     dependencies {
       // other dependencies
-      ksp("com.github.kopykat-kt.kopykat:ksp:1.0-rc1")
+      ksp("at.kopyk:kopykat-ksp:1.0-rc5")
     }
     ```
 
