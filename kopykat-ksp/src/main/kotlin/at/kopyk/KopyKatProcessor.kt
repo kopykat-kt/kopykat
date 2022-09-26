@@ -18,6 +18,8 @@ import at.kopyk.utils.hasGeneratedMarker
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.onKnownCategory
 import at.kopyk.utils.typeCategory
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.isAnnotationPresent
 
 internal class KopyKatProcessor(
   private val codegen: CodeGenerator,
@@ -30,6 +32,7 @@ internal class KopyKatProcessor(
       if (files.none { it.hasGeneratedMarker() }) {
         files.flatMap { it.allNestedDeclarations() }
           .filterIsInstance<KSClassDeclaration>()
+          .filter { it.isAnnotated() }
           .filter { it.typeCategory is Known }
           .let { targets -> targets.map { ClassCompileScope(it, targets, logger) } }
           .forEachRun { process() }
@@ -49,6 +52,20 @@ internal class KopyKatProcessor(
         Data, Value -> generate()
         Sealed -> if (options.hierarchyCopy) generate()
       }
+    }
+  }
+
+  @OptIn(KspExperimental::class)
+  private fun KSClassDeclaration.isAnnotated(): Boolean = when {
+    options.annotatedOnly -> isAnnotationPresent(KopyKat::class)
+    else -> {
+      if (isAnnotationPresent(KopyKat::class))
+        logger.warn("""
+          Unused '@KopyKat' annotation, the plug-in is configured to process all classes.
+          Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
+          More info at https://kopyk.at/#enable-only-for-selected-classes.
+        """.trimIndent(), this)
+      true
     }
   }
 }

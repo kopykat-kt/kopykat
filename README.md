@@ -6,6 +6,7 @@
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
+    * [Enable only for selected classes](#enable-only-for-selected-classes)
     * [Customizing the generation](#customizing-the-generation)
 * [What about optics?](#what-about-optics)
 <!-- TOC -->
@@ -157,7 +158,8 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
-2. Add KSP to the list of plug-ins. You can check the latest version in their [releases](https://github.com/google/ksp/releases/).
+2. Add KSP to the list of plug-ins. You can check the latest version in their 
+   [releases](https://github.com/google/ksp/releases/).
 
     ```kotlin
     plugins {
@@ -174,11 +176,47 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
-4. (Optional) If you are using IntelliJ as your IDE, we recommend you to [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it aware of the new code.
+4. (Optional) If you are using IntelliJ as your IDE, we recommend you to 
+   [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it 
+   aware of the new code.
+
+### Enable only for selected classes
+
+By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
+to enable generation for only some classes, this is of course possible.
+
+1. Add a dependency on KopyKat's annotation package. Note that we declare it as `compileOnly`, which means there's no
+   trace of it in the compiled artifact.
+ 
+    ```kotlin
+    dependencies {
+      // other dependencies
+      compileOnly("at.kopyk:kopykat-annotations:$kopyKatVersion")
+    }
+    ```
+
+2. Enable the `annotatedOnly` option for the plug-in, by
+   [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
+
+    ```kotlin
+    ksp {
+      arg("annotatedOnly", "true")
+    }
+    ```
+
+3. Mark those classes you want KopyKat to process with the `@KopyKat` annotation.
+
+    ```kotlin
+    import at.kopyk.KopyKat
+    
+    @KopyKat data class Person(val name: String, val age: Int)
+    ```
 
 ### Customizing the generation
 
-You can disable the generation of some of these methods by [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle file. For example, the following block disables the generation of `copyMap`.
+You can disable the generation of some of these methods by 
+[passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle
+file. For example, the following block disables the generation of `copyMap`.
 
 ```kotlin
 ksp {
@@ -192,6 +230,11 @@ By default, the three kinds of methods are generated.
 
 ## What about optics?
 
-Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart from changing fields, optics allow uniform access to collections, possibly-null values, and hierarchies of data classes. You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ type, instead of relying on generating an implementation for each data type.
+Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart
+from changing fields, optics allow uniform access to collections, possibly-null values, and hierarchies of data classes.
+You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ 
+type, instead of relying on generating an implementation for each data type.
 
-KopyKat, on the other hand, aims to be just a tiny step further from Kotlin's built-in `copy`. By re-using well-known idioms, the barrier to introducing this plug-in becomes much lower. Our goal is to make it easier to work with immutable data classes.
+KopyKat, on the other hand, aims to be just a tiny step further from Kotlin's built-in `copy`. By re-using well-known 
+idioms, the barrier to introducing this plug-in becomes much lower. Our goal is to make it easier to work with immutable
+data classes.
