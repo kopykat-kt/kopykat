@@ -128,19 +128,19 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
           MutationInfo(
             ClassName(className.packageName, "MutableList"),
             { "${it}.toMutableList()" },
-            { "${it}.toList()" }
+            { it }
           )
         className == MAP ->
           MutationInfo(
             ClassName(className.packageName, "MutableMap"),
             { "${it}.toMutableMap()" },
-            { "${it}.toMap()" }
+            { it }
           )
         className == SET ->
           MutationInfo(
             ClassName(className.packageName, "MutableSet"),
             { "${it}.toMutableSet()" },
-            { "${it}.toSet()" }
+            { it }
           )
         ty.hasMutableCopy() ->
           MutationInfo(
