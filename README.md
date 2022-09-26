@@ -170,7 +170,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     ```kotlin
     dependencies {
       // other dependencies
-      ksp("at.kopyk:kopykat-ksp:1.0-rc5")
+      ksp("at.kopyk:kopykat-ksp:$kopyKatVersion")
     }
     ```
 
