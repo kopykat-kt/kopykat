@@ -15,6 +15,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import at.kopyk.poet.className
+import at.kopyk.poet.makeInvariant
 import at.kopyk.poet.parameterizedWhenNotEmpty
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.MAP
@@ -62,15 +63,25 @@ internal class ClassCompileScope(
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
 
   override val typeVariableNames: List<TypeVariableName> = typeParameters.map { it.toTypeVariableName() }
-  override val typeParameterResolver: TypeParameterResolver = typeParameters.toTypeParameterResolver()
+  override val typeParameterResolver: TypeParameterResolver
+    get() {
+      val original = typeParameters.toTypeParameterResolver()
+      return object : TypeParameterResolver {
+        override val parametersMap: Map<String, TypeVariableName>
+          get() = original.parametersMap.mapValues { (_, v) -> v.makeInvariant() }
+        override fun get(index: String): TypeVariableName =
+          original.get(index).makeInvariant()
+      }
+    }
   override val target: ClassName = className
   override val properties: Sequence<KSPropertyDeclaration> = getPrimaryConstructorProperties()
 
-  override val ClassName.parameterized get() = parameterizedWhenNotEmpty(typeVariableNames)
+  override val ClassName.parameterized
+    get() = parameterizedWhenNotEmpty(typeVariableNames.map { it.makeInvariant() })
   override fun KSType.hasMutableCopy(): Boolean = declaration.closestClassDeclaration() in mutableCandidates
 
   override val KSPropertyDeclaration.typeName: TypeName
-    get() = type.toTypeName(classDeclaration.typeParameters.toTypeParameterResolver())
+    get() = type.toTypeName(classDeclaration.typeParameters.toTypeParameterResolver()).makeInvariant()
 
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
 }
@@ -91,7 +102,7 @@ internal class FileCompilerScope(
     file.addFunction(FunSpec.builder(name).apply {
       receiver(receives)
       returns(returns)
-      addTypeVariables(typeVariableNames)
+      addTypeVariables(typeVariableNames.map { it.makeInvariant() })
     }.apply(block).build())
   }
 

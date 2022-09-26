@@ -85,4 +85,18 @@ class CopyMapTest {
       |val r = p2.age
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `generic classes and variance, issue #48`() {
+    """
+      |data class Node<out T>(
+      |  val current: T,
+      |  val paths: List<Node<T>>,
+      |)
+      |
+      |val n1: Node<Int> = Node(1, paths = listOf(Node(2, emptyList())))
+      |val n2 = n1.copyMap(current = { it + 1 })
+      |val r = n2.current
+      """.evals("r" to 2)
+  }
 }

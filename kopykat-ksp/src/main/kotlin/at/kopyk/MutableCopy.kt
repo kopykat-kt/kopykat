@@ -9,6 +9,7 @@ import at.kopyk.poet.addParameter
 import at.kopyk.poet.addProperty
 import at.kopyk.poet.addReturn
 import at.kopyk.poet.asReceiverConsumer
+import at.kopyk.poet.makeInvariant
 import at.kopyk.poet.parameterModifiers
 import at.kopyk.poet.primaryConstructor
 import at.kopyk.poet.propertyModifiers
@@ -45,7 +46,7 @@ internal val TypeCompileScope.mutableCopyKt: FileSpec
 internal fun FileCompilerScope.addMutableCopy() {
   file.addClass(target.mutable) {
     addAnnotation(target.dslMarker)
-    addTypeVariables(typeVariableNames)
+    addTypeVariables(typeVariableNames.map { it.makeInvariant() })
     primaryConstructor {
       mutationInfo.forEach { (property, mutationInfo) ->
         with (property) {
