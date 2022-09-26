@@ -50,6 +50,9 @@ public val KSDeclaration.className: ClassName
 public fun TypeName.asTransformLambda(): LambdaTypeName =
   LambdaTypeName.get(parameters = arrayOf(this), returnType = this)
 
+public fun TypeName.asTransformLambda(receiver: TypeName): LambdaTypeName =
+  LambdaTypeName.get(receiver = receiver, parameters = arrayOf(this), returnType = this)
+
 public fun TypeName.asReceiverConsumer(): LambdaTypeName =
   LambdaTypeName.get(receiver = this, returnType = UNIT)
 
