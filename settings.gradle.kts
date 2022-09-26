@@ -6,7 +6,8 @@ rootProject.name = "kopykat"
 apply(from = "./buildSrc/repositories.settings.gradle.kts")
 
 include(
-  ":kopykat-ksp",
-  ":utils:compiletesting",
-  ":utils:kotlin-poet",
+    ":kopykat-ksp",
+    ":kopykat-gradle-plugin",
+    ":utils:compiletesting",
+    ":utils:kotlin-poet",
 )
