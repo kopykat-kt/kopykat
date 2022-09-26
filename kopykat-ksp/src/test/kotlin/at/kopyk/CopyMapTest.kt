@@ -74,4 +74,15 @@ class CopyMapTest {
       |val r = p2.age
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `uses a different field`() {
+    """
+      |data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { name.count() })
+      |val r = p2.age
+      """.evals("r" to 4)
+  }
 }

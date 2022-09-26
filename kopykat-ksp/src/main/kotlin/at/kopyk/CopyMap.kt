@@ -20,11 +20,18 @@ import at.kopyk.utils.typeCategory
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
   get() = buildFile(fileName = target.append("CopyMap").reflectionName()) {
+    val parameterized = target.parameterized
     addGeneratedMarker()
-    addInlinedFunction(name = "copyMap", receives = target.parameterized, returns = target.parameterized) {
+    addInlinedFunction(name = "copyMap", receives = parameterized, returns = parameterized) {
       properties
-        .onEachRun { addParameter(name = baseName, type = typeName.asTransformLambda(), defaultValue = "{ it }") }
-        .mapRun { "$baseName = $baseName(this.$baseName)" }
+        .onEachRun {
+          addParameter(
+            name = baseName,
+            type = typeName.asTransformLambda(receiver = parameterized),
+            defaultValue = "{ it }"
+          )
+        }
+        .mapRun { "$baseName = $baseName(this, this.$baseName)" }
         .run { addReturn(repeatOnSubclasses(joinToString(), "copy")) }
     }
   }
