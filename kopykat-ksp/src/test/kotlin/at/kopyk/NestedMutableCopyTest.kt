@@ -29,4 +29,20 @@ class NestedMutableCopyTest {
       |val r = p2.job.level.value
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `mutate list property`() {
+    """
+      |data class Person(val name: String, val job: Job)
+      |data class Job(val title: String, val teams: List<String>)
+      |
+      |val p1 = Person("Alex", Job("Developer", listOf("A")))
+      |val p2 = p1.copy { 
+      |  job.title = "Señor Developer"
+      |  job.teams.add("B")
+      |}
+      |val r1 = p2.job.title
+      |val r2 = p2.job.teams
+      """.evals("r1" to "Señor Developer", "r2" to listOf("A", "B"))
+  }
 }

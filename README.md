@@ -3,6 +3,7 @@
 * [What can KopyKat do?](#what-can-kopykat-do)
     * [Mutable `copy`](#mutable-copy)
         * [Nested mutation](#nested-mutation)
+        * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
@@ -59,9 +60,9 @@ inner types. Let's say we have these types:
 
 ```kotlin
 data class Person(val name: String, val job: Job)
-data class Job(val title: String)
+data class Job(val title: String, val teams: List<String>)
 
-val p1 = Person(name = "John", job = Job("Developer"))
+val p1 = Person(name = "John", job = Job("Developer", listOf("Kotlin", "Training")))
 ```
 
 Currently, to do mutate inner types you have to do the following:
@@ -80,6 +81,26 @@ val p2 = p1.copy { job.title = "Señor Developer" }
 > **Warning**
 > For now, this doesn't work with types that are external to the source code (i.e. dependencies). We are working on
 > supporting this in the future.
+
+#### Nested collections
+
+The nested mutation also extends to collections, which are turned into their mutable counterparts, if they exist.
+
+```kotlin
+val p3 = p1.copy { job.teams.add("Compiler") }
+```
+
+To avoid unnecessary copies, we recommend to mutate the collections in-place as much as possible. This means that
+`forEach` should be preferred over `map`.
+
+```kotlin
+val p4 = p1.copy { // needs an additional toMutableList at the end
+  job.teams = job.teams.map { it.capitalize() }.toMutableList()
+}
+val p5 = p1.copy { // mutates the job.teams collection in-place
+  job.teams.forEachIndexed { i, team -> job.teams[i] = team.capitalize() }
+}
+```
 
 ### Mapping `copyMap`
 

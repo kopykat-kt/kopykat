@@ -40,7 +40,7 @@ class CopyMapTest {
   }
 
   @Test
-  fun `works on generic classes`() {
+  fun `works on generic classes, 1`() {
     """
       |data class Person<A>(val name: String, val age: A)
       |
@@ -48,6 +48,17 @@ class CopyMapTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.evals("r" to 2)
+  }
+
+  @Test
+  fun `works on generic classes, 2`() {
+    """
+      |data class Person<A>(val name: String, val infos: List<A>)
+      |
+      |val p1: Person<Int> = Person("Alex", listOf(1, 2))
+      |val p2 = p1.copyMap(infos = { it.map { i -> i + 1 } })
+      |val r = p2.infos
+      """.evals("r" to listOf(2, 3))
   }
 
   @Test

@@ -100,9 +100,9 @@ class MutableCopyTest {
       |data class Person<A>(val name: String, val age: Int, val anns: List<A>)
       |
       |val p1: Person<Int> = Person("Alex", 1, listOf(1, 10))
-      |val p2 = p1.copy { anns = anns.map { it + 1 } }
-      |val r = p2.anns.first()
-      """.evals("r" to 2)
+      |val p2 = p1.copy { anns.forEachIndexed { i, v -> anns[i] = v + 1 } }
+      |val r = p2.anns
+      """.evals("r" to listOf(2, 11))
   }
 
   @Test
@@ -111,8 +111,8 @@ class MutableCopyTest {
       |data class Person(val name: String, val age: Int, val things: Map<String, Int>)
       |
       |val p1: Person = Person("Alex", 1, mapOf("chair" to 1, "pencil" to 10))
-      |val p2 = p1.copy { things = things.mapValues { it.value + 1 } }
-      |val r = p2.things["chair"]
-      """.evals("r" to 2)
+      |val p2 = p1.copy { things.forEach { (k, v) -> things[k] = v + 1 } }
+      |val r = p2.things
+      """.evals("r" to mapOf("chair" to 2, "pencil" to 11))
   }
 }
