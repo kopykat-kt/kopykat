@@ -1,11 +1,5 @@
 package at.kopyk
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
 import at.kopyk.poet.writeTo
 import at.kopyk.utils.ClassCompileScope
 import at.kopyk.utils.TypeCategory.Known
@@ -20,6 +14,12 @@ import at.kopyk.utils.onKnownCategory
 import at.kopyk.utils.typeCategory
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.isAnnotationPresent
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import org.apache.commons.io.FilenameUtils.wildcardMatch
 
 internal class KopyKatProcessor(
@@ -76,18 +76,24 @@ internal class KopyKatProcessor(
   private fun KSClassDeclaration.checkAnnotationMisuse() {
     if (isAnnotationPresent(CopyExtensions::class)) {
       if (typeCategory !is Known) {
-        logger.error("""
+        logger.error(
+          """
           '@CopyExtensions' may only be used in data or value classes,
           or sealed hierarchies of those.
-        """.trimIndent(), this)
+          """.trimIndent(),
+          this
+        )
         return
       }
       if (options.generate is KopyKatGenerate.NotAnnotated) {
-        logger.warn("""
+        logger.warn(
+          """
           Unused '@CopyExtensions' annotation, the plug-in is configured to process all classes.
           Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
           More info at https://kopyk.at/#enable-only-for-selected-classes.
-        """.trimIndent(), this)
+          """.trimIndent(),
+          this
+        )
         return
       }
     }

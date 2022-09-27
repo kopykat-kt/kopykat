@@ -1,8 +1,5 @@
 package at.kopyk
 
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
 import at.kopyk.poet.addClass
 import at.kopyk.poet.addMutableProperty
 import at.kopyk.poet.addParameter
@@ -28,6 +25,9 @@ import at.kopyk.utils.mutable
 import at.kopyk.utils.onKnownCategory
 import at.kopyk.utils.sealedTypes
 import at.kopyk.utils.typeCategory
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
   get() = buildFile(target.mutable.reflectionName()) {
@@ -49,7 +49,7 @@ internal fun FileCompilerScope.addMutableCopy() {
     addTypeVariables(typeVariableNames.map { it.makeInvariant() })
     primaryConstructor {
       mutationInfo.forEach { (property, mutationInfo) ->
-        with (property) {
+        with(property) {
           addParameter(
             name = baseName,
             type = mutationInfo.className,
@@ -102,9 +102,11 @@ internal fun FileCompilerScope.addCopyClosure() {
 private fun FileCompilerScope.addRetrofittedCopyFunction() {
   addCopyFunction {
     properties.forEachRun { addParameter(name = baseName, type = typeName, defaultValue = "this.$baseName") }
-    addReturn(sealedTypes.joinWithWhen { type ->
-      "is ${type.fullName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
-    })
+    addReturn(
+      sealedTypes.joinWithWhen { type ->
+        "is ${type.fullName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
+      }
+    )
   }
 }
 

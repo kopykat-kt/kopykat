@@ -17,6 +17,7 @@ dependencies {
     // This should be the only place where Gradle plugins versions are defined.
 
     implementation(libs.gradlePlugin.kotlinJvm)
+    implementation(libs.gradlePlugin.ktLint)
 }
 
 

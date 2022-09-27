@@ -1,9 +1,8 @@
 package at.kopyk
 
-import at.kopyk.poet.append
-import com.squareup.kotlinpoet.FileSpec
 import at.kopyk.poet.addParameter
 import at.kopyk.poet.addReturn
+import at.kopyk.poet.append
 import at.kopyk.poet.asTransformLambda
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
@@ -17,6 +16,7 @@ import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
 import at.kopyk.utils.sealedTypes
 import at.kopyk.utils.typeCategory
+import com.squareup.kotlinpoet.FileSpec
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
   get() = buildFile(fileName = target.append("CopyMap").reflectionName()) {

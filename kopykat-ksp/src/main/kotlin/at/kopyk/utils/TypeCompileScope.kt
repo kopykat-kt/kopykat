@@ -1,5 +1,8 @@
 package at.kopyk.utils
 
+import at.kopyk.poet.className
+import at.kopyk.poet.makeInvariant
+import at.kopyk.poet.parameterizedWhenNotEmpty
 import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -9,19 +12,16 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeVariableName
-import com.squareup.kotlinpoet.ksp.toTypeName
-import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
-import com.squareup.kotlinpoet.ksp.toTypeVariableName
-import at.kopyk.poet.className
-import at.kopyk.poet.makeInvariant
-import at.kopyk.poet.parameterizedWhenNotEmpty
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.MAP
 import com.squareup.kotlinpoet.SET
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import com.squareup.kotlinpoet.ksp.toTypeVariableName
 
 internal data class MutationInfo<out T : TypeName>(
   val className: T,
@@ -47,13 +47,12 @@ internal sealed interface TypeCompileScope : KSClassDeclaration {
     "$baseName = ${wrapper("${source ?: ""}$baseName")}"
   fun Sequence<Pair<KSPropertyDeclaration, MutationInfo<TypeName>>>.joinAsAssignmentsWithMutation(
     wrapper: MutationInfo<TypeName>.(String) -> String,
-  )  = joinToString { (prop, mut) -> prop.toAssignment( { wrapper(mut, it) }) }
+  ) = joinToString { (prop, mut) -> prop.toAssignment({ wrapper(mut, it) }) }
 
   fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
     FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
-
 }
 
 internal class ClassCompileScope(
@@ -99,11 +98,13 @@ internal class FileCompilerScope(
     returns: TypeName,
     block: FunSpec.Builder.() -> Unit = {},
   ) {
-    file.addFunction(FunSpec.builder(name).apply {
-      receiver(receives)
-      returns(returns)
-      addTypeVariables(typeVariableNames.map { it.makeInvariant() })
-    }.apply(block).build())
+    file.addFunction(
+      FunSpec.builder(name).apply {
+        receiver(receives)
+        returns(returns)
+        addTypeVariables(typeVariableNames.map { it.makeInvariant() })
+      }.apply(block).build()
+    )
   }
 
   fun addInlinedFunction(
@@ -127,26 +128,26 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
         className == LIST ->
           MutationInfo(
             ClassName(className.packageName, "MutableList"),
-            { "${it}.toMutableList()" },
+            { "$it.toMutableList()" },
             { it }
           )
         className == MAP ->
           MutationInfo(
             ClassName(className.packageName, "MutableMap"),
-            { "${it}.toMutableMap()" },
+            { "$it.toMutableMap()" },
             { it }
           )
         className == SET ->
           MutationInfo(
             ClassName(className.packageName, "MutableSet"),
-            { "${it}.toMutableSet()" },
+            { "$it.toMutableSet()" },
             { it }
           )
         ty.hasMutableCopy() ->
           MutationInfo(
             className.mutable,
-            { "${it}.toMutable()" },
-            { "${it}.freeze()" }
+            { "$it.toMutable()" },
+            { "$it.freeze()" }
           )
         else ->
           MutationInfo(className, { it }, { it })

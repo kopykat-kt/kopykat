@@ -72,7 +72,6 @@ class CopyMapTest {
       """.failsWith { it.contains("Unresolved reference: copyMap") }
   }
 
-
   @Test
   fun `simple test with additional property`() {
     """
