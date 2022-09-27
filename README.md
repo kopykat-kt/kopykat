@@ -105,21 +105,31 @@ val p5 = p1.copy { // mutates the job.teams collection in-place
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
+The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or 
+introduce an explicit name.
 
 ```kotlin
 val p1 = Person("Alex", 1)
 val p2 = p1.copyMap(age = { it + 1 })
+val p3 = p1.copyMap(name = { nm -> nm.capitalize() })
+```
+
+The whole "old" value (the `Person` in the example above) is given as receiver to each of the transformations. That
+means that you can access all the other fields in the body of each of the transformations.
+
+```kotlin
+val p4 = p1.copyMap(age = { name.count() })
 ```
 
 > **Note**
 > you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
 
 ```kotlin
-val p3 = p1.copyMap(age = { 10 })
+val p5 = p1.copyMap(age = { 10 })
 ```
 
 > **Note**
-> When using value classes, given that you only have one property, you can skip the name of the property:
+> When using value classes, given that you only have one property, you can skip the name of the property.
 
 ```kotlin
 @JvmInline value class Age(ageValue: Int)
