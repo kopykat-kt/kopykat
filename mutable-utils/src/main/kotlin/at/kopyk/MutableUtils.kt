@@ -6,11 +6,10 @@ package at.kopyk
  */
 public fun <A> MutableList<A>.mutateAll(
   transform: (A) -> A
-): MutableList<A> {
+): MutableList<A> = apply {
   forEachIndexed { ix, value ->
     this[ix] = transform(value)
   }
-  return this
 }
 
 /**
@@ -19,11 +18,10 @@ public fun <A> MutableList<A>.mutateAll(
  */
 public fun <A> MutableList<A>.mutateAllIndexed(
   transform: (index: Int, value: A) -> A
-): MutableList<A> {
+): MutableList<A> = apply {
   forEachIndexed { ix, value ->
     this[ix] = transform(ix, value)
   }
-  return this
 }
 
 /**
@@ -32,11 +30,10 @@ public fun <A> MutableList<A>.mutateAllIndexed(
  */
 public fun <K, V> MutableMap<K, V>.mutateValues(
   transform: (entry: Map.Entry<K, V>) -> V
-): MutableMap<K, V> {
+): MutableMap<K, V> = apply {
   forEach { entry ->
     this[entry.key] = transform(entry)
   }
-  return this
 }
 
 /**
@@ -45,9 +42,8 @@ public fun <K, V> MutableMap<K, V>.mutateValues(
  */
 public fun <K, V> MutableMap<K, V>.mutateValues(
   transform: (key: K, value: V) -> V
-): MutableMap<K, V> {
+): MutableMap<K, V> = apply {
   forEach { (key, value) ->
     this[key] = transform(key, value)
   }
-  return this
 }
