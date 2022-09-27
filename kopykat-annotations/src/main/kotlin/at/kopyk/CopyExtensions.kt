@@ -2,4 +2,4 @@ package at.kopyk
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-public annotation class KopyKat
+public annotation class CopyExtensions

@@ -226,21 +226,21 @@ to enable generation for only some classes, this is of course possible.
     }
     ```
 
-2. Enable the `annotatedOnly` option for the plug-in, by
+2. Disable the `generateAll` option for the plug-in, by
    [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
 
     ```kotlin
     ksp {
-      arg("annotatedOnly", "true")
+      arg("generateAll", "false")
     }
     ```
 
-3. Mark those classes you want KopyKat to process with the `@KopyKat` annotation.
+3. Mark those classes you want KopyKat to process with the `@CopyExtensions` annotation.
 
     ```kotlin
-    import at.kopyk.KopyKat
+    import at.kopyk.CopyExtensions
     
-    @KopyKat data class Person(val name: String, val age: Int)
+    @CopyExtensions data class Person(val name: String, val age: Int)
     ```
 
 ### Customizing the generation
