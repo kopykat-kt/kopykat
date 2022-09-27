@@ -1,66 +1,48 @@
 package at.kopyk
 
+import at.kopyk.utils.assumingCast
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.junit.jupiter.api.Test
 
 class MutableListTest {
 
   @Test
-  fun `can mutate all items`() {
-    val original = mutableListOf("a", "b", "c")
-
-    val result = original.mutateAll { it + it }
-
-    original shouldContainExactly listOf("aa", "bb", "cc")
-    result shouldContainExactly listOf("aa", "bb", "cc")
-    original shouldBeSameInstanceAs result
-  }
+  fun `can mutate all items`() = testMutation(
+    given = mutableListOf("a", "b", "c"),
+    whenWe = { mutateAll { it + it } },
+    then = { it shouldContainExactly listOf("aa", "bb", "cc") },
+  )
 
   @Test
-  fun `can mutate all items indexed`() {
-    val original = mutableListOf("a", "b", "c")
-
-    val result = original.mutateAllIndexed { index, value -> value + index }
-
-    original shouldContainExactly listOf("a0", "b1", "c2")
-    result shouldContainExactly listOf("a0", "b1", "c2")
-    original shouldBeSameInstanceAs result
-  }
+  fun `can mutate all items indexed`() = testMutation(
+    given = mutableListOf("a", "b", "c"),
+    whenWe = { mutateAllIndexed { index, value -> value + index } },
+    then = { it shouldContainExactly listOf("a0", "b1", "c2") },
+  )
 
   @Test
-  fun `removes null mutations`() {
-    val original = mutableListOf("a", "b", "c")
-
-    val result = original.mutateAllNotNull { value -> value.takeUnless { it == "b" } }
-
-    original shouldContainExactly listOf("a", "c")
-    result shouldContainExactly listOf("a", "c")
-    original shouldBeSameInstanceAs result
-  }
+  fun `removes null mutations`() = testMutation(
+    given = mutableListOf("a", "b", "c"),
+    whenWe = { mutateAllNotNull { value -> value.takeUnless { it == "b" } } },
+    then = { it shouldContainExactly listOf("a", "c") },
+  )
 
   @Test
-  fun `removes null mutations with index`() {
-    val original = mutableListOf("a", "b", "c")
-
-    val result = original.mutateAllNotNullIndexed { index, value ->
-      value.takeUnless { it == "b" }?.plus("$index")
-    }
-
-    original shouldContainExactly listOf("a0", "c2")
-    result shouldContainExactly listOf("a0", "c2")
-    original shouldBeSameInstanceAs result
-  }
+  fun `removes null mutations with index`() = testMutation(
+    given = mutableListOf("a", "b", "c"),
+    whenWe = {
+      mutateAllNotNullIndexed { index, value ->
+        value.takeUnless { it == "b" }?.plus("$index")
+      }
+    },
+    then = { it shouldContainExactly listOf("a0", "c2") }
+  )
 
   @Test
-  fun `keep instances of a given type`() {
-    val original: MutableList<Any> = mutableListOf("a", 10, "c")
-
-    val result: MutableList<String> = original.removeUnlessInstanceOf<String, _>().mutateAll { it + it }
-
-    original shouldContainExactly listOf("aa", "cc")
-    result shouldContainExactly listOf("aa", "cc")
-    original shouldBeSameInstanceAs result
-  }
+  fun `keep instances of a given type`() = testMutation(
+    given = mutableListOf("a", 10, "c"),
+    whenWe = assumingCast { removeUnlessInstanceOf<String>().mutateAll { it + it } },
+    then = { it shouldContainExactly listOf("aa", "cc") }
+  )
 
 }

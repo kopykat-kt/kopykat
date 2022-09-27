@@ -36,9 +36,9 @@ public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
 ): MutableMap<K, V> = mutateValuesNotNull { (key, value) -> transform(key, value) }
 
 /**
- * Removes any values in the map that are not type [V2] and
- * returns a [MutableMap]<[K], [V2]> with the remaining entries.
+ * Removes any values in the map that are not type [V] and
+ * returns a [MutableMap]<[K], [V]> with the remaining entries.
  */
 @Suppress("UNCHECKED_CAST")
-public inline fun <reified V2 : V, K, V> MutableMap<K, V>.removeValuesUnlessInstanceOf(): MutableMap<K, V2> =
-  mutateValuesNotNull { (_, value) -> value as? V2 } as MutableMap<K, V2>
+public inline fun <K, reified V> MutableMap<K, *>.removeValuesUnlessInstanceOf(): MutableMap<K, V> =
+  (this as MutableMap<Any, Any>).mutateValuesNotNull { (_, value) -> value as? V } as MutableMap<K, V>
