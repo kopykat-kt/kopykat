@@ -5,20 +5,16 @@ package at.kopyk
  * reusing the same structure to keep them.
  */
 public inline fun <A> MutableList<A>.mutateAll(
-  transform: (A) -> A
-): MutableList<A> = apply {
-  with(listIterator()) { while (hasNext()) set(transform(next())) }
-}
+  transform: (A) -> A,
+): MutableList<A> = mutateAllNotNull(transform)
 
 /**
  * Applies [transform] to each element in the list with the current item index,
  * reusing the same structure to keep them.
  */
 public inline fun <A> MutableList<A>.mutateAllIndexed(
-  transform: (index: Int, value: A) -> A
-): MutableList<A> = apply {
-  with(listIterator()) { while (hasNext()) set(transform(nextIndex(), next())) }
-}
+  transform: (index: Int, value: A) -> A,
+): MutableList<A> = mutateAllNotNullIndexed(transform)
 
 /**
  * Applies [transform] to each element in the list,
@@ -37,10 +33,6 @@ public inline fun <A> MutableList<A>.mutateAllNotNull(
 public inline fun <A> MutableList<A>.mutateAllNotNullIndexed(
   transform: (index: Int, value: A) -> A?,
 ): MutableList<A> {
-  /**
-   * Implementation Note: We can't use [ListIterator.nextIndex] because
-   * removing an item will change the next item index.
-   */
   var index = 0
   return mutateAllNotNull { transform(index++, it) }
 }

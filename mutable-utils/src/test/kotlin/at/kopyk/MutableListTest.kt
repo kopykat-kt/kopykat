@@ -7,39 +7,43 @@ class MutableListTest {
 
   @Test
   fun `can mutate all items`() {
-    val list = mutableListOf("a", "b", "c")
+    val original = mutableListOf("a", "b", "c")
 
-    val result = list.mutateAll { it + it }
+    val result = original.mutateAll { it + it }
 
+    original shouldContainExactly listOf("aa", "bb", "cc")
     result shouldContainExactly listOf("aa", "bb", "cc")
   }
 
   @Test
   fun `can mutate all items indexed`() {
-    val list = mutableListOf("a", "b", "c")
+    val original = mutableListOf("a", "b", "c")
 
-    val result = list.mutateAllIndexed { index, value -> value + index }
+    val result = original.mutateAllIndexed { index, value -> value + index }
 
+    original shouldContainExactly listOf("a0", "b1", "c2")
     result shouldContainExactly listOf("a0", "b1", "c2")
   }
 
   @Test
-  fun `removes null transformations`() {
-    val list = mutableListOf("a", "b", "c")
+  fun `removes null mutations`() {
+    val original = mutableListOf("a", "b", "c")
 
-    val result = list.mutateAllNotNull { value -> value.takeUnless { it == "b" } }
+    val result = original.mutateAllNotNull { value -> value.takeUnless { it == "b" } }
 
+    original shouldContainExactly listOf("a", "c")
     result shouldContainExactly listOf("a", "c")
   }
 
   @Test
-  fun `removes null transformations with index`() {
-    val list = mutableListOf("a", "b", "c")
+  fun `removes null mutations with index`() {
+    val original = mutableListOf("a", "b", "c")
 
-    val result = list.mutateAllNotNullIndexed { index, value ->
+    val result = original.mutateAllNotNullIndexed { index, value ->
       value.takeUnless { it == "b" }?.plus("$index")
     }
 
+    original shouldContainExactly listOf("a0", "c2")
     result shouldContainExactly listOf("a0", "c2")
   }
 
