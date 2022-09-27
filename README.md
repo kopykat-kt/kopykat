@@ -224,6 +224,21 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
 to enable generation for only some classes, this is of course possible.
 
+#### All classes in given packages
+
+Change the `generate` option for the plug-in, by
+[passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
+The packages should be separated by `:`, and you can use wildcards, as supported by
+[`wildcardMatch`](https://commons.apache.org/proper/commons-io/javadocs/api-release/org/apache/commons/io/FilenameUtils.html#wildcardMatch-java.lang.String-java.lang.String-).
+
+```kotlin
+ksp {
+  arg("generate", "packages:my.example.*")
+}
+```
+
+#### Using annotations
+
 1. Add a dependency to KopyKat's annotation package. Note that we declare it as `compileOnly`, which means there's no
    trace of it in the compiled artifact.
  
@@ -234,12 +249,12 @@ to enable generation for only some classes, this is of course possible.
     }
     ```
 
-2. Disable the `generateAll` option for the plug-in, by
+2. Change the `generate` option for the plug-in, by
    [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
 
     ```kotlin
     ksp {
-      arg("generateAll", "false")
+      arg("generate", "annotated")
     }
     ```
 

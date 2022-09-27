@@ -15,7 +15,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.evalsWithArgs(mapOf(KopyKatOptions.GENERATE_ALL to "false"),"r" to 2)
+      """.evalsWithArgs(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ANNOTATED),"r" to 2)
   }
 
   @Test
@@ -26,7 +26,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.failsWith(mapOf(KopyKatOptions.GENERATE_ALL to "false")) {
+      """.failsWith(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ANNOTATED)) {
         it.contains("Unresolved reference: copyMap")
       }
   }
@@ -58,7 +58,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.compilesWith(mapOf(KopyKatOptions.GENERATE_ALL to "true")) {
+      """.compilesWith(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ALL)) {
         it.contains("Unused '@CopyExtensions' annotation")
       }
   }
@@ -72,6 +72,57 @@ class AnnotationTest {
       |class Person(val name: String, val age: Int)
       """.failsWith {
       it.contains("'@CopyExtensions' may only be used")
+    }
+  }
+
+  @Test
+  fun `generates in the given package`() {
+    """
+      |package A
+      |
+      |data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { it + 1 })
+      |val r = p2.age
+      """.failsWith(
+      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+    ) {
+      it.contains("Unresolved reference: copyMap")
+    }
+  }
+
+  @Test
+  fun `generates in the given package, pattern`() {
+    """
+      |package A
+      |
+      |data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { it + 1 })
+      |val r = p2.age
+      """.failsWith(
+      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}?")
+    ) {
+      it.contains("Unresolved reference: copyMap")
+    }
+  }
+
+  @Test
+  fun `doesn't generate in other package`() {
+    """
+      |package B
+      |
+      |data class Person(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(age = { it + 1 })
+      |val r = p2.age
+      """.failsWith(
+      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+    ) {
+      it.contains("Unresolved reference: copyMap")
     }
   }
 }

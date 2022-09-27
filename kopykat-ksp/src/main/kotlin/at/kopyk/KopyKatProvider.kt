@@ -9,6 +9,6 @@ public class KopyKatProvider : SymbolProcessorProvider {
     KopyKatProcessor(
       codegen = environment.codeGenerator,
       logger = environment.logger,
-      options = KopyKatOptions.fromKspOptions(environment.options)
+      options = KopyKatOptions.fromKspOptions(environment.logger, environment.options)
     )
 }

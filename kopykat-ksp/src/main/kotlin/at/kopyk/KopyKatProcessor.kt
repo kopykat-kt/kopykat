@@ -20,6 +20,7 @@ import at.kopyk.utils.onKnownCategory
 import at.kopyk.utils.typeCategory
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.isAnnotationPresent
+import org.apache.commons.io.FilenameUtils.wildcardMatch
 
 internal class KopyKatProcessor(
   private val codegen: CodeGenerator,
@@ -56,8 +57,20 @@ internal class KopyKatProcessor(
   }
 
   @OptIn(KspExperimental::class)
-  private fun KSClassDeclaration.shouldGenerate(): Boolean =
-    options.generateAll || isAnnotationPresent(CopyExtensions::class)
+  private fun KSClassDeclaration.shouldGenerate(): Boolean = when (options.generate) {
+    is KopyKatGenerate.Error ->
+      false
+    is KopyKatGenerate.All ->
+      true
+    is KopyKatGenerate.Annotated ->
+      isAnnotationPresent(CopyExtensions::class)
+    is KopyKatGenerate.Packages -> {
+      val pkg = packageName.asString()
+      options.generate.patterns.any { pattern ->
+        wildcardMatch(pkg, pattern)
+      }
+    }
+  }
 
   @OptIn(KspExperimental::class)
   private fun KSClassDeclaration.checkAnnotationMisuse() {
@@ -69,7 +82,7 @@ internal class KopyKatProcessor(
         """.trimIndent(), this)
         return
       }
-      if (options.generateAll) {
+      if (options.generate is KopyKatGenerate.NotAnnotated) {
         logger.warn("""
           Unused '@CopyExtensions' annotation, the plug-in is configured to process all classes.
           Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
