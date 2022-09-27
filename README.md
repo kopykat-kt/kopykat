@@ -185,7 +185,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
 to enable generation for only some classes, this is of course possible.
 
-1. Add a dependency on KopyKat's annotation package. Note that we declare it as `compileOnly`, which means there's no
+1. Add a dependency to KopyKat's annotation package. Note that we declare it as `compileOnly`, which means there's no
    trace of it in the compiled artifact.
  
     ```kotlin
