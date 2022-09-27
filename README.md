@@ -106,7 +106,7 @@ The `at.kopyk:mutable-utils` library contains versions of the main collection fu
 
 ```kotlin
 val p6 = p1.copy { // mutates the job.teams collection in-place
-  job.teams.mapInPlace { it.capitalize() }
+  job.teams.mutateAll { it.capitalize() }
 }
 ```
 
