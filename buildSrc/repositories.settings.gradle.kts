@@ -6,7 +6,6 @@ dependencyResolutionManagement {
 
     repositories {
         mavenCentral()
-        jitpack()
         gradlePluginPortal()
     }
 
@@ -14,11 +13,6 @@ dependencyResolutionManagement {
         repositories {
             gradlePluginPortal()
             mavenCentral()
-            jitpack()
         }
     }
-}
-
-fun RepositoryHandler.jitpack() {
-    maven("https://jitpack.io")
 }

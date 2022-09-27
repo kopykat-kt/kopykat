@@ -6,6 +6,7 @@ kotlinCompileTesting = "1.4.9"
 assertj = "3.23.1"
 classgraph = "4.8.149"
 commons = "1.3.2"
+ktlint = "11.0.0"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -24,6 +25,7 @@ apache-commons-io = { module = "org.apache.commons:commons-io", version.ref = "c
 # the *Maven coodinates* of Gradle plugins. Use in ./buildSrc/build.gradle.kts.
 
 gradlePlugin-kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+gradlePlugin-ktLint = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 
 
 [plugins]

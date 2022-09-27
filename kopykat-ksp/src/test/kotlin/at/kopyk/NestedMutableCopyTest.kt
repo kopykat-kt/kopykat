@@ -16,7 +16,6 @@ class NestedMutableCopyTest {
       """.evals("r" to "Señor Developer")
   }
 
-
   @Test
   fun `mutate nested property with value type`() {
     """

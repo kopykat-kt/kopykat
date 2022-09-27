@@ -1,12 +1,12 @@
 package at.kopyk.utils
 
+import at.kopyk.utils.TypeCategory.Known
+import at.kopyk.utils.TypeCategory.Unknown
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Modifier.SEALED
-import at.kopyk.utils.TypeCategory.Known
-import at.kopyk.utils.TypeCategory.Unknown
 
 internal val KSClassDeclaration.typeCategory: TypeCategory
   get() = when {
