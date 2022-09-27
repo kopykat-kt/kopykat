@@ -3,6 +3,7 @@
 * [What can KopyKat do?](#what-can-kopykat-do)
     * [Mutable `copy`](#mutable-copy)
         * [Nested mutation](#nested-mutation)
+        * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
@@ -60,9 +61,9 @@ inner types. Let's say we have these types:
 
 ```kotlin
 data class Person(val name: String, val job: Job)
-data class Job(val title: String)
+data class Job(val title: String, val teams: List<String>)
 
-val p1 = Person(name = "John", job = Job("Developer"))
+val p1 = Person(name = "John", job = Job("Developer", listOf("Kotlin", "Training")))
 ```
 
 Currently, to do mutate inner types you have to do the following:
@@ -82,24 +83,54 @@ val p2 = p1.copy { job.title = "Señor Developer" }
 > For now, this doesn't work with types that are external to the source code (i.e. dependencies). We are working on
 > supporting this in the future.
 
+#### Nested collections
+
+The nested mutation also extends to collections, which are turned into their mutable counterparts, if they exist.
+
+```kotlin
+val p3 = p1.copy { job.teams.add("Compiler") }
+```
+
+To avoid unnecessary copies, we recommend to mutate the collections in-place as much as possible. This means that
+`forEach` should be preferred over `map`.
+
+```kotlin
+val p4 = p1.copy { // needs an additional toMutableList at the end
+  job.teams = job.teams.map { it.capitalize() }.toMutableList()
+}
+val p5 = p1.copy { // mutates the job.teams collection in-place
+  job.teams.forEachIndexed { i, team -> job.teams[i] = team.capitalize() }
+}
+```
+
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
+The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or 
+introduce an explicit name.
 
 ```kotlin
 val p1 = Person("Alex", 1)
 val p2 = p1.copyMap(age = { it + 1 })
+val p3 = p1.copyMap(name = { nm -> nm.capitalize() })
+```
+
+The whole "old" value (the `Person` in the example above) is given as receiver to each of the transformations. That
+means that you can access all the other fields in the body of each of the transformations.
+
+```kotlin
+val p4 = p1.copyMap(age = { name.count() })
 ```
 
 > **Note**
 > you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
 
 ```kotlin
-val p3 = p1.copyMap(age = { 10 })
+val p5 = p1.copyMap(age = { 10 })
 ```
 
 > **Note**
-> When using value classes, given that you only have one property, you can skip the name of the property:
+> When using value classes, given that you only have one property, you can skip the name of the property.
 
 ```kotlin
 @JvmInline value class Age(ageValue: Int)
