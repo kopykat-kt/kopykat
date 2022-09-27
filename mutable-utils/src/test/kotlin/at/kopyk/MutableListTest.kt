@@ -1,6 +1,6 @@
 package at.kopyk
 
-import kotlin.test.assertContentEquals
+import io.kotest.matchers.collections.shouldContainExactly
 import org.junit.jupiter.api.Test
 
 class MutableListTest {
@@ -11,7 +11,7 @@ class MutableListTest {
 
     val result = list.mutateAll { it + it }
 
-    assertContentEquals(actual = result, expected = listOf("aa", "bb", "cc"))
+    result shouldContainExactly listOf("aa", "bb", "cc")
   }
 
   @Test
@@ -20,7 +20,7 @@ class MutableListTest {
 
     val result = list.mutateAllIndexed { index, value -> value + index }
 
-    assertContentEquals(actual = result, expected = listOf("a0", "b1", "c2"))
+    result shouldContainExactly listOf("a0", "b1", "c2")
   }
 
 }

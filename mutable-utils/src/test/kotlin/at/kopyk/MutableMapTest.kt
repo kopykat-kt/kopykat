@@ -1,6 +1,6 @@
 package at.kopyk
 
-import kotlin.test.assertEquals
+import io.kotest.matchers.maps.shouldContainExactly
 import org.junit.jupiter.api.Test
 
 class MutableMapTest {
@@ -11,7 +11,7 @@ class MutableMapTest {
 
     val result = list.mutateValues { (k, v) -> "$k -> $v" }
 
-    assertEquals(actual = result, expected = mapOf(12 to "12 -> a", 15 to "15 -> b"))
+    result shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b")
   }
 
   @Test
@@ -20,7 +20,7 @@ class MutableMapTest {
 
     val result = list.mutateValues { k, v -> "$k -> $v" }
 
-    assertEquals(actual = result, expected = mapOf(12 to "12 -> a", 15 to "15 -> b"))
+    result shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b")
   }
 
 }
