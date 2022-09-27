@@ -9,4 +9,5 @@ include(
   ":kopykat-ksp",
   ":utils:compiletesting",
   ":utils:kotlin-poet",
+  ":mutable-utils",
 )

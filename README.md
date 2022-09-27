@@ -102,6 +102,14 @@ val p5 = p1.copy { // mutates the job.teams collection in-place
 }
 ```
 
+The `at.kopyk:mutable-utils` library contains versions of the main collection functions which reuse the same structure.
+
+```kotlin
+val p6 = p1.copy { // mutates the job.teams collection in-place
+  job.teams.mutateAll { it.capitalize() }
+}
+```
+
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
