@@ -46,7 +46,7 @@ jobs:
       - name: Stop Gradle daemons
         run: ./gradlew --stop
 
-  update_api:
+  ktlint:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
