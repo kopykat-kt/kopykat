@@ -5,6 +5,7 @@ kotlinPoet = "1.12.0"
 kotlinCompileTesting = "1.4.9"
 assertj = "3.23.1"
 classgraph = "4.8.149"
+commons = "1.3.2"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -17,6 +18,7 @@ kotlinCompileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testi
 kotlinCompileTestingKsp = { module = "com.github.tschuchortdev:kotlin-compile-testing-ksp", version.ref = "kotlinCompileTesting" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
+apache-commons-io = { module = "org.apache.commons:commons-io", version.ref = "commons"}
 
 ### Plugins ###
 # the *Maven coodinates* of Gradle plugins. Use in ./buildSrc/build.gradle.kts.

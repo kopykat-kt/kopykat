@@ -3,6 +3,7 @@ package at.kopyk.compiletesting
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
+import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.assertj.core.api.Assertions
@@ -13,14 +14,32 @@ import java.nio.file.Paths
 
 private const val SOURCE_FILENAME = "Source.kt"
 
-public fun String.failsWith(provider: SymbolProcessorProvider, check: (String) -> Boolean) {
-  val compilationResult = compile(this, provider)
+public fun String.failsWith(
+  provider: SymbolProcessorProvider,
+  providerArgs: Map<String, String> = emptyMap(),
+  check: (String) -> Boolean
+) {
+  val compilationResult = compile(this, provider, providerArgs)
   Assertions.assertThat(compilationResult.exitCode).isNotEqualTo(KotlinCompilation.ExitCode.OK)
   Assertions.assertThat(check(compilationResult.messages)).isTrue
 }
 
-public fun String.evals(provider: SymbolProcessorProvider, vararg things: Pair<String, Any?>) {
-  val compilationResult = compile(this, provider)
+public fun String.compilesWith(
+  provider: SymbolProcessorProvider,
+  providerArgs: Map<String, String> = emptyMap(),
+  check: (String) -> Boolean
+) {
+  val compilationResult = compile(this, provider, providerArgs)
+  Assertions.assertThat(compilationResult.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+  Assertions.assertThat(check(compilationResult.messages)).isTrue
+}
+
+public fun String.evals(
+  provider: SymbolProcessorProvider,
+  providerArgs: Map<String, String> = emptyMap(),
+  vararg things: Pair<String, Any?>
+) {
+  val compilationResult = compile(this, provider, providerArgs)
   Assertions.assertThat(compilationResult.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
   val classesDirectory = compilationResult.outputDirectory
   things.forEach { (variable, output) ->
@@ -31,13 +50,35 @@ public fun String.evals(provider: SymbolProcessorProvider, vararg things: Pair<S
 // UTILITY FUNCTIONS COPIED FROM META-TEST
 // =======================================
 
-internal fun compile(text: String, provider: SymbolProcessorProvider): KotlinCompilation.Result {
-  val compilation = buildCompilation(text, provider)
+internal data class FullCompilationResult(
+  val mainResult: KotlinCompilation.Result,
+  val additionalMessages: String?
+) {
+  val exitCode = mainResult.exitCode
+  val outputDirectory = mainResult.outputDirectory
+  val messages = when (additionalMessages) {
+    null -> mainResult.messages
+    else -> listOf(additionalMessages, mainResult.messages).joinToString(separator = "\n")
+  }
+}
+
+private fun KotlinCompilation.Result.pass1Result() =
+  FullCompilationResult(this, null)
+
+private fun KotlinCompilation.Result.pass2Result(additionalMessages: String) =
+  FullCompilationResult(this, additionalMessages)
+
+internal fun compile(
+  text: String,
+  provider: SymbolProcessorProvider,
+  providerArgs: Map<String, String> = emptyMap()
+): FullCompilationResult {
+  val compilation = buildCompilation(text, provider, providerArgs)
   // fix problems with double compilation and KSP
   // as stated in https://github.com/tschuchortdev/kotlin-compile-testing/issues/72
   val pass1 = compilation.compile()
   // if the first pass was unsuccessful, return it
-  if (pass1.exitCode != KotlinCompilation.ExitCode.OK) return pass1
+  if (pass1.exitCode != KotlinCompilation.ExitCode.OK) return pass1.pass1Result()
   // return the results of second pass
   return buildCompilation(text, provider)
     .apply {
@@ -45,14 +86,18 @@ internal fun compile(text: String, provider: SymbolProcessorProvider): KotlinCom
       symbolProcessorProviders = emptyList()
     }
     .compile()
+    .pass2Result(pass1.messages)
 }
 
 private fun buildCompilation(
   text: String,
   provider: SymbolProcessorProvider,
+  providerArgs: Map<String, String> = emptyMap()
 ) = KotlinCompilation().apply {
   symbolProcessorProviders = listOf(provider)
+  kspArgs.putAll(providerArgs)
   sources = listOf(SourceFile.kotlin(SOURCE_FILENAME, text.trimMargin()))
+  inheritClassPath = true
 }
 
 
