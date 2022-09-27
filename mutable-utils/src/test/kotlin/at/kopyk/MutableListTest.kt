@@ -23,4 +23,24 @@ class MutableListTest {
     result shouldContainExactly listOf("a0", "b1", "c2")
   }
 
+  @Test
+  fun `removes null transformations`() {
+    val list = mutableListOf("a", "b", "c")
+
+    val result = list.mutateAllNotNull { value -> value.takeUnless { it == "b" } }
+
+    result shouldContainExactly listOf("a", "c")
+  }
+
+  @Test
+  fun `removes null transformations with index`() {
+    val list = mutableListOf("a", "b", "c")
+
+    val result = list.mutateAllNotNullIndexed { index, value ->
+      value.takeUnless { it == "b" }?.plus("$index")
+    }
+
+    result shouldContainExactly listOf("a0", "c2")
+  }
+
 }
