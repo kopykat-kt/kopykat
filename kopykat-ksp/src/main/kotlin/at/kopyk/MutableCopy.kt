@@ -3,13 +3,13 @@ package at.kopyk
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ksp.toClassName
 import at.kopyk.poet.addClass
 import at.kopyk.poet.addMutableProperty
 import at.kopyk.poet.addParameter
 import at.kopyk.poet.addProperty
 import at.kopyk.poet.addReturn
 import at.kopyk.poet.asReceiverConsumer
+import at.kopyk.poet.makeInvariant
 import at.kopyk.poet.parameterModifiers
 import at.kopyk.poet.primaryConstructor
 import at.kopyk.poet.propertyModifiers
@@ -46,12 +46,22 @@ internal val TypeCompileScope.mutableCopyKt: FileSpec
 internal fun FileCompilerScope.addMutableCopy() {
   file.addClass(target.mutable) {
     addAnnotation(target.dslMarker)
-    addTypeVariables(typeVariableNames)
+    addTypeVariables(typeVariableNames.map { it.makeInvariant() })
     primaryConstructor {
-      properties.forEachRun {
-        val typeName = type.resolve().takeIf { it.hasMutableCopy() }?.toClassName()?.mutable ?: typeName
-        addParameter(name = baseName, type = typeName, modifiers = parameterModifiers)
-        addMutableProperty(name = baseName, type = typeName, modifiers = propertyModifiers, initializer = baseName)
+      mutationInfo.forEach { (property, mutationInfo) ->
+        with (property) {
+          addParameter(
+            name = baseName,
+            type = mutationInfo.className,
+            modifiers = parameterModifiers
+          )
+          addMutableProperty(
+            name = baseName,
+            type = mutationInfo.className,
+            modifiers = propertyModifiers,
+            initializer = baseName
+          )
+        }
       }
       addParameter(name = "old", type = target.parameterized)
       addProperty(name = "old", type = target.parameterized, initializer = "old")
@@ -64,9 +74,9 @@ internal fun FileCompilerScope.addFreezeFunction() {
     addFunction(name = "freeze", receives = target.mutable.parameterized, returns = target.parameterized) {
       addReturn(
         when (category) {
-          Data, Value -> "${target.canonicalName}(${properties.joinAsAssignments(".freeze()")})"
-          Sealed -> sealedTypes.joinWithWhen(subject = "old") {
-            "is ${it.fullName} -> old.copy(${properties.joinAsAssignments(".freeze()")})"
+          Data, Value -> "${target.canonicalName}(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) } })"
+          Sealed -> sealedTypes.joinWithWhen(subject = "old") { type ->
+            "is ${type.fullName} -> old.copy(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) } })"
           }
         }
       )
@@ -77,7 +87,7 @@ internal fun FileCompilerScope.addFreezeFunction() {
 internal fun FileCompilerScope.addToMutateFunction() {
   val parameterized = target.mutable.parameterized
   addFunction(name = "toMutable", receives = target.parameterized, returns = parameterized) {
-    addReturn("$parameterized(old = this, ${properties.joinAsAssignments(".toMutable()")})")
+    addReturn("$parameterized(old = this, ${mutationInfo.joinAsAssignmentsWithMutation { toMutable(it) } })")
   }
 }
 
