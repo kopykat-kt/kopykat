@@ -1,6 +1,7 @@
 package at.kopyk
 
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.junit.jupiter.api.Test
 
 class MutableListTest {
@@ -13,6 +14,7 @@ class MutableListTest {
 
     original shouldContainExactly listOf("aa", "bb", "cc")
     result shouldContainExactly listOf("aa", "bb", "cc")
+    original shouldBeSameInstanceAs result
   }
 
   @Test
@@ -23,6 +25,7 @@ class MutableListTest {
 
     original shouldContainExactly listOf("a0", "b1", "c2")
     result shouldContainExactly listOf("a0", "b1", "c2")
+    original shouldBeSameInstanceAs result
   }
 
   @Test
@@ -33,6 +36,7 @@ class MutableListTest {
 
     original shouldContainExactly listOf("a", "c")
     result shouldContainExactly listOf("a", "c")
+    original shouldBeSameInstanceAs result
   }
 
   @Test
@@ -45,6 +49,18 @@ class MutableListTest {
 
     original shouldContainExactly listOf("a0", "c2")
     result shouldContainExactly listOf("a0", "c2")
+    original shouldBeSameInstanceAs result
+  }
+
+  @Test
+  fun `keep instances of a given type`() {
+    val original: MutableList<Any> = mutableListOf("a", 10, "c")
+
+    val result: MutableList<String> = original.removeUnlessInstanceOf<String, _>().mutateAll { it + it }
+
+    original shouldContainExactly listOf("aa", "cc")
+    result shouldContainExactly listOf("aa", "cc")
+    original shouldBeSameInstanceAs result
   }
 
 }

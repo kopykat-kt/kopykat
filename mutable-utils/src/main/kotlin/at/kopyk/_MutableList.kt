@@ -36,3 +36,13 @@ public inline fun <A> MutableList<A>.mutateAllNotNullIndexed(
   var index = 0
   return mutateAllNotNull { transform(index++, it) }
 }
+
+/**
+ * Removes any items in the list that are not type [B] and
+ * returns a [MutableList]<[B]> with the remaining items.
+ *
+ * The mutable equivalent to [List.filterIsInstance]
+ */
+@Suppress("UNCHECKED_CAST") // The one time that I found type erasure not annoying
+public inline fun <reified B : A, A> MutableList<A>.removeUnlessInstanceOf(): MutableList<B> =
+  mutateAllNotNull { it as? B } as MutableList<B>
