@@ -30,11 +30,7 @@ class MutableListTest {
   @Test
   fun `removes null mutations with index`() = testMutation(
     given = mutableListOf("a", "b", "c"),
-    whenWe = {
-      mutateAllNotNullIndexed { index, value ->
-        value.takeUnless { it == "b" }?.plus("$index")
-      }
-    },
+    whenWe = { mutateAllNotNullIndexed { i, v -> v.takeUnless { it == "b" }?.plus("$i") } },
     then = { it shouldContainExactly listOf("a0", "c2") }
   )
 

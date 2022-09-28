@@ -37,11 +37,8 @@ class MutableMapTest {
   @Test
   fun `keep values of a given type`() = testMutation<MutableMap<Int, Any>>(
     given = mutableMapOf(12 to "a", 15 to 5, 10 to "c"),
-    whenWe = assumingCast {
-      removeValuesUnlessInstanceOf<_, String>().mutateValues { (k, v) -> "$k -> $v" }
-    },
+    whenWe = assumingCast { removeValuesUnlessInstanceOf<_, String>().mutateValues { (k, v) -> "$k -> $v" } },
     then = { it shouldContainExactly mapOf(12 to "12 -> a", 10 to "10 -> c") }
   )
-
 
 }
