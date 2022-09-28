@@ -42,6 +42,4 @@ class MutableMapTest {
     },
     then = { it shouldContainExactly mapOf(12 to "12 -> a", 10 to "10 -> c") }
   )
-
-
 }

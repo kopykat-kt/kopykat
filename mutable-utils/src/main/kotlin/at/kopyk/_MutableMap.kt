@@ -1,6 +1,5 @@
 package at.kopyk
 
-
 /**
  * Applies [transform] to each entry in the map,
  * reusing the same structure to keep them.
