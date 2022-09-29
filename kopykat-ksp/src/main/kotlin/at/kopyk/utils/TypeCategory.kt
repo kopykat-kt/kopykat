@@ -5,15 +5,33 @@ import at.kopyk.utils.TypeCategory.Unknown
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Modifier.SEALED
 
-internal val KSClassDeclaration.typeCategory: TypeCategory
-  get() = when {
-    isDataClass() -> Known.Data
-    isValueClass() -> Known.Value
-    isSealedDataHierarchy() -> Known.Sealed
+internal val KSDeclaration.typeCategory: TypeCategory
+  get() = when (this) {
+    is KSTypeAlias ->
+      when (val result = type.resolve().declaration.typeCategory) {
+        is Unknown -> Unknown(this)
+        else -> result
+      }
+    is KSClassDeclaration ->
+      when {
+        isDataClass() -> Known.Data
+        isValueClass() -> Known.Value
+        isSealedDataHierarchy() -> Known.Sealed
+        else -> Unknown(this)
+      }
     else -> Unknown(this)
+  }
+
+internal val KSTypeAlias.ultimateDeclaration: KSClassDeclaration? get() =
+  when (val oneStep = type.resolve().declaration) {
+    is KSClassDeclaration -> oneStep
+    is KSTypeAlias -> oneStep.ultimateDeclaration
+    else -> null
   }
 
 internal inline fun TypeCompileScope.onKnownCategory(block: (Known) -> Unit) {
@@ -27,7 +45,7 @@ internal sealed interface TypeCategory {
     object Data : Known
   }
 
-  @JvmInline value class Unknown(val original: KSClassDeclaration) : TypeCategory
+  @JvmInline value class Unknown(val original: KSDeclaration) : TypeCategory
 }
 
 private fun KSClassDeclaration.isConstructable() = primaryConstructor?.isPublic() == true

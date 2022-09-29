@@ -109,4 +109,15 @@ class CopyMapTest {
       |val r = p2.age
       """.evals("r" to 4)
   }
+
+  @Test
+  fun `typealias test`() {
+    """
+      |typealias Person = Pair<String, Int>
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(second = { it + 1 })
+      |val r = p2.second
+      """.evals("r" to 2)
+  }
 }

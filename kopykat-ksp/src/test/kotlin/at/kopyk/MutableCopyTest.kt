@@ -115,4 +115,15 @@ class MutableCopyTest {
       |val r = p2.things
       """.evals("r" to mapOf("chair" to 2, "pencil" to 11))
   }
+
+  @Test
+  fun `typealias test`() {
+    """
+      |typealias Person = Pair<String, Int>
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copy { second++ }
+      |val r = p2.second
+      """.evals("r" to 2)
+  }
 }
