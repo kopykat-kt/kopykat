@@ -1,6 +1,8 @@
 package at.kopyk
 
 import at.kopyk.poet.writeTo
+import at.kopyk.utils.ClassCompileScope
+import at.kopyk.utils.TypeAliasCompileScope
 import at.kopyk.utils.TypeCategory.Known
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
@@ -29,14 +31,26 @@ internal class KopyKatProcessor(
   private val options: KopyKatOptions
 ) : SymbolProcessor {
 
+  @OptIn(KspExperimental::class)
   override fun process(resolver: Resolver): List<KSAnnotated> {
     resolver.getAllFiles().let { files ->
       if (files.none { it.hasGeneratedMarker() }) {
-        files.flatMap { it.allNestedDeclarations() }
-          .filter { it is KSClassDeclaration || it is KSTypeAlias }
-          .onEach { it.checkAnnotationMisuse() }
+        val declarations = files.flatMap { it.allNestedDeclarations() }
+
+        val classes = declarations
+          .filterIsInstance<KSClassDeclaration>()
+          .onEach { it.checkKnown() ; it.checkRedundantAnnotation() }
           .filter { it.shouldGenerate() && it.typeCategory is Known }
-          .let { targets -> targets.mapNotNull { TypeCompileScope(it, targets, logger) } }
+
+        classes
+          .let { targets -> targets.map { ClassCompileScope(it, classes, logger) } }
+          .forEachRun { process() }
+
+        declarations
+          .filterIsInstance<KSTypeAlias>()
+          .onEach { it.checkKnown() }
+          .filter { it.isAnnotationPresent(CopyExtensions::class) && it.typeCategory is Known }
+          .let { targets -> targets.map { TypeAliasCompileScope(it, classes, logger) } }
           .forEachRun { process() }
       }
     }
@@ -74,29 +88,29 @@ internal class KopyKatProcessor(
   }
 
   @OptIn(KspExperimental::class)
-  private fun KSDeclaration.checkAnnotationMisuse() {
-    if (isAnnotationPresent(CopyExtensions::class)) {
-      if (typeCategory !is Known) {
-        logger.error(
-          """
-          '@CopyExtensions' may only be used in data or value classes,
-          sealed hierarchies of those, or type aliases of those.
-          """.trimIndent(),
-          this
-        )
-        return
-      }
-      if (options.generate is KopyKatGenerate.NotAnnotated) {
-        logger.warn(
-          """
-          Unused '@CopyExtensions' annotation, the plug-in is configured to process all classes.
-          Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
-          More info at https://kopyk.at/#enable-only-for-selected-classes.
-          """.trimIndent(),
-          this
-        )
-        return
-      }
+  private fun KSDeclaration.checkKnown() {
+    if (isAnnotationPresent(CopyExtensions::class) && typeCategory !is Known) {
+      logger.error(
+        """
+        '@CopyExtensions' may only be used in data or value classes,
+        sealed hierarchies of those, or type aliases of those.
+        """.trimIndent(),
+        this
+      )
+    }
+  }
+
+  @OptIn(KspExperimental::class)
+  private fun KSDeclaration.checkRedundantAnnotation() {
+    if (isAnnotationPresent(CopyExtensions::class) && options.generate is KopyKatGenerate.NotAnnotated) {
+      logger.warn(
+        """
+        Unused '@CopyExtensions' annotation, the plug-in is configured to process all classes.
+        Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
+        More info at https://kopyk.at/#enable-only-for-selected-classes.
+        """.trimIndent(),
+        this
+      )
     }
   }
 }

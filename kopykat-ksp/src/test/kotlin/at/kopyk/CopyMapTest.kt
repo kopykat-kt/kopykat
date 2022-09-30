@@ -113,6 +113,9 @@ class CopyMapTest {
   @Test
   fun `typealias test`() {
     """
+      |import at.kopyk.CopyExtensions
+      |
+      |@CopyExtensions
       |typealias Person = Pair<String, Int>
       |
       |val p1 = Person("Alex", 1)

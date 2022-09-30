@@ -57,15 +57,6 @@ internal sealed interface TypeCompileScope : KSDeclaration {
     FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
-
-  companion object {
-    operator fun invoke(decl: KSDeclaration, targets: Sequence<KSDeclaration>, logger: KSPLogger): TypeCompileScope? =
-      when (decl) {
-        is KSClassDeclaration -> ClassCompileScope(decl, targets, logger)
-        is KSTypeAlias -> TypeAliasCompileScope(decl, targets, logger)
-        else -> null
-      }
-  }
 }
 
 internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver {

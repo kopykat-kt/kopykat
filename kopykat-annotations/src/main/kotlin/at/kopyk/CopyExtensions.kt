@@ -1,5 +1,5 @@
 package at.kopyk
 
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)
 public annotation class CopyExtensions
