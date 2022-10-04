@@ -39,7 +39,8 @@ internal class KopyKatProcessor(
 
         val classes = declarations
           .filterIsInstance<KSClassDeclaration>()
-          .onEach { it.checkKnown() ; it.checkRedundantAnnotation() }
+          .onEach { it.checkKnown() }
+          .onEach { it.checkRedundantAnnotation() }
           .filter { it.shouldGenerate() && it.typeCategory is Known }
 
         classes

@@ -10,23 +10,29 @@ import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.Variance
 
-internal typealias TypeSubstitution = Map<KSName, KSType?>
+internal typealias TypeSubstitution = Map<KSName, KSType>
 
 /* This function needs to "jump" across type aliases
    to get the type parameters applied to the "real" type */
 internal fun KSTypeAlias.unravelTypeParameters(): TypeSubstitution {
-  val ty = type.resolve()
-  return when (val decl = ty.declaration) {
-    is KSClassDeclaration ->
-      decl.typeParameters.map { it.name }.zip(ty.arguments.map { it.type?.resolve() }).toMap()
+  val resolvedType = type.resolve() // this is expensive, we don't want to do it twice
+  return when (val resolvedDeclaration = resolvedType.declaration) {
+    is KSClassDeclaration -> {
+      val typeParameterNames = resolvedDeclaration.typeParameters.map { it.name }
+      val typeArguments = resolvedType.arguments.map { it.type?.resolve() }
+      // keep only those type parameters for which we know the substituted type
+      typeParameterNames.zip(typeArguments) { typeParamName, typeArgument ->
+        typeArgument?.let { typeParamName to it }
+      }.filterNotNull().toMap()
+    }
     // implement for type aliases referencing other aliases
     else -> emptyMap()
   }
 }
 
 internal fun KSType.substitute(subst: TypeSubstitution): KSType =
-  when (val decl = declaration) {
-    is KSTypeParameter -> subst[decl.name] ?: this
+  when (val declaration = declaration) {
+    is KSTypeParameter -> subst[declaration.name] ?: this
     else -> replace(arguments.map { it.substitute(subst) })
   }
 
