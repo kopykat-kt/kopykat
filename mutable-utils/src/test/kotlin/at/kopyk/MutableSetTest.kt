@@ -40,5 +40,4 @@ class MutableSetTest {
     whenWe = assumingCast { removeUnlessInstanceOf<String>().mutateAll { it + it } },
     then = { it shouldContainExactly listOf("aa", "cc") }
   )
-
 }
