@@ -109,4 +109,46 @@ class CopyMapTest {
       |val r = p2.age
       """.evals("r" to 4)
   }
+
+  @Test
+  fun `typealias test`() {
+    """
+      |import at.kopyk.CopyExtensions
+      |
+      |@CopyExtensions
+      |typealias Person = Pair<String, Int>
+      |
+      |val p1 = "Alex" to 1
+      |val p2 = p1.copyMap(second = { it + 1 })
+      |val r = p2.second
+      """.evals("r" to 2)
+  }
+
+  @Test
+  fun `typealias test, full generic`() {
+    """
+      |import at.kopyk.CopyExtensions
+      |
+      |@CopyExtensions
+      |typealias Pareja<A, B> = Pair<A, B>
+      |
+      |val p1: Pareja<String, Int> = "Alex" to 1
+      |val p2 = p1.copyMap(second = { it + 1 })
+      |val r = p2.second
+      """.evals("r" to 2)
+  }
+
+  @Test
+  fun `typealias test, half generic`() {
+    """
+      |import at.kopyk.CopyExtensions
+      |
+      |@CopyExtensions
+      |typealias Named<A> = Pair<String, A>
+      |
+      |val p1: Named<Int> = "Alex" to 1
+      |val p2 = p1.copyMap(second = { it + 1 })
+      |val r = p2.second
+      """.evals("r" to 2)
+  }
 }

@@ -14,7 +14,6 @@ import at.kopyk.utils.fullName
 import at.kopyk.utils.lang.joinWithWhen
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
-import at.kopyk.utils.sealedTypes
 import at.kopyk.utils.typeCategory
 import com.squareup.kotlinpoet.FileSpec
 

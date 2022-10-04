@@ -1,15 +1,17 @@
 <!-- TOC -->
-
-* [What can KopyKat do?](#what-can-kopykat-do)
+  * [What can KopyKat do?](#what-can-kopykat-do)
     * [Mutable `copy`](#mutable-copy)
-        * [Nested mutation](#nested-mutation)
-        * [Nested collections](#nested-collections)
+      * [Nested mutation](#nested-mutation)
+      * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-* [Using KopyKat in your project](#using-kopykat-in-your-project)
-    * [Enable only for selected classes](#enable-only-for-selected-classes)
+    * [`copy` for type aliases](#copy-for-type-aliases)
+  * [Using KopyKat in your project](#using-kopykat-in-your-project)
+    * [Enable only for selected types](#enable-only-for-selected-types)
+      * [All classes in given packages](#all-classes-in-given-packages)
+      * [Using annotations](#using-annotations)
     * [Customizing the generation](#customizing-the-generation)
-* [What about optics?](#what-about-optics)
+  * [What about optics?](#what-about-optics)
 <!-- TOC -->
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
@@ -181,6 +183,24 @@ fun User.takeOver() = this.copy(name = "Me")
 > KopyKat only generates these if all the subclasses are data or value classes. We can't mutate object types without
 > breaking the world underneath them. And cause a lot of pain.
 
+### `copy` for type aliases
+
+KopyKat can also generate the different `copy` methods for a type alias.
+
+```kotlin
+@CopyExtensions
+typealias Person = Pair<String, Int>
+
+// generates the following methods
+fun Person.copyMap(first: (String) -> String, second: (Int) -> Int): Person = TODO()
+fun Person.copy(block: `Person$Mutable`.() -> Unit): Person = TODO()
+```
+
+The following must hold for the type alias to be processed:
+- It must be marked with the `@CopyExtensions` annotation,
+- It must refer to a data or value class, or a type hierarchy of those.
+
+
 ## Using KopyKat in your project
 
 > This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat
@@ -189,7 +209,7 @@ fun User.takeOver() = this.copy(name = "Me")
 KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with
 Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
-1. Add [Mvaen Central](https://search.maven.org/) to the list of repositories.
+1. Add [Maven Central](https://search.maven.org/) to the list of repositories.
 
     ```kotlin
     repositories {
@@ -219,10 +239,11 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
    [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it 
    aware of the new code.
 
-### Enable only for selected classes
+### Enable only for selected types
 
 By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
-to enable generation for only some classes, this is of course possible.
+to enable generation for only some classes, this is of course possible. Note that you always require a `@CopyExtensions`
+annotation to process a type alias.
 
 #### All classes in given packages
 
