@@ -101,7 +101,7 @@ internal class TypeAliasCompileScope(
 ) : TypeCompileScope, KSTypeAlias by aliasDeclaration {
 
   init {
-    require(aliasDeclaration.ultimateDeclaration != null)
+    requireNotNull(aliasDeclaration.ultimateDeclaration)
   }
 
   override val typeVariableNames: List<TypeVariableName> =
