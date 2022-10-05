@@ -18,6 +18,7 @@ dependencies {
 
     implementation(libs.gradlePlugin.kotlinJvm)
     implementation(libs.gradlePlugin.ktLint)
+    implementation(libs.gradlePlugin.dokka)
 }
 
 
