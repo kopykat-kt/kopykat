@@ -14,7 +14,7 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAll(
  */
 public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(
   transform: (index: Int, value: A) -> A,
-): T = mutateAllNotNullIndexed(transform)
+): T = mutateAllIndexedNotNull(transform)
 
 /**
  * Applies [transform] to each element in the collection,
@@ -53,7 +53,7 @@ public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(
  * Applies [transform] to each element in the list with the current item index,
  * removing the value if `null` is returned.
  */
-public inline fun <T : MutableCollection<A>, A> T.mutateAllNotNullIndexed(
+public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexedNotNull(
   transform: (index: Int, value: A) -> A?,
 ): T {
   var index = 0
