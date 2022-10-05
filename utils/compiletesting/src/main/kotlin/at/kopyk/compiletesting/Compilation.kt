@@ -2,11 +2,13 @@ package at.kopyk.compiletesting
 
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
+import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
-import org.assertj.core.api.Assertions
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
@@ -20,8 +22,8 @@ public fun String.failsWith(
   check: (String) -> Boolean
 ) {
   val compilationResult = compile(this, provider, providerArgs)
-  Assertions.assertThat(compilationResult.exitCode).isNotEqualTo(KotlinCompilation.ExitCode.OK)
-  Assertions.assertThat(check(compilationResult.messages)).isTrue
+  compilationResult.exitCode shouldNotBe OK
+  check(compilationResult.messages) shouldBe true
 }
 
 public fun String.compilesWith(
@@ -30,8 +32,9 @@ public fun String.compilesWith(
   check: (String) -> Boolean
 ) {
   val compilationResult = compile(this, provider, providerArgs)
-  Assertions.assertThat(compilationResult.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-  Assertions.assertThat(check(compilationResult.messages)).isTrue
+
+  compilationResult.exitCode shouldBe OK
+  check(compilationResult.messages) shouldBe true
 }
 
 public fun String.evals(
@@ -40,10 +43,10 @@ public fun String.evals(
   vararg things: Pair<String, Any?>
 ) {
   val compilationResult = compile(this, provider, providerArgs)
-  Assertions.assertThat(compilationResult.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+  compilationResult.exitCode shouldBe OK
   val classesDirectory = compilationResult.outputDirectory
   things.forEach { (variable, output) ->
-    Assertions.assertThat(eval(variable, classesDirectory)).isEqualTo(output)
+    eval(variable, classesDirectory) shouldBe output
   }
 }
 
@@ -78,7 +81,7 @@ internal fun compile(
   // as stated in https://github.com/tschuchortdev/kotlin-compile-testing/issues/72
   val pass1 = compilation.compile()
   // if the first pass was unsuccessful, return it
-  if (pass1.exitCode != KotlinCompilation.ExitCode.OK) return pass1.pass1Result()
+  if (pass1.exitCode != OK) return pass1.pass1Result()
   // return the results of second pass
   return buildCompilation(text, provider)
     .apply {
