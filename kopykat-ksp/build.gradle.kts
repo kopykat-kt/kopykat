@@ -6,6 +6,8 @@ plugins {
 dependencies {
     implementation(libs.ksp)
     implementation(projects.utils.kotlinPoet)
+    implementation(projects.kopykatAnnotations)
+    implementation(libs.apache.commons.io)
 
     testImplementation(projects.utils.compiletesting)
     testImplementation(kotlin("test"))

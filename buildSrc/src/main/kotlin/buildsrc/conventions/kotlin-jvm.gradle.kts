@@ -6,6 +6,7 @@ plugins {
     id("buildsrc.conventions.kopykat-base")
     kotlin("jvm")
     `java-library`
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 dependencies {

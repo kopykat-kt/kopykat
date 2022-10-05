@@ -1,14 +1,17 @@
 <!-- TOC -->
-
-* [What can KopyKat do?](#what-can-kopykat-do)
+  * [What can KopyKat do?](#what-can-kopykat-do)
     * [Mutable `copy`](#mutable-copy)
-        * [Nested mutation](#nested-mutation)
-        * [Nested collections](#nested-collections)
+      * [Nested mutation](#nested-mutation)
+      * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-* [Using KopyKat in your project](#using-kopykat-in-your-project)
+    * [`copy` for type aliases](#copy-for-type-aliases)
+  * [Using KopyKat in your project](#using-kopykat-in-your-project)
+    * [Enable only for selected types](#enable-only-for-selected-types)
+      * [All classes in given packages](#all-classes-in-given-packages)
+      * [Using annotations](#using-annotations)
     * [Customizing the generation](#customizing-the-generation)
-* [What about optics?](#what-about-optics)
+  * [What about optics?](#what-about-optics)
 <!-- TOC -->
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
@@ -180,6 +183,24 @@ fun User.takeOver() = this.copy(name = "Me")
 > KopyKat only generates these if all the subclasses are data or value classes. We can't mutate object types without
 > breaking the world underneath them. And cause a lot of pain.
 
+### `copy` for type aliases
+
+KopyKat can also generate the different `copy` methods for a type alias.
+
+```kotlin
+@CopyExtensions
+typealias Person = Pair<String, Int>
+
+// generates the following methods
+fun Person.copyMap(first: (String) -> String, second: (Int) -> Int): Person = TODO()
+fun Person.copy(block: `Person$Mutable`.() -> Unit): Person = TODO()
+```
+
+The following must hold for the type alias to be processed:
+- It must be marked with the `@CopyExtensions` annotation,
+- It must refer to a data or value class, or a type hierarchy of those.
+
+
 ## Using KopyKat in your project
 
 > This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat
@@ -188,7 +209,7 @@ fun User.takeOver() = this.copy(name = "Me")
 KopyKat builds upon [KSP](https://kotlinlang.org/docs/ksp-overview.html), from which it inherits easy integration with
 Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
-1. Add [Mvaen Central](https://search.maven.org/) to the list of repositories.
+1. Add [Maven Central](https://search.maven.org/) to the list of repositories.
 
     ```kotlin
     repositories {
@@ -196,7 +217,8 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
-2. Add KSP to the list of plug-ins. You can check the latest version in their [releases](https://github.com/google/ksp/releases/).
+2. Add KSP to the list of plug-ins. You can check the latest version in their 
+   [releases](https://github.com/google/ksp/releases/).
 
     ```kotlin
     plugins {
@@ -213,11 +235,63 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
-4. (Optional) If you are using IntelliJ as your IDE, we recommend you to [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it aware of the new code.
+4. (Optional) If you are using IntelliJ as your IDE, we recommend you to 
+   [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it 
+   aware of the new code.
+
+### Enable only for selected types
+
+By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
+to enable generation for only some classes, this is of course possible. Note that you always require a `@CopyExtensions`
+annotation to process a type alias.
+
+#### All classes in given packages
+
+Change the `generate` option for the plug-in, by
+[passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
+The packages should be separated by `:`, and you can use wildcards, as supported by
+[`wildcardMatch`](https://commons.apache.org/proper/commons-io/javadocs/api-release/org/apache/commons/io/FilenameUtils.html#wildcardMatch-java.lang.String-java.lang.String-).
+
+```kotlin
+ksp {
+  arg("generate", "packages:my.example.*")
+}
+```
+
+#### Using annotations
+
+1. Add a dependency to KopyKat's annotation package. Note that we declare it as `compileOnly`, which means there's no
+   trace of it in the compiled artifact.
+ 
+    ```kotlin
+    dependencies {
+      // other dependencies
+      compileOnly("at.kopyk:kopykat-annotations:$kopyKatVersion")
+    }
+    ```
+
+2. Change the `generate` option for the plug-in, by
+   [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors).
+
+    ```kotlin
+    ksp {
+      arg("generate", "annotated")
+    }
+    ```
+
+3. Mark those classes you want KopyKat to process with the `@CopyExtensions` annotation.
+
+    ```kotlin
+    import at.kopyk.CopyExtensions
+    
+    @CopyExtensions data class Person(val name: String, val age: Int)
+    ```
 
 ### Customizing the generation
 
-You can disable the generation of some of these methods by [passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle file. For example, the following block disables the generation of `copyMap`.
+You can disable the generation of some of these methods by 
+[passing options to KSP](https://kotlinlang.org/docs/ksp-quickstart.html#pass-options-to-processors) in your Gradle
+file. For example, the following block disables the generation of `copyMap`.
 
 ```kotlin
 ksp {
@@ -231,6 +305,11 @@ By default, the three kinds of methods are generated.
 
 ## What about optics?
 
-Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart from changing fields, optics allow uniform access to collections, possibly-null values, and hierarchies of data classes. You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ type, instead of relying on generating an implementation for each data type.
+Optics, like the ones provided by [Arrow](https://arrow-kt.io/docs/optics/), are a much more powerful abstraction. Apart
+from changing fields, optics allow uniform access to collections, possibly-null values, and hierarchies of data classes.
+You can even define a [single `copy` function](https://github.com/arrow-kt/arrow/pull/2777) which works for _every_ 
+type, instead of relying on generating an implementation for each data type.
 
-KopyKat, on the other hand, aims to be just a tiny step further from Kotlin's built-in `copy`. By re-using well-known idioms, the barrier to introducing this plug-in becomes much lower. Our goal is to make it easier to work with immutable data classes.
+KopyKat, on the other hand, aims to be just a tiny step further from Kotlin's built-in `copy`. By re-using well-known 
+idioms, the barrier to introducing this plug-in becomes much lower. Our goal is to make it easier to work with immutable
+data classes.

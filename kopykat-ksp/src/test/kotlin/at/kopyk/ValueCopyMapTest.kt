@@ -27,5 +27,4 @@ class ValueCopyMapTest {
       |val r = a2.age
       """.evals("r" to 1)
   }
-
 }
