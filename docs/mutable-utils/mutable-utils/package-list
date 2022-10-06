@@ -1,0 +1,9 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:at.kopyk////PointingToDeclaration/mutable-utils/at.kopyk/index.html
+$dokka.location:at.kopyk//mutateAll/kotlin.collections.MutableList[TypeParam(bounds=[kotlin.Any?])]#kotlin.Function1[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all.html
+$dokka.location:at.kopyk//mutateAllIndexed/kotlin.collections.MutableList[TypeParam(bounds=[kotlin.Any?])]#kotlin.Function2[kotlin.Int,TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all-indexed.html
+$dokka.location:at.kopyk//mutateValues/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function1[kotlin.collections.Map.Entry[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])],TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values.html
+$dokka.location:at.kopyk//mutateValues/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function2[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values.html
+at.kopyk
+

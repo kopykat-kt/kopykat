@@ -1,5 +1,6 @@
 [versions]
 kotlin = "1.7.10"
+dokka = "1.7.10"
 kspVersion = "1.7.10-1.0.6"
 kotlinPoet = "1.12.0"
 kotlinCompileTesting = "1.4.9"
@@ -26,7 +27,7 @@ apache-commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo
 
 gradlePlugin-kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 gradlePlugin-ktLint = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
-
+gradlePlugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
 [plugins]
 
