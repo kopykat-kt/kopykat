@@ -3,3 +3,8 @@ plugins {
     buildsrc.conventions.`maven-publish`
     buildsrc.conventions.dokka
 }
+
+dependencies {
+    testImplementation(libs.kotest.assertions.core)
+    testImplementation(kotlin("test"))
+}
