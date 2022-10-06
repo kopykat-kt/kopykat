@@ -60,14 +60,17 @@ internal class KopyKatProcessor(
 
   private fun TypeCompileScope.process() {
     logger.logging("Processing $simpleName")
-    fun generate() {
+    fun mapAndMutable() {
       if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
       if (options.mutableCopy) mutableCopyKt.writeTo(codegen)
     }
     onKnownCategory { category ->
       when (category) {
-        Data, Value -> generate()
-        Sealed -> if (options.hierarchyCopy) generate()
+        Data, Value -> {
+          mapAndMutable()
+          if (options.superCopy && this is ClassCompileScope) copyFromParentKt.writeTo(codegen)
+        }
+        Sealed -> if (options.hierarchyCopy) mapAndMutable()
       }
     }
   }
