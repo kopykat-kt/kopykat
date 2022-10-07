@@ -48,7 +48,7 @@ internal sealed interface TypeCategory {
   @JvmInline value class Unknown(val original: KSDeclaration) : TypeCategory
 }
 
-private fun KSClassDeclaration.isConstructable() = primaryConstructor?.isPublic() == true
+internal fun KSClassDeclaration.isConstructable() = primaryConstructor?.isPublic() == true
 
 private fun KSClassDeclaration.isDataClass() = isConstructable() && Modifier.DATA in modifiers
 
