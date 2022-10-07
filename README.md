@@ -94,7 +94,7 @@ val p3 = p1.copy { job.teams.add("Compiler") }
 ```
 
 To avoid unnecessary copies, we recommend to mutate the collections in-place as much as possible. This means that
-`forEach` should be preferred over `map`.
+`forEach` functions and mutation should be preferred over `map`.
 
 ```kotlin
 val p4 = p1.copy { // needs an additional toMutableList at the end
@@ -105,7 +105,7 @@ val p5 = p1.copy { // mutates the job.teams collection in-place
 }
 ```
 
-The `at.kopyk:mutable-utils` library contains versions of the main collection functions which reuse the same structure.
+The `at.kopyk:mutable-utils` library ([documentation](https://kopyk.at/docs/mutable-utils/mutable-utils/at.kopyk/index.html)) contains versions of the main collection functions which reuse the same structure.
 
 - Mutable version of `map`
 

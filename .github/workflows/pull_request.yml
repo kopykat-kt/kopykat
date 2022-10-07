@@ -74,3 +74,35 @@ jobs:
         with:
           commit_message: Format files using ktlint
           file_pattern: "**/*.kt"
+
+  update-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v3.5.0
+        with:
+          distribution: 'adopt'
+          java-version: 11
+
+      - name: Checkout
+        run: rm -rf docs
+
+      - name: Format
+        uses: gradle/gradle-build-action@v2.2.0
+        with:
+          arguments: :mutable-utils:dokkaHtml
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop
+
+      - name: "Commit formatted files"
+        uses: stefanzweifel/git-auto-commit-action@v4.15.0
+        with:
+          commit_message: Update documentation
+          file_pattern: "docs/*"

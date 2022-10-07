@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(kotlin("test"))
-    implementation(libs.assertj)
+    implementation(libs.kotest.assertions.core)
     implementation(libs.classgraph)
     implementation(libs.kotlinCompileTesting) {
         exclude(

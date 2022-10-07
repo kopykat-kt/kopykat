@@ -1,0 +1,19 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:at.kopyk////PointingToDeclaration/mutable-utils/at.kopyk/index.html
+$dokka.location:at.kopyk//clearThenAddAllNotNull/TypeParam(bounds=[kotlin.collections.MutableCollection[TypeParam(bounds=[kotlin.Any?])]])#kotlin.Function1[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/clear-then-add-all-not-null.html
+$dokka.location:at.kopyk//mutateAll/TypeParam(bounds=[kotlin.collections.MutableCollection[TypeParam(bounds=[kotlin.Any?])]])#kotlin.Function1[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all.html
+$dokka.location:at.kopyk//mutateAllIndexed/TypeParam(bounds=[kotlin.collections.MutableCollection[TypeParam(bounds=[kotlin.Any?])]])#kotlin.Function2[kotlin.Int,TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all-indexed.html
+$dokka.location:at.kopyk//mutateAllNotNull/TypeParam(bounds=[kotlin.collections.MutableCollection[TypeParam(bounds=[kotlin.Any?])]])#kotlin.Function1[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all-not-null.html
+$dokka.location:at.kopyk//mutateAllNotNull/kotlin.collections.MutableList[TypeParam(bounds=[kotlin.Any?])]#kotlin.Function1[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all-not-null.html
+$dokka.location:at.kopyk//mutateAllNotNullIndexed/TypeParam(bounds=[kotlin.collections.MutableCollection[TypeParam(bounds=[kotlin.Any?])]])#kotlin.Function2[kotlin.Int,TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-all-not-null-indexed.html
+$dokka.location:at.kopyk//mutateValues/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function1[kotlin.collections.Map.Entry[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])],TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values.html
+$dokka.location:at.kopyk//mutateValues/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function2[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values.html
+$dokka.location:at.kopyk//mutateValuesNotNull/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function1[kotlin.collections.Map.Entry[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])],TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values-not-null.html
+$dokka.location:at.kopyk//mutateValuesNotNull/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])]#kotlin.Function2[TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?]),TypeParam(bounds=[kotlin.Any?])?]/PointingToDeclaration/mutable-utils/at.kopyk/mutate-values-not-null.html
+$dokka.location:at.kopyk//removeUnlessInstanceOf/kotlin.collections.MutableCollection[*]#/PointingToDeclaration/mutable-utils/at.kopyk/remove-unless-instance-of.html
+$dokka.location:at.kopyk//removeUnlessInstanceOf/kotlin.collections.MutableList[*]#/PointingToDeclaration/mutable-utils/at.kopyk/remove-unless-instance-of.html
+$dokka.location:at.kopyk//removeUnlessInstanceOf/kotlin.collections.MutableSet[*]#/PointingToDeclaration/mutable-utils/at.kopyk/remove-unless-instance-of.html
+$dokka.location:at.kopyk//removeValuesUnlessInstanceOf/kotlin.collections.MutableMap[TypeParam(bounds=[kotlin.Any?]),*]#/PointingToDeclaration/mutable-utils/at.kopyk/remove-values-unless-instance-of.html
+at.kopyk
+
