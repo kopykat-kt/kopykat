@@ -107,77 +107,11 @@ val p5 = p1.copy { // mutates the job.teams collection in-place
 
 The `at.kopyk:mutable-utils` library ([documentation](https://kopyk.at/docs/mutable-utils/mutable-utils/at.kopyk/index.html)) contains versions of the main collection functions which reuse the same structure.
 
-- Mutable version of `map`
-
-In this example it applies the result of the provided closure to each of the elements in the collection.
-
 ```kotlin
 val p6 = p1.copy { // mutates the job.teams collection in-place
   job.teams.mutateAll { it.capitalize() }
 }
 ```
-
-- Mutable version of `mapIndexed`
-
-Same as with `mutateAll` but also with the index of the item being mutated
-
-```kotlin
-val p7 = p1.copy {
-    job.teams.mutateAllIndexed { i, team -> "${i + 1}." + team }
-}
-```
-
-- Mutable version of `mapNotNull`
-
-It behaves like `mutateAll` but, it will drop the item from the collection if it returns null.
-
-```kotlin
-val p8 = p1.copy {
-    job.teams.mutateAllNotNull { it.takeUnless { it.startsWith("admin-") } }
-}
-```
-
-- Mutable version of `mapIndexedNotNull`
-
-Same behaviour as `mutateAllNull` but with the index of the item being mutated.
-
-```kotlin
-val p9 = p1.copy {
-    job.teams.mutateAllIndexedNotNull { i, team -> team.takeIf { i % 2 == 0 } }
-}
-```
-
-> **Warning**
-> The index is the one from the original collection. If any item is dropped from it, it won't affect the indexes.
-
-- Type safe transformations (`filterIsInstance`)
-
-Similar behaviour to `filterIsInstance`. It will remove any element that is not an instance of the provided type.
-
-```kotlin
-sealed interface Item {
-    data class SoldOut(val name: String) : Item
-    data class Available(val name: String, val remaining: Int) : Item
-}
-
-data class Catalog(val items: List<Item>)
-
-fun filterAvailable(catalog: Catalog) =
-    catalog.copy { 
-        items.removeUnlessInstanceOf<Item.Available>()
-    }
-```
-
-The returned value is a typed mutable collection
-where we can do further modifications with the right type. Saving you having to do further type checks.
-
-```kotlin
-items.removeUnlessInstanceOf<Item.Available>()
-    .mutateAll { item -> item.remaining-- }
-```
-
-> **Note**
-> All these are also available for map instances.
 
 ### Mapping `copyMap`
 
