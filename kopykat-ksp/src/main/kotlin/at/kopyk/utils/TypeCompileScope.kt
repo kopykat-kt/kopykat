@@ -67,7 +67,7 @@ internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver 
 }
 
 internal class ClassCompileScope(
-  private val classDeclaration: KSClassDeclaration,
+  val classDeclaration: KSClassDeclaration,
   private val mutableCandidates: Sequence<KSDeclaration>,
   override val logger: KSPLogger,
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
@@ -78,6 +78,8 @@ internal class ClassCompileScope(
     get() = classDeclaration.typeParameters.toTypeParameterResolver().invariant()
 
   override val target: ClassName = classDeclaration.className
+  val parentTypes: Sequence<KSType> =
+    classDeclaration.superTypes.map { it.resolve() }
   override val sealedTypes: Sequence<KSClassDeclaration> = classDeclaration.sealedTypes
   override val properties: Sequence<KSPropertyDeclaration> = classDeclaration.getPrimaryConstructorProperties()
 
@@ -141,13 +143,13 @@ internal class FileCompilerScope(
 
   fun addFunction(
     name: String,
-    receives: TypeName,
+    receives: TypeName?,
     returns: TypeName,
     block: FunSpec.Builder.() -> Unit = {},
   ) {
     file.addFunction(
       FunSpec.builder(name).apply {
-        receiver(receives)
+        if (receives != null) receiver(receives)
         returns(returns)
         addTypeVariables(element.typeVariableNames.map { it.makeInvariant() })
       }.apply(block).build()
@@ -156,7 +158,7 @@ internal class FileCompilerScope(
 
   fun addInlinedFunction(
     name: String,
-    receives: TypeName,
+    receives: TypeName?,
     returns: TypeName,
     block: FunSpec.Builder.() -> Unit = {},
   ) {

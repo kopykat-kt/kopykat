@@ -32,12 +32,14 @@ internal data class KopyKatOptions(
   val copyMap: Boolean,
   val mutableCopy: Boolean,
   val hierarchyCopy: Boolean,
+  val superCopy: Boolean,
   val generate: KopyKatGenerate
 ) {
   companion object {
     const val COPY_MAP = "copyMap"
     const val MUTABLE_COPY = "mutableCopy"
     const val HIERARCHY_COPY = "hierarchyCopy"
+    const val SUPER_COPY = "superCopy"
     const val GENERATE = "generate"
 
     fun fromKspOptions(logger: KSPLogger, options: Map<String, String>) =
@@ -45,6 +47,7 @@ internal data class KopyKatOptions(
         copyMap = options.parseBoolOrTrue(COPY_MAP),
         mutableCopy = options.parseBoolOrTrue(MUTABLE_COPY),
         hierarchyCopy = options.parseBoolOrTrue(HIERARCHY_COPY),
+        superCopy = options.parseBoolOrTrue(SUPER_COPY),
         generate = KopyKatGenerate.fromKspOptions(logger, options[GENERATE])
       )
   }
