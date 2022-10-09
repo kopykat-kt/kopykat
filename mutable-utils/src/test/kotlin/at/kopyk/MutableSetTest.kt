@@ -30,7 +30,7 @@ class MutableSetTest {
   @Test
   fun `removes null mutations with index`() = testMutation(
     given = mutableSetOf("a", "b", "c"),
-    whenWe = { mutateAllNotNullIndexed { i, v -> v.takeUnless { it == "b" }?.plus("$i") } },
+    whenWe = { mutateAllIndexedNotNull { i, v -> v.takeUnless { it == "b" }?.plus("$i") } },
     then = { it shouldContainExactly listOf("a0", "c2") }
   )
 

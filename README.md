@@ -116,7 +116,7 @@ val p6 = p1.copy { // mutates the job.teams collection in-place
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
-The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or 
+The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or
 introduce an explicit name.
 
 ```kotlin

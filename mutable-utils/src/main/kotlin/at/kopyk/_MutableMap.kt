@@ -3,6 +3,8 @@ package at.kopyk
 /**
  * Applies [transform] to each entry in the map,
  * reusing the same structure to keep them.
+ *
+ * The mutable equivalent to [Map.mapValues].
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValues(
   transform: (entry: Map.Entry<K, V>) -> V,
@@ -11,6 +13,8 @@ public inline fun <K, V> MutableMap<K, V>.mutateValues(
 /**
  * Applies [transform] to each entry in the map,
  * reusing the same structure to keep them.
+ *
+ * The mutable equivalent to [Map.mapValues].
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValues(
   transform: (key: K, value: V) -> V,
@@ -23,7 +27,13 @@ public inline fun <K, V> MutableMap<K, V>.mutateValues(
 public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
   transform: (entry: Map.Entry<K, V>) -> V?,
 ): MutableMap<K, V> = apply {
-  with(iterator()) { while (hasNext()) next().apply { transform(this)?.also(::setValue) ?: remove() } }
+  with(iterator()) {
+    while (hasNext()) {
+      next().apply {
+        transform(this)?.also(::setValue) ?: remove()
+      }
+    }
+  }
 }
 
 /**
