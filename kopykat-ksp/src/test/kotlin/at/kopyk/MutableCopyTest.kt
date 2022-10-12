@@ -29,6 +29,28 @@ class MutableCopyTest {
   }
 
   @Test
+  fun `mutate one property, nullable type`() {
+    """
+      |data class Person(val name: String, val age: Int?)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copy { age = age?.let { it + 1 } }
+      |val r = p2.age
+      """.evals("r" to 2)
+  }
+
+  @Test
+  fun `mutate one property, nullable type, set to null`() {
+    """
+      |data class Person(val name: String, val age: Int?)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copy { age = null }
+      |val r = p2.age
+      """.evals("r" to null)
+  }
+
+  @Test
   fun `mutate two properties`() {
     """
       |data class Person(val name: String, val age: Int)
