@@ -10,10 +10,12 @@ import at.kopyk.utils.TypeCategory.Known.Value
 import at.kopyk.utils.TypeCompileScope
 import at.kopyk.utils.allNestedDeclarations
 import at.kopyk.utils.hasGeneratedMarker
+import at.kopyk.utils.isConstructable
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.onKnownCategory
 import at.kopyk.utils.typeCategory
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
@@ -43,16 +45,26 @@ internal class KopyKatProcessor(
           .onEach { it.checkRedundantAnnotation() }
           .filter { it.shouldGenerate() && it.typeCategory is Known }
 
+        // add different copies to data and value classes
         classes
           .let { targets -> targets.map { ClassCompileScope(it, classes, logger) } }
           .forEachRun { process() }
-
+        // add different copies to type aliases
         declarations
           .filterIsInstance<KSTypeAlias>()
           .onEach { it.checkKnown() }
           .filter { it.isAnnotationPresent(CopyExtensions::class) && it.typeCategory is Known }
           .let { targets -> targets.map { TypeAliasCompileScope(it, classes, logger) } }
           .forEachRun { process() }
+        // add copy from parent to all classes
+        declarations
+          .filterIsInstance<KSClassDeclaration>()
+          .filter { !it.isAbstract() && it.isConstructable() }
+          .forEach {
+            with(ClassCompileScope(it, classes, logger)) {
+              if (options.superCopy) copyFromParentKt.writeTo(codegen)
+            }
+          }
       }
     }
     return emptyList()
@@ -60,14 +72,14 @@ internal class KopyKatProcessor(
 
   private fun TypeCompileScope.process() {
     logger.logging("Processing $simpleName")
-    fun generate() {
+    fun mapAndMutable() {
       if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
       if (options.mutableCopy) mutableCopyKt.writeTo(codegen)
     }
     onKnownCategory { category ->
       when (category) {
-        Data, Value -> generate()
-        Sealed -> if (options.hierarchyCopy) generate()
+        Data, Value -> mapAndMutable()
+        Sealed -> if (options.hierarchyCopy) mapAndMutable()
       }
     }
   }

@@ -5,6 +5,7 @@
       * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
+    * [`copy` from supertypes](#copy-from-supertypes)
     * [`copy` for type aliases](#copy-for-type-aliases)
   * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
@@ -25,12 +26,16 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 ```
 
+<hr style="border-bottom: 3px dashed #b5e853;">
+
 ## What can KopyKat do?
 
 This plug-in generates a couple of new methods that make working with immutable (read-only) types, like data classes and
 value classes, more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
+
+<hr>
 
 ### Mutable `copy`
 
@@ -113,10 +118,12 @@ val p6 = p1.copy { // mutates the job.teams collection in-place
 }
 ```
 
+<hr>
+
 ### Mapping `copyMap`
 
 Instead of new *values*, `copyMap` takes as arguments the *transformations* that ought to be applied to each argument.
-The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or 
+The "old" value of each field is given as argument to each of the functions, so you can refer to it using `it` or
 introduce an explicit name.
 
 ```kotlin
@@ -149,6 +156,8 @@ val a = Age(39)
 
 val b = a.copyMap { it + 1 }
 ```
+
+<hr>
 
 ### `copy` for sealed hierarchies
 
@@ -183,6 +192,40 @@ fun User.takeOver() = this.copy(name = "Me")
 > KopyKat only generates these if all the subclasses are data or value classes. We can't mutate object types without
 > breaking the world underneath them. And cause a lot of pain.
 
+<hr>
+
+### `copy` from supertypes
+
+KopyKat generates "fake constructors" which consume a supertype of a data class, if that supertype defines all the
+properties required by its primary constructor. This is useful when working with separate domain and data transfer
+types.
+
+```kotlin
+data class Person(val name: String, val age: Int)
+@Serializable data class RemotePerson(val name: String, val age: Int)
+```
+
+In that case you can define a common interface which represents the data,
+
+```kotlin
+interface PersonCommon {
+  val name: String
+  val age: Int
+}
+
+data class Person(override val name: String, override val age: Int): PersonCommon
+@Serializable data class RemotePerson(override val name: String, override val age: Int): PersonCommon
+```
+
+With those "fake constructors" you can move easily from one to the other representation.
+
+```kotlin
+val p1 = Person("Alex", 1)
+val p2 = RemotePerson(p1)
+```
+
+<hr>
+
 ### `copy` for type aliases
 
 KopyKat can also generate the different `copy` methods for a type alias.
@@ -200,6 +243,7 @@ The following must hold for the type alias to be processed:
 - It must be marked with the `@CopyExtensions` annotation,
 - It must refer to a data or value class, or a type hierarchy of those.
 
+<hr style="border-bottom: 3px dashed #b5e853;">
 
 ## Using KopyKat in your project
 
@@ -298,10 +342,13 @@ ksp {
   arg("mutableCopy", "true")
   arg("copyMap", "false")
   arg("hierarchyCopy", "true")
+  arg("superCopy", "true")
 }
 ```
 
 By default, the three kinds of methods are generated.
+
+<hr style="border-bottom: 3px dashed #b5e853;">
 
 ## What about optics?
 
