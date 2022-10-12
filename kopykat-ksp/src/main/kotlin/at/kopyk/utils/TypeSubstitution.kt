@@ -12,8 +12,10 @@ import com.google.devtools.ksp.symbol.Variance
 
 internal typealias TypeSubstitution = Map<KSName, KSType>
 
-/* This function needs to "jump" across type aliases
-   to get the type parameters applied to the "real" type */
+/**
+ * This function needs to "jump" across type aliases
+ * to get the type parameters applied to the "real" type
+ */
 internal fun KSTypeAlias.unravelTypeParameters(): TypeSubstitution {
   val resolvedType = type.resolve() // this is expensive, we don't want to do it twice
   return when (val resolvedDeclaration = resolvedType.declaration) {
