@@ -11,6 +11,7 @@ import at.kopyk.poet.parameterModifiers
 import at.kopyk.poet.primaryConstructor
 import at.kopyk.poet.propertyModifiers
 import at.kopyk.utils.FileCompilerScope
+import at.kopyk.utils.TypeCategory.Known
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
@@ -76,6 +77,7 @@ internal fun FileCompilerScope.addFreezeFunction() {
       addFunction(name = "freeze", receives = target.mutable.parameterized, returns = target.parameterized) {
         addReturn(
           when (category) {
+            Known.Class -> error("Plain classes are not supported as mutable")
             Data, Value -> "${target.canonicalName}(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) }})"
             Sealed -> sealedTypes.joinWithWhen(subject = "old") { type ->
               "is ${type.fullName} -> old.copy(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) }})"

@@ -3,8 +3,10 @@ package at.kopyk
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
+import at.kopyk.utils.hasAnnotation
 import at.kopyk.utils.isConstructable
 import at.kopyk.utils.lang.filterIsInstance
+import at.kopyk.utils.lang.flatMapRun
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
@@ -58,8 +60,16 @@ internal class KopyKatProcessor(
           .filterIsInstance<KSClassDeclaration> { !isAbstract() && isConstructable() }
           .forEachRun { if (options.superCopy) classScope.copyFromParentKt.write() }
       }
+      // add isomorphic copies
+      declarations
+        .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
+        .flatMapRun { classScope.copyConstructorsKt() }
+        .forEachRun { write() }
     }
     return emptyList()
   }
 
 }
+
+private fun KSClassDeclaration.hasCopyAnnotation() =
+  hasAnnotation<Copy>() || hasAnnotation<CopyTo>() || hasAnnotation<CopyFrom>()
