@@ -47,7 +47,7 @@ private fun TypeCompileScope.copyConstructor(from: KSClassDeclaration, to: KSCla
   }
 
 private fun KSClassDeclaration.isIsomorphicOf(other: KSClassDeclaration): Boolean {
-  val properties = getPrimaryConstructorProperties().toSet()
+  val properties = getAllProperties().toSet()
   val otherProperties = other.getPrimaryConstructorProperties().toSet()
   if (properties.size != otherProperties.size) return false
   if (properties.names != otherProperties.names) return false

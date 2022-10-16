@@ -4,14 +4,12 @@ import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
 import at.kopyk.utils.hasAnnotation
-import at.kopyk.utils.isConstructable
 import at.kopyk.utils.lang.filterIsInstance
 import at.kopyk.utils.lang.flatMapRun
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
 import at.kopyk.utils.typeCategory
-import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -52,13 +50,6 @@ internal class KopyKatProcessor(
             if (options.copyMap) copyMapFunctionKt.write()
             if (options.mutableCopy) mutableCopyKt.write()
           }
-      }
-
-      // add copy from parent to all classes
-      if (options.superCopy) {
-        declarations
-          .filterIsInstance<KSClassDeclaration> { !isAbstract() && isConstructable() }
-          .forEachRun { if (options.superCopy) classScope.copyFromParentKt.write() }
       }
       // add isomorphic copies
       declarations
