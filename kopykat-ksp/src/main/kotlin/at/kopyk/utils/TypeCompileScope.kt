@@ -34,7 +34,6 @@ internal data class MutationInfo<out T : TypeName>(
 )
 
 internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
-
   val typeVariableNames: List<TypeVariableName>
   val typeParameterResolver: TypeParameterResolver
   val target: ClassName
@@ -169,10 +168,21 @@ internal class FileCompilerScope(
   }
 }
 
+/**
+ * Obtains the [ClassName] corresponding to a [KSType].
+ *
+ * We need this function because [KSType.toClassName] doesn't
+ * keep the nullability information correctly. As seen in
+ * issue #62, this meant that [String?] was for example mapped
+ * (incorrectly) to [String] when generating mutation info.
+ */
+internal fun KSType.toClassNameRespectingNullability(): ClassName =
+  toClassName().copy(this.isMarkedNullable, emptyList(), emptyMap())
+
 internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
-      val className = ty.toClassName()
+      val className = ty.toClassNameRespectingNullability()
       val intermediate: MutationInfo<ClassName> = when {
         className == LIST ->
           MutationInfo(
