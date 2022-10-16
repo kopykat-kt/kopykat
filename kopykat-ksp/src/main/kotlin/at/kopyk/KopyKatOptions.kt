@@ -34,24 +34,22 @@ internal data class KopyKatOptions(
   val hierarchyCopy: Boolean,
   val superCopy: Boolean,
   val generate: KopyKatGenerate
-) {
-  companion object {
-    const val COPY_MAP = "copyMap"
-    const val MUTABLE_COPY = "mutableCopy"
-    const val HIERARCHY_COPY = "hierarchyCopy"
-    const val SUPER_COPY = "superCopy"
-    const val GENERATE = "generate"
+)
 
-    fun fromKspOptions(logger: KSPLogger, options: Map<String, String>) =
-      KopyKatOptions(
-        copyMap = options.parseBoolOrTrue(COPY_MAP),
-        mutableCopy = options.parseBoolOrTrue(MUTABLE_COPY),
-        hierarchyCopy = options.parseBoolOrTrue(HIERARCHY_COPY),
-        superCopy = options.parseBoolOrTrue(SUPER_COPY),
-        generate = KopyKatGenerate.fromKspOptions(logger, options[GENERATE])
-      )
-  }
-}
+internal fun KopyKatOptions(logger: KSPLogger, options: Map<String, String>) =
+  KopyKatOptions(
+    copyMap = options.parseBoolOrTrue(COPY_MAP),
+    mutableCopy = options.parseBoolOrTrue(MUTABLE_COPY),
+    hierarchyCopy = options.parseBoolOrTrue(HIERARCHY_COPY),
+    superCopy = options.parseBoolOrTrue(SUPER_COPY),
+    generate = KopyKatGenerate.fromKspOptions(logger, options[GENERATE])
+  )
+
+private const val COPY_MAP = "copyMap"
+private const val MUTABLE_COPY = "mutableCopy"
+private const val HIERARCHY_COPY = "hierarchyCopy"
+private const val SUPER_COPY = "superCopy"
+private const val GENERATE = "generate"
 
 private fun Map<String, String>.parseBoolOrTrue(key: String) =
   this[key]?.lowercase()?.toBooleanStrictOrNull() ?: true

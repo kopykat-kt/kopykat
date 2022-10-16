@@ -12,7 +12,7 @@ import at.kopyk.utils.typeCategory
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFile
@@ -20,35 +20,34 @@ import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.squareup.kotlinpoet.FileSpec
 import org.apache.commons.io.FilenameUtils
 
-internal fun Sequence<KSFile>.inScope(
-  codegen: CodeGenerator,
-  logger: KSPLogger,
-  options: KopyKatOptions,
+internal fun ProcessorScope.processFiles(
+  resolver: Resolver,
   block: FileCompileScope.() -> Unit,
 ) {
-  if (none(KSFile::hasGeneratedMarker)) {
-    block(FileCompileScope(this, logger, options, codegen))
+  val files = resolver.getAllFiles()
+  if (files.none(KSFile::hasGeneratedMarker)) {
+    block(FileCompileScope(files, this))
   }
 }
 
 internal class FileCompileScope(
   files: Sequence<KSFile>,
-  private val logger: KSPLogger,
-  val options: KopyKatOptions,
-  val codegen: CodeGenerator,
-) {
+  scope: ProcessorScope,
+) : LoggerScope by scope, OptionsScope by scope {
+
+  private val codegen: CodeGenerator = scope.codegen
 
   val declarations = files
     .flatMap { it.allNestedDeclarations() }
     .onEach { it.isKnownWithCopyExtension() }
+    .onEach { it.checkRedundantAnnotation() }
     .filter { it.typeCategory is Known }
 
-  val typealiases = declarations
+  val typeAliases = declarations
     .filterIsInstance<KSTypeAlias> { isKnownWithCopyExtension() }
 
   val classes = declarations
     .filterIsInstance<KSClassDeclaration>()
-    .onEach { it.checkRedundantAnnotation() }
     .filter { it.shouldGenerate() }
 
   val KSClassDeclaration.classScope: ClassCompileScope
@@ -60,7 +59,7 @@ internal class FileCompileScope(
   private fun KSDeclaration.isKnownWithCopyExtension() =
     hasAnnotation<CopyExtensions>()
       .also { isCopyExtension ->
-        if (isCopyExtension && typeCategory !is Known) {
+        if (isCopyExtension && (typeCategory !is Known || typeCategory is Known.Class)) {
           logger.error(
             """
             '@CopyExtensions' may only be used in data or value classes,

@@ -1,5 +1,6 @@
 package at.kopyk.utils
 
+import at.kopyk.LoggerScope
 import at.kopyk.poet.className
 import at.kopyk.poet.makeInvariant
 import at.kopyk.poet.parameterizedWhenNotEmpty
@@ -32,9 +33,8 @@ internal data class MutationInfo<out T : TypeName>(
   val freeze: (String) -> String
 )
 
-internal sealed interface TypeCompileScope : KSDeclaration {
+internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
 
-  val logger: KSPLogger
   val typeVariableNames: List<TypeVariableName>
   val typeParameterResolver: TypeParameterResolver
   val target: ClassName
