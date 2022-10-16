@@ -45,7 +45,7 @@ internal class KopyKatProcessor(
           .filter {
             it.typeCategory in listOf(Data, Value) || it.typeCategory is Sealed && options.hierarchyCopy
           }
-          .onEachRun { logger.logging("Processing $simpleName") }
+          .onEachRun { logger.logging("Processing ${simpleName.asString()}") }
           .forEachRun {
             if (options.copyMap) copyMapFunctionKt.write()
             if (options.mutableCopy) mutableCopyKt.write()
