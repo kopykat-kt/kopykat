@@ -30,17 +30,17 @@ internal val ClassCompileScope.allCopyConstructorsKtFiles: Sequence<FileSpec>
 
 private fun TypeCompileScope.copyConstructor(from: KSClassDeclaration, to: KSClassDeclaration): FileSpec? =
   if (from.isIsomorphicOf(to)) {
-    buildFile(fileName = target.append("_${to.baseName}").reflectionName()) {
+    buildFile(fileName = to.className.append("_${to.baseName}").reflectionName()) {
       addGeneratedMarker()
       addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
         addParameter(name = "from", type = from.className)
         properties
           .mapRun { "$baseName = from.$baseName" }
-          .run { addReturn("${target.simpleName}(${joinToString()})") }
+          .run { addReturn("${to.baseName}(${joinToString()})") }
       }
     }
   } else {
-    val message = "${target.simpleName} must have the same constructor properties as ${from.fullName}"
+    val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
     logger.error(message = message, symbol = this@copyConstructor)
     null
   }
