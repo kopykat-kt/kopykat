@@ -59,7 +59,6 @@ internal class KopyKatProcessor(
     }
     return emptyList()
   }
-
 }
 
 private fun KSClassDeclaration.hasCopyAnnotation() =

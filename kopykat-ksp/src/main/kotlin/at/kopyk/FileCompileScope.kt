@@ -106,6 +106,4 @@ internal class FileCompileScope(
       }
     }
   }
-
 }
-

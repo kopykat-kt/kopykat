@@ -2,7 +2,7 @@ package at.kopyk
 
 import org.junit.jupiter.api.Test
 
-class CopyConstructorTest {
+class CopyConstructorsTest {
 
   @Test
   fun `simple test`() {

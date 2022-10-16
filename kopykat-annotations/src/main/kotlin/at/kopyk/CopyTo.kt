@@ -2,7 +2,6 @@ package at.kopyk
 
 import kotlin.reflect.KClass
 
-
 /**
  * Marks type or typealias to generate copy constructor from
  * the subject of this annotation to the provided [type].

@@ -12,5 +12,3 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)
 public annotation class CopyFrom(val type: KClass<*>)
-
-

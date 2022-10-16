@@ -17,7 +17,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.FileSpec
 
-
 internal fun ClassCompileScope.copyConstructorsKt(): Sequence<FileSpec> =
   sequence {
     val copyTargets = typesFor<Copy>()
@@ -67,7 +66,6 @@ internal inline fun <reified T : Annotation> ClassCompileScope.typesFor() =
 
 private val KSAnnotation.type
   get() = arguments.firstOrNull { it.name?.getShortName() == "type" }?.value as? KSType
-
 
 private inline fun <reified T : Annotation> KSAnnotated.annotationsOf(): Sequence<KSAnnotation> =
   annotations.filter {
