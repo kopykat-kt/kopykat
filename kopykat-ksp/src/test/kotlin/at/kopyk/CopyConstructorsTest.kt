@@ -1,10 +1,26 @@
 package at.kopyk
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 class CopyConstructorsTest {
 
-  private fun copyFrom(annotatedModifiers: String, targetModifiers: String) {
+  companion object {
+    @JvmStatic
+    fun cases(): Stream<Arguments> = Stream.of(
+      Arguments.of("", ""),
+      Arguments.of("", "data"),
+      Arguments.of("data", ""),
+      Arguments.of("data", "data"),
+    )
+  }
+
+  @ParameterizedTest(name = "{0} class CopyFrom {1} class")
+  @MethodSource("cases")
+  fun copyFrom(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.CopyFrom
     |
@@ -19,19 +35,9 @@ class CopyConstructorsTest {
     """.evals("r" to 1)
   }
 
-  @Test
-  fun `class @CopyFrom class`() = copyFrom("", "")
-
-  @Test
-  fun `data class @CopyFrom data class`() = copyFrom("data", "data")
-
-  @Test
-  fun `class @CopyFrom data class`() = copyFrom("", "data")
-
-  @Test
-  fun `data class @CopyFrom class`() = copyFrom("data", "")
-
-  private fun copyTo(annotatedModifiers: String, targetModifiers: String) {
+  @ParameterizedTest(name = "{0} class CopyTo {1} class")
+  @MethodSource("cases")
+  fun copyTo(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.CopyTo
     |
@@ -46,19 +52,9 @@ class CopyConstructorsTest {
     """.evals("r" to 1)
   }
 
-  @Test
-  fun `class @CopyTo class`() = copyTo("", "")
-
-  @Test
-  fun `data class @CopyTo data class`() = copyTo("data", "data")
-
-  @Test
-  fun `class @CopyTo data class`() = copyTo("", "data")
-
-  @Test
-  fun `data class @CopyTo class`() = copyTo("data", "")
-
-  private fun copy(annotatedModifiers: String, targetModifiers: String) {
+  @ParameterizedTest(name = "{0} class Copy {1} class")
+  @MethodSource("cases")
+  fun copy(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.Copy
     |
@@ -73,18 +69,6 @@ class CopyConstructorsTest {
     |val r = p3.age
     """.evals("r" to 1)
   }
-
-  @Test
-  fun `class @Copy class`() = copy("", "")
-
-  @Test
-  fun `data class @Copy data class`() = copy("data", "data")
-
-  @Test
-  fun `class @Copy data class`() = copy("", "data")
-
-  @Test
-  fun `data class @Copy class`() = copy("data", "")
 
   @Test
   fun `@Copy, missing field should fail compilation`() {

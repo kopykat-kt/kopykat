@@ -1,10 +1,27 @@
 package at.kopyk
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 class CopyConstructorsWithValueTest {
 
-  private fun copyFrom(annotatedModifiers: String, targetModifiers: String) {
+  companion object {
+    @JvmStatic
+    fun cases(): Stream<Arguments> = Stream.of(
+      Arguments.of("value", ""),
+      Arguments.of("value", "data"),
+      Arguments.of("value", "value"),
+      Arguments.of("", "value"),
+      Arguments.of("data", "value"),
+    )
+  }
+
+  @ParameterizedTest(name = "{0} class CopyFrom {1} class")
+  @MethodSource("cases")
+  fun copyFrom(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.CopyFrom
     |
@@ -21,19 +38,9 @@ class CopyConstructorsWithValueTest {
     """.evals("r" to "Alex")
   }
 
-  @Test
-  fun `value class @CopyFrom data class`() = copyFrom("value", "data")
-
-  @Test
-  fun `value class @CopyFrom class`() = copyFrom("value", "")
-
-  @Test
-  fun `data class @CopyFrom value class`() = copyFrom("data", "value")
-
-  @Test
-  fun `class @CopyFrom value class`() = copyFrom("", "value")
-
-  private fun copyTo(annotatedModifiers: String, targetModifiers: String) {
+  @ParameterizedTest(name = "{0} class CopyTo {1} class")
+  @MethodSource("cases")
+  fun copyTo(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.CopyTo
     |
@@ -50,19 +57,9 @@ class CopyConstructorsWithValueTest {
     """.evals("r" to "Alex")
   }
 
-  @Test
-  fun `value class @CopyTo data class`() = copyTo("value", "data")
-
-  @Test
-  fun `value class @CopyTo class`() = copyTo("value", "")
-
-  @Test
-  fun `data class @CopyTo value class`() = copyTo("data", "value")
-
-  @Test
-  fun `class @CopyTo value class`() = copyTo("", "value")
-
-  private fun copy(annotatedModifiers: String, targetModifiers: String) {
+  @ParameterizedTest(name = "{0} class Copy {1} class")
+  @MethodSource("cases")
+  fun copy(annotatedModifiers: String, targetModifiers: String) {
     """
     |import at.kopyk.Copy
     |
@@ -79,18 +76,6 @@ class CopyConstructorsWithValueTest {
     |val r = p3.name
     """.evals("r" to "Alex")
   }
-
-  @Test
-  fun `value class @Copy data class`() = copy("value", "data")
-
-  @Test
-  fun `value class @Copy class`() = copy("value", "")
-
-  @Test
-  fun `data class @Copy value class`() = copy("data", "value")
-
-  @Test
-  fun `class @Copy value class`() = copy("", "value")
 
   @Test
   fun `@Copy, missing field should fail compilation`() {
