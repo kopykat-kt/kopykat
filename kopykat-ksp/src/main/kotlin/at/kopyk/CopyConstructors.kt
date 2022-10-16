@@ -17,13 +17,13 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.FileSpec
 
-internal fun ClassCompileScope.copyConstructorsKt(): Sequence<FileSpec> =
-  sequence {
+internal val ClassCompileScope.allCopyConstructorsKtFiles: Sequence<FileSpec>
+  get() = sequence {
     val copyTargets = typesFor<Copy>()
     val copyFromTargets = typesFor<CopyFrom>() + copyTargets
     val copyToTargets = typesFor<CopyTo>() + copyTargets
 
-    val self = this@copyConstructorsKt
+    val self = this@allCopyConstructorsKtFiles
     yieldAll(copyFromTargets.mapNotNull { from -> copyConstructor(from = from, to = self) })
     yieldAll(copyToTargets.mapNotNull { to -> copyConstructor(from = self, to = to) })
   }

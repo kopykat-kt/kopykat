@@ -3,9 +3,9 @@ package at.kopyk
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
+import at.kopyk.utils.TypeCompileScope
 import at.kopyk.utils.hasAnnotation
 import at.kopyk.utils.lang.filterIsInstance
-import at.kopyk.utils.lang.flatMapRun
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
@@ -42,9 +42,7 @@ internal class KopyKatProcessor(
       // add copy functions for data, value classes, and type aliases
       if (options.copyMap || options.mutableCopy) {
         (classes.mapRun { classScope } + typeAliases.mapRun { typealiasScope })
-          .filter {
-            it.typeCategory in listOf(Data, Value) || it.typeCategory is Sealed && options.hierarchyCopy
-          }
+          .filter { it.canHaveCopyFunctions(options.hierarchyCopy) }
           .onEachRun { logger.logging("Processing ${simpleName.asString()}") }
           .forEachRun {
             if (options.copyMap) copyMapFunctionKt.write()
@@ -54,11 +52,13 @@ internal class KopyKatProcessor(
       // add isomorphic copies
       declarations
         .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
-        .flatMapRun { classScope.copyConstructorsKt() }
-        .forEachRun { write() }
+        .forEachRun { classScope.allCopyConstructorsKtFiles.forEachRun { write() } }
     }
     return emptyList()
   }
+
+  private fun TypeCompileScope.canHaveCopyFunctions(hierarchyCopy: Boolean) =
+    typeCategory in listOf(Data, Value) || typeCategory is Sealed && hierarchyCopy
 }
 
 private fun KSClassDeclaration.hasCopyAnnotation() =
