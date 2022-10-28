@@ -142,17 +142,30 @@ class CopyConstructorsTest {
     |
     |data class Person(val name: String, val job: Job)
     |
-    |data class Job(val title: String)
+    |data class Job(val title: String, val department: Department)
+    |
+    |@JvmInline
+    |value class Department(val name: String)
     |
     |@Copy(Person::class)
     |data class LocalPerson(val name: String, val job: LocalJob)
     |
     |@Copy(Job::class)
-    |data class LocalJob(val title: String)
+    |data class LocalJob(val title: String, val department: LocalDepartment)
     |
-    |val p1 = LocalPerson("Alex", LocalJob("Developer"))
+    |@Copy(Department::class)
+    |@JvmInline
+    |value class LocalDepartment(val name: String)
+    |
+    |val p1 = LocalPerson("Alex", LocalJob("Developer", LocalDepartment("Engineering")))
     |val p2 = Person(p1)
+    |val n = p2.name
     |val t = p2.job.title
-    """.evals("t" to "Developer")
+    |val d = p2.job.department.name
+    """.evals(
+      "n" to "Alex",
+      "t" to "Developer",
+      "d" to "Engineering"
+    )
   }
 }
