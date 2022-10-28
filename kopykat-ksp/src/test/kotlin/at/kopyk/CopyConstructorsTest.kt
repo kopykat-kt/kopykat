@@ -168,4 +168,25 @@ class CopyConstructorsTest {
       "d" to "Engineering"
     )
   }
+
+
+  @Test
+  fun `multiple constructors`() {
+    """
+    |import at.kopyk.Copy
+    |
+    |@Copy(LocalPerson::class)
+    |@Copy(RemotePerson::class)
+    |data class Person(val name: String, val age: Int)
+    |
+    |data class LocalPerson(val name: String, val age: Int)
+    |
+    |data class RemotePerson(val name: String, val age: Int)
+    |
+    |val p1 = LocalPerson("Alex", 1)
+    |val p2 = Person(p1)
+    |val p3 = RemotePerson(p2)
+    |val a = p3.age
+    """.evals("a" to 1)
+  }
 }

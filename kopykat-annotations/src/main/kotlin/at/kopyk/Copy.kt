@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
  * Both the subject of this annotation and the provided type
  * have to have the same constructor properties.
  */
+@Repeatable
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)
 public annotation class Copy(val type: KClass<*>)
@@ -20,6 +21,7 @@ public annotation class Copy(val type: KClass<*>)
  * Both the subject of this annotation and the provided type
  * have to have the same constructor properties.
  */
+@Repeatable
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)
 public annotation class CopyFrom(val type: KClass<*>)
@@ -31,6 +33,7 @@ public annotation class CopyFrom(val type: KClass<*>)
  * Both the subject of this annotation and the provided type
  * have to have the same constructor properties.
  */
+@Repeatable
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)
 public annotation class CopyTo(val type: KClass<*>)
