@@ -55,9 +55,10 @@ internal class KopyKatProcessor(
         .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
         .flatMapRun { classScope.allCopies }
         .distinctBy { it.fileName }
-        .mapNotNull(::fileSpec)
+        .let { copies ->
+          copies.mapNotNull { copy -> fileSpec(others = copies, copy) }
+        }
         .forEachRun { write() }
-
     }
     return emptyList()
   }

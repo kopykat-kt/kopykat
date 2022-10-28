@@ -1,4 +1,5 @@
 [versions]
+arrow = "1.1.3"
 kotlin = "1.7.10"
 dokka = "1.7.10"
 kspVersion = "1.7.10-1.0.6"
@@ -11,6 +12,7 @@ ktlint = "11.0.0"
 junit = "5.8.0"
 
 [libraries]
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-stdlibCommon = { module = "org.jetbrains.kotlin:kotlin-stdlib-common" }
 kotlin-stdlibJDK8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }

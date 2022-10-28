@@ -134,4 +134,25 @@ class CopyConstructorsTest {
     |val r = p2.age
     """.evals("r" to 1)
   }
+
+  @Test
+  fun `nested copy constructors`() {
+    """
+    |import at.kopyk.Copy
+    |
+    |data class Person(val name: String, val job: Job)
+    |
+    |data class Job(val title: String)
+    |
+    |@Copy(Person::class)
+    |data class LocalPerson(val name: String, val job: LocalJob)
+    |
+    |@Copy(Job::class)
+    |data class LocalJob(val title: String)
+    |
+    |val p1 = LocalPerson("Alex", LocalJob("Developer"))
+    |val p2 = Person(p1)
+    |val t = p2.job.title
+    """.evals("t" to "Developer")
+  }
 }

@@ -8,6 +8,7 @@ dependencies {
     implementation(projects.utils.kotlinPoet)
     implementation(projects.kopykatAnnotations)
     implementation(libs.apache.commons.io)
+    implementation(libs.arrow.core)
 
     testImplementation(projects.utils.compiletesting)
     testImplementation(kotlin("test"))

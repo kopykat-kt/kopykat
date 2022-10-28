@@ -1,5 +1,6 @@
 package at.kopyk
 
+import arrow.core.Nullable.zip
 import at.kopyk.poet.addReturn
 import at.kopyk.poet.append
 import at.kopyk.poet.className
@@ -9,7 +10,7 @@ import at.kopyk.utils.addGeneratedMarker
 import at.kopyk.utils.baseName
 import at.kopyk.utils.fullName
 import at.kopyk.utils.getPrimaryConstructorProperties
-import at.kopyk.utils.lang.mapRun
+import at.kopyk.utils.lang.takeIfInstanceOf
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -33,20 +34,39 @@ internal val ClassCompileScope.allCopies: Sequence<CopyPair>
     yieldAll(copyToTargets.map { CopyPair(self, self, it) })
   }
 
-internal val CopyPair.fileName get() = from.className.append("_${to.baseName}").reflectionName()
+internal val CopyPair.fileName get() = fileName(from, to)
+
+internal fun fileName(from: KSClassDeclaration, to: KSClassDeclaration) =
+  from.className.append(to.baseName).reflectionName()
 
 internal fun fileSpec(
+  others: Sequence<CopyPair>,
   copyPair: CopyPair,
 ): FileSpec? = copyPair.let { (self, from, to) ->
   with(self) {
     when {
-      from.isIsomorphicOf(to) ->
+      from.isIsomorphicOf(others, to) ->
         buildFile(fileName = copyPair.fileName) {
           addGeneratedMarker()
           addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
             addParameter(name = "from", type = from.className)
-            properties
-              .mapRun { "$baseName = from.$baseName" }
+            from.asScope().properties.zip(to.asScope().properties) { fromProperty, toProperty ->
+              val propertyName = fromProperty.baseName
+              zip(
+                fromProperty.type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>(),
+                toProperty.type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>(),
+              ) { fromType, toType ->
+                when {
+                  others.hasCopyConstructor(
+                    fromType,
+                    toType
+                  ) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
+
+                  else -> "$propertyName = from.$propertyName"
+                }
+              }
+            }
+              .filterNotNull()
               .run { addReturn("${to.baseName}(${joinToString()})") }
           }
         }
@@ -60,21 +80,48 @@ internal fun fileSpec(
   }
 }
 
-private fun KSClassDeclaration.isIsomorphicOf(other: KSClassDeclaration): Boolean {
+private fun KSClassDeclaration.isIsomorphicOf(
+  copies: Sequence<CopyPair>,
+  other: KSClassDeclaration,
+): Boolean {
   val properties = getAllProperties().toSet()
   val otherProperties = other.getPrimaryConstructorProperties().toSet()
   if (properties.size != otherProperties.size) return false
   if (properties.names != otherProperties.names) return false
   otherProperties.zip(properties) { property, otherProperty ->
-    if (!property.isAssignableFrom(otherProperty)) return false
+    if (!property.isCopiableTo(copies, otherProperty)) return false
   }
   return true
 }
 
 private val Iterable<KSPropertyDeclaration>.names get() = map { it.baseName }
 
-private fun KSPropertyDeclaration.isAssignableFrom(other: KSPropertyDeclaration): Boolean =
-  type.resolve().isAssignableFrom(other.type.resolve())
+private fun KSPropertyDeclaration.isCopiableTo(
+  copies: Sequence<CopyPair>,
+  other: KSPropertyDeclaration,
+): Boolean {
+  val from = type.resolve()
+  val to = other.type.resolve()
+  val hasCopyConstructor = zip(
+    from.declaration as? KSClassDeclaration,
+    to.declaration as? KSClassDeclaration,
+    copies::hasCopyConstructor,
+  ) == true
+  return when {
+    hasCopyConstructor -> true
+    from.isAssignableFrom(to) -> true
+    else -> false
+  }
+}
+
+private fun Sequence<CopyPair>.hasCopyConstructor(
+  from: KSClassDeclaration,
+  to: KSClassDeclaration,
+): Boolean {
+  val name = fileName(from, to)
+  return any { it.fileName == name }
+}
+
 
 internal inline fun <reified A : Annotation> ClassCompileScope.typesFor() =
   annotationsOf<A>().mapNotNull { it.type?.declaration }.filterIsInstance<KSClassDeclaration>()
