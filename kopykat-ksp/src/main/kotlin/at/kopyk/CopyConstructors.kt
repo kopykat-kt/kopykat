@@ -31,60 +31,65 @@ internal val ClassCompileScope.allCopies: Sequence<CopyPair>
     val copyToTargets = typesFor<CopyTo>() + typesFor<Copy>()
 
     val self = this@allCopies
-    yieldAll(copyFromTargets.map { CopyPair(self, it, self) })
-    yieldAll(copyToTargets.map { CopyPair(self, self, it) })
+    val pair = ::CopyPair.partially1(self)
+    yieldAll(copyFromTargets.map { other -> pair(other, self) })
+    yieldAll(copyToTargets.map { other -> pair(self, other) })
   }
 
-internal val CopyPair.fileName get() = fileName(from, to)
+internal val CopyPair.name get() = nameFor(from, to)
 
-internal fun fileName(from: KSClassDeclaration, to: KSClassDeclaration) =
+internal fun nameFor(from: KSClassDeclaration, to: KSClassDeclaration) =
   from.className.append(to.baseName).reflectionName()
 
 internal fun fileSpec(
   others: Sequence<CopyPair>,
   copyPair: CopyPair,
-): FileSpec? = copyPair.let { (self, from, to) ->
-  with(self) {
+): FileSpec? =
+  with(copyPair) {
     when {
-      from.isIsomorphicOf(others, to) -> buildFile(fileName = copyPair.fileName) {
-        addGeneratedMarker()
-        addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
-          addParameter(name = "from", type = from.className)
-          val fromProperties = from.asScope().properties
-          val toProperties = to.asScope().properties
-          fromProperties.zip(toProperties, ::propertyDefinition.partially1(others))
-            .filterNotNull()
-            .run { addReturn("${to.baseName}(${joinToString()})") }
-        }
-      }
+      from.isIsomorphicOf(others, to) -> self.copyConstructorFileSpec(copyPair, others)
+      else -> self.reportMismatchedProperties(copyPair)
+    }
+  }
 
-      else -> {
-        val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
-        logger.error(message = message, symbol = self)
-        null
+private fun TypeCompileScope.copyConstructorFileSpec(
+  copyPair: CopyPair,
+  others: Sequence<CopyPair>
+): FileSpec =
+  with(copyPair) {
+    buildFile(fileName = name) {
+      addGeneratedMarker()
+      addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
+        addParameter(name = "from", type = from.className)
+        from.properties.zip(to.properties, ::propertyDefinition.partially1(others)).filterNotNull().run {
+          addReturn("${to.baseName}(${joinToString()})")
+        }
       }
     }
   }
+
+private fun TypeCompileScope.reportMismatchedProperties(
+  copyPair: CopyPair
+): Nothing? = with(copyPair) {
+  val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
+  logger.error(message = message, symbol = self)
+  null
 }
 
 private fun propertyDefinition(
   others: Sequence<CopyPair>,
-  fromProperty: KSPropertyDeclaration,
-  toProperty: KSPropertyDeclaration,
-): String? = zip(
-  fromProperty.asClassDeclaration(),
-  toProperty.asClassDeclaration(),
-) { fromType, toType ->
-  val propertyName = fromProperty.baseName
+  from: KSPropertyDeclaration,
+  to: KSPropertyDeclaration,
+): String? = zip(from.typeDeclaration, to.typeDeclaration) { fromType, toType ->
+  val propertyName = from.baseName
   when {
     others.hasCopyConstructor(fromType, toType) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
     else -> "$propertyName = from.$propertyName"
   }
 }
 
-private fun KSPropertyDeclaration.asClassDeclaration() =
-  type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
-
+private val KSPropertyDeclaration.typeDeclaration
+  get() = type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
 
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
@@ -106,28 +111,17 @@ private fun KSPropertyDeclaration.isCopiableTo(
   copies: Sequence<CopyPair>,
   other: KSPropertyDeclaration,
 ): Boolean {
-  val from = type.resolve()
-  val to = other.type.resolve()
-  val hasCopyConstructor = zip(
-    from.declaration as? KSClassDeclaration,
-    to.declaration as? KSClassDeclaration,
-    copies::hasCopyConstructor,
-  ) == true
-  return when {
-    hasCopyConstructor -> true
-    from.isAssignableFrom(to) -> true
-    else -> false
-  }
+  val hasCopyConstructor = zip(typeDeclaration, other.typeDeclaration, copies::hasCopyConstructor) == true
+  return hasCopyConstructor || isAssignableFrom(other)
 }
 
-private fun Sequence<CopyPair>.hasCopyConstructor(
-  from: KSClassDeclaration,
-  to: KSClassDeclaration,
-): Boolean {
-  val name = fileName(from, to)
-  return any { it.fileName == name }
-}
+private fun KSPropertyDeclaration.isAssignableFrom(other: KSPropertyDeclaration) =
+  type.resolve().isAssignableFrom(other.type.resolve())
 
+private fun Sequence<CopyPair>.hasCopyConstructor(from: KSClassDeclaration, to: KSClassDeclaration): Boolean {
+  val name = nameFor(from, to)
+  return any { it.name == name }
+}
 
 internal inline fun <reified A : Annotation> ClassCompileScope.typesFor() =
   annotationsOf<A>().mapNotNull { it.type?.declaration }.filterIsInstance<KSClassDeclaration>()

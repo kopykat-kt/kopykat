@@ -59,6 +59,7 @@ internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
   fun KSClassDeclaration.asScope(): ClassCompileScope
+  val KSClassDeclaration.properties: Sequence<KSPropertyDeclaration> get() = asScope().properties
 }
 
 internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver {

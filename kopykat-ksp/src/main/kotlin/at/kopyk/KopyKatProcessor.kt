@@ -1,5 +1,6 @@
 package at.kopyk
 
+import arrow.core.partially1
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
@@ -54,10 +55,8 @@ internal class KopyKatProcessor(
       declarations
         .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
         .flatMapRun { classScope.allCopies }
-        .distinctBy { it.fileName }
-        .let { copies ->
-          copies.mapNotNull { copy -> fileSpec(others = copies, copy) }
-        }
+        .distinctBy { it.name }
+        .let { others -> others.mapNotNull(::fileSpec.partially1(others)) }
         .forEachRun { write() }
     }
     return emptyList()
