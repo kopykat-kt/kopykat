@@ -99,7 +99,6 @@ internal class ClassCompileScope(
   override fun KSClassDeclaration.asScope(): ClassCompileScope =
     takeIfInstanceOf<ClassCompileScope>()
       .orElse { ClassCompileScope(this, mutableCandidates, logger) }
-
 }
 
 internal class TypeAliasCompileScope(

@@ -57,7 +57,6 @@ internal class KopyKatProcessor(
         .distinctBy { it.fileName }
         .mapNotNull(::fileSpec)
         .forEachRun { write() }
-
     }
     return emptyList()
   }
