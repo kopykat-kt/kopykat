@@ -85,7 +85,6 @@ private fun propertyDefinition(
 private fun KSPropertyDeclaration.asClassDeclaration() =
   type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
 
-
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
   other: KSClassDeclaration,
@@ -127,7 +126,6 @@ private fun Sequence<CopyPair>.hasCopyConstructor(
   val name = fileName(from, to)
   return any { it.fileName == name }
 }
-
 
 internal inline fun <reified A : Annotation> ClassCompileScope.typesFor() =
   annotationsOf<A>().mapNotNull { it.type?.declaration }.filterIsInstance<KSClassDeclaration>()
