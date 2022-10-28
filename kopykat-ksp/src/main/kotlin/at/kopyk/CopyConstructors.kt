@@ -1,6 +1,7 @@
 package at.kopyk
 
 import arrow.core.Nullable.zip
+import arrow.core.partially1
 import at.kopyk.poet.addReturn
 import at.kopyk.poet.append
 import at.kopyk.poet.className
@@ -45,31 +46,17 @@ internal fun fileSpec(
 ): FileSpec? = copyPair.let { (self, from, to) ->
   with(self) {
     when {
-      from.isIsomorphicOf(others, to) ->
-        buildFile(fileName = copyPair.fileName) {
-          addGeneratedMarker()
-          addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
-            addParameter(name = "from", type = from.className)
-            from.asScope().properties.zip(to.asScope().properties) { fromProperty, toProperty ->
-              val propertyName = fromProperty.baseName
-              zip(
-                fromProperty.type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>(),
-                toProperty.type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>(),
-              ) { fromType, toType ->
-                when {
-                  others.hasCopyConstructor(
-                    fromType,
-                    toType
-                  ) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
-
-                  else -> "$propertyName = from.$propertyName"
-                }
-              }
-            }
-              .filterNotNull()
-              .run { addReturn("${to.baseName}(${joinToString()})") }
-          }
+      from.isIsomorphicOf(others, to) -> buildFile(fileName = copyPair.fileName) {
+        addGeneratedMarker()
+        addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
+          addParameter(name = "from", type = from.className)
+          val fromProperties = from.asScope().properties
+          val toProperties = to.asScope().properties
+          fromProperties.zip(toProperties, ::propertyDefinition.partially1(others))
+            .filterNotNull()
+            .run { addReturn("${to.baseName}(${joinToString()})") }
         }
+      }
 
       else -> {
         val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
@@ -79,6 +66,25 @@ internal fun fileSpec(
     }
   }
 }
+
+private fun propertyDefinition(
+  others: Sequence<CopyPair>,
+  fromProperty: KSPropertyDeclaration,
+  toProperty: KSPropertyDeclaration,
+): String? = zip(
+  fromProperty.asClassDeclaration(),
+  toProperty.asClassDeclaration(),
+) { fromType, toType ->
+  val propertyName = fromProperty.baseName
+  when {
+    others.hasCopyConstructor(fromType, toType) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
+    else -> "$propertyName = from.$propertyName"
+  }
+}
+
+private fun KSPropertyDeclaration.asClassDeclaration() =
+  type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
+
 
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
