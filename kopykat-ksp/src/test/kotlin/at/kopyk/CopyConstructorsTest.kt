@@ -117,4 +117,21 @@ class CopyConstructorsTest {
       |val r = p2.age
       """.failsWith { it.contains("Person must have the same constructor properties as LocalPerson") }
   }
+
+  @Test
+  fun `@Copy duplicated annotation`() {
+    """
+      |import at.kopyk.Copy
+      |
+      |@Copy(LocalPerson::class)
+      |data class Person(val name: String, val age: Int)
+      |
+      |@Copy(Person::class)
+      |data class LocalPerson(val name: String, val age: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = LocalPerson(p1)
+      |val r = p2.age
+      """.evals("r" to 1)
+  }
 }

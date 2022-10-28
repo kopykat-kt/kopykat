@@ -17,33 +17,48 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.FileSpec
 
-internal val ClassCompileScope.allCopyConstructorsKtFiles: Sequence<FileSpec>
-  get() = sequence {
-    val copyTargets = typesFor<Copy>()
-    val copyFromTargets = typesFor<CopyFrom>() + copyTargets
-    val copyToTargets = typesFor<CopyTo>() + copyTargets
+internal data class CopyPair(
+  val self: TypeCompileScope,
+  val from: KSClassDeclaration,
+  val to: KSClassDeclaration,
+)
 
-    val self = this@allCopyConstructorsKtFiles
-    yieldAll(copyFromTargets.mapNotNull { from -> copyConstructor(from = from, to = self) })
-    yieldAll(copyToTargets.mapNotNull { to -> copyConstructor(from = self, to = to) })
+internal val ClassCompileScope.allCopies: Sequence<CopyPair>
+  get() = sequence {
+    val copyFromTargets = typesFor<CopyFrom>() + typesFor<Copy>()
+    val copyToTargets = typesFor<CopyTo>() + typesFor<Copy>()
+
+    val self = this@allCopies
+    yieldAll(copyFromTargets.map { CopyPair(self, it, self) })
+    yieldAll(copyToTargets.map { CopyPair(self, self, it) })
   }
 
-private fun TypeCompileScope.copyConstructor(from: KSClassDeclaration, to: KSClassDeclaration): FileSpec? =
-  if (from.isIsomorphicOf(to)) {
-    buildFile(fileName = to.className.append("_${to.baseName}").reflectionName()) {
-      addGeneratedMarker()
-      addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
-        addParameter(name = "from", type = from.className)
-        properties
-          .mapRun { "$baseName = from.$baseName" }
-          .run { addReturn("${to.baseName}(${joinToString()})") }
+internal val CopyPair.fileName get() = from.className.append("_${to.baseName}").reflectionName()
+
+internal fun fileSpec(
+  copyPair: CopyPair,
+): FileSpec? = copyPair.let { (self, from, to) ->
+  with(self) {
+    when {
+      from.isIsomorphicOf(to) ->
+        buildFile(fileName = copyPair.fileName) {
+          addGeneratedMarker()
+          addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
+            addParameter(name = "from", type = from.className)
+            properties
+              .mapRun { "$baseName = from.$baseName" }
+              .run { addReturn("${to.baseName}(${joinToString()})") }
+          }
+        }
+
+      else -> {
+        val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
+        logger.error(message = message, symbol = self)
+        null
       }
     }
-  } else {
-    val message = "${to.fullName} must have the same constructor properties as ${from.fullName}"
-    logger.error(message = message, symbol = this@copyConstructor)
-    null
   }
+}
 
 private fun KSClassDeclaration.isIsomorphicOf(other: KSClassDeclaration): Boolean {
   val properties = getAllProperties().toSet()
@@ -61,8 +76,8 @@ private val Iterable<KSPropertyDeclaration>.names get() = map { it.baseName }
 private fun KSPropertyDeclaration.isAssignableFrom(other: KSPropertyDeclaration): Boolean =
   type.resolve().isAssignableFrom(other.type.resolve())
 
-internal inline fun <reified T : Annotation> ClassCompileScope.typesFor() =
-  annotationsOf<T>().mapNotNull { it.type?.declaration }.filterIsInstance<KSClassDeclaration>()
+internal inline fun <reified A : Annotation> ClassCompileScope.typesFor() =
+  annotationsOf<A>().mapNotNull { it.type?.declaration }.filterIsInstance<KSClassDeclaration>()
 
 private val KSAnnotation.type
   get() = arguments.firstOrNull { it.name?.getShortName() == "type" }?.value as? KSType

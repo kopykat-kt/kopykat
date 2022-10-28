@@ -6,6 +6,7 @@ import at.kopyk.utils.TypeCategory.Known.Value
 import at.kopyk.utils.TypeCompileScope
 import at.kopyk.utils.hasAnnotation
 import at.kopyk.utils.lang.filterIsInstance
+import at.kopyk.utils.lang.flatMapRun
 import at.kopyk.utils.lang.forEachRun
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
@@ -52,7 +53,11 @@ internal class KopyKatProcessor(
       // add isomorphic copies
       declarations
         .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
-        .forEachRun { classScope.allCopyConstructorsKtFiles.forEachRun { write() } }
+        .flatMapRun { classScope.allCopies }
+        .distinctBy { it.fileName }
+        .mapNotNull(::fileSpec)
+        .forEachRun { write() }
+
     }
     return emptyList()
   }
