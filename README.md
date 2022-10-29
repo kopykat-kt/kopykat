@@ -6,17 +6,16 @@
         * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-    * [`copy` from supertypes](#copy-from-supertypes)
-    * [`copy` for type aliases](#copy-for-type-aliases)
 * [Isomorphic copy constructors](#isomorphic-copy-constructors)
     * [Nested Copy Constructors](#nested-copy-constructors)
+    * [Multiple Copy Constructors](#multiple-copy-constructors)
+    * [`copy` for type aliases](#copy-for-type-aliases)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
         * [All classes in given packages](#all-classes-in-given-packages)
         * [Using annotations](#using-annotations)
     * [Customizing the generation](#customizing-the-generation)
 * [What about optics?](#what-about-optics)
-
 <!-- TOC -->
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
