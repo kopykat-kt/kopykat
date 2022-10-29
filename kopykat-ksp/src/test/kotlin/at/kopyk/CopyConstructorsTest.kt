@@ -169,7 +169,6 @@ class CopyConstructorsTest {
     )
   }
 
-
   @Test
   fun `multiple constructors`() {
     """
