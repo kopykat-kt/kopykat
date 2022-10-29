@@ -90,7 +90,6 @@ private fun propertyDefinition(
 
 private val KSPropertyDeclaration.typeDeclaration
   get() = type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
-
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
   other: KSClassDeclaration,
