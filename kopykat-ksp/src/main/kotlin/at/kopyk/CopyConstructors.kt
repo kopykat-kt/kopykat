@@ -99,7 +99,7 @@ private fun KSClassDeclaration.isIsomorphicOf(
   val properties = getAllProperties().toSet()
   val otherProperties = other.getPrimaryConstructorProperties().toSet()
   if (properties.size != otherProperties.size) return false
-  if (properties.names != otherProperties.names) return false
+  if (properties.names.toSet() != otherProperties.names.toSet()) return false
   otherProperties.zipByName(properties) { property, otherProperty ->
     if (!property.isCopiableTo(copies, otherProperty)) return@isIsomorphicOf false
   }

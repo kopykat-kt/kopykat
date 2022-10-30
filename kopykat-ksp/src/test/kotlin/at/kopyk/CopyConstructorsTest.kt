@@ -70,6 +70,24 @@ class CopyConstructorsTest {
     """.evals("r" to 1)
   }
 
+  @ParameterizedTest(name = "{0} class Copy {1} class, change of order")
+  @MethodSource("cases")
+  fun copyOrderChange(annotatedModifiers: String, targetModifiers: String) {
+    """
+    |import at.kopyk.Copy
+    |
+    |$targetModifiers class Person(val name: String, val age: Int)
+    |
+    |@Copy(Person::class)
+    |$annotatedModifiers class LocalPerson(val age: Int, val name: String)
+    |
+    |val p1 = LocalPerson(1, "Alex")
+    |val p2 = Person(p1)
+    |val p3 = LocalPerson(p2)
+    |val r = p3.age
+    """.evals("r" to 1)
+  }
+
   @Test
   fun `@Copy, missing field should fail compilation`() {
     """
