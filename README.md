@@ -7,8 +7,8 @@
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
 * [Isomorphic copy constructors](#isomorphic-copy-constructors)
-    * [Nested Copy Constructors](#nested-copy-constructors)
-    * [Multiple Copy Constructors](#multiple-copy-constructors)
+    * [Nested copy constructors](#nested-copy-constructors)
+    * [Multiple copy constructors](#multiple-copy-constructors)
     * [`copy` for type aliases](#copy-for-type-aliases)
 * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
@@ -240,7 +240,7 @@ If you don't need either of the copy constructors, you can use either `@CopyFrom
 generate a copy constructor from the provided type to the annotated type (`LocalPerson -> Person`). On the other hand,
 if you use `@CopyTo` will generate the oposite (`Person -> LocalPerson`).
 
-### Nested Copy Constructors
+### Nested copy constructors
 
 In some cases you may want to have properties that are different on both types. To support data trees like that, you
 must make sure that they have copy constructors generated as well. For example:
@@ -260,7 +260,7 @@ check(person.job.title == "Developer")
 
 In this example, if `LocalJob` is not annotated wih `@Copy` (or `@CopyFrom`) the compiler will complain about it.
 
-### Multiple Copy Constructors
+### Multiple copy constructors
 
 Annotations for copy constructors (`@Copy[From|To]`) can be applied more than once to the same type. This means
 that you can define mapping across multiple isomorphic types:
@@ -395,7 +395,6 @@ ksp {
   arg("mutableCopy", "true")
   arg("copyMap", "false")
   arg("hierarchyCopy", "true")
-  arg("superCopy", "true")
 }
 ```
 
