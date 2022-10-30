@@ -61,9 +61,10 @@ private fun TypeCompileScope.copyConstructorFileSpec(
       addGeneratedMarker()
       addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
         addParameter(name = "from", type = from.className)
-        from.properties.zip(to.properties, ::propertyDefinition.partially1(others)).filterNotNull().run {
-          addReturn("${to.baseName}(${joinToString()})")
-        }
+        val propertyAssignments = to.properties.toList().zipByName(from.getAllProperties().toList()) { to, from ->
+          propertyDefinition(others, from, to)
+        }.filterNotNull()
+        addReturn("${to.baseName}(${propertyAssignments.joinToString()})")
       }
     }
   }
@@ -90,6 +91,7 @@ private fun propertyDefinition(
 
 private val KSPropertyDeclaration.typeDeclaration
   get() = type.resolve().declaration.takeIfInstanceOf<KSClassDeclaration>()
+
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
   other: KSClassDeclaration,
@@ -98,8 +100,8 @@ private fun KSClassDeclaration.isIsomorphicOf(
   val otherProperties = other.getPrimaryConstructorProperties().toSet()
   if (properties.size != otherProperties.size) return false
   if (properties.names != otherProperties.names) return false
-  otherProperties.zip(properties) { property, otherProperty ->
-    if (!property.isCopiableTo(copies, otherProperty)) return false
+  otherProperties.zipByName(properties) { property, otherProperty ->
+    if (!property.isCopiableTo(copies, otherProperty)) return@isIsomorphicOf false
   }
   return true
 }
@@ -132,4 +134,15 @@ private inline fun <reified T : Annotation> KSAnnotated.annotationsOf(): Sequenc
   annotations.filter {
     it.shortName.getShortName() == T::class.simpleName && it.annotationType.resolve().declaration
       .qualifiedName?.asString() == T::class.qualifiedName
+  }
+
+private inline fun <A> Iterable<KSPropertyDeclaration>.zipByName(
+  other: Iterable<KSPropertyDeclaration>,
+  transform: (KSPropertyDeclaration, KSPropertyDeclaration) -> A
+): List<A> =
+  map { thisProp ->
+    val otherProp = other.first { otherProp ->
+      thisProp.baseName == otherProp.baseName
+    }
+    transform(thisProp, otherProp)
   }
