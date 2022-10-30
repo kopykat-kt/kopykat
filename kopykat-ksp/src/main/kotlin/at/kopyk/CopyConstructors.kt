@@ -1,7 +1,5 @@
 package at.kopyk
 
-import arrow.core.Nullable.zip
-import arrow.core.partially1
 import at.kopyk.poet.addReturn
 import at.kopyk.poet.append
 import at.kopyk.poet.className
@@ -31,7 +29,7 @@ internal val ClassCompileScope.allCopies: Sequence<CopyPair>
     val copyToTargets = typesFor<CopyTo>() + typesFor<Copy>()
 
     val self = this@allCopies
-    val pair = ::CopyPair.partially1(self)
+    fun pair(from: KSClassDeclaration, to: KSClassDeclaration) = CopyPair(self, from, to)
     yieldAll(copyFromTargets.map { other -> pair(other, self) })
     yieldAll(copyToTargets.map { other -> pair(self, other) })
   }
@@ -81,9 +79,12 @@ private fun propertyDefinition(
   others: Sequence<CopyPair>,
   from: KSPropertyDeclaration,
   to: KSPropertyDeclaration,
-): String? = zip(from.typeDeclaration, to.typeDeclaration) { fromType, toType ->
+): String? {
+  val fromType = from.typeDeclaration
+  val toType = to.typeDeclaration
   val propertyName = from.baseName
-  when {
+  return when {
+    fromType == null || toType == null -> null
     others.hasCopyConstructor(fromType, toType) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
     else -> "$propertyName = from.$propertyName"
   }
@@ -112,8 +113,12 @@ private fun KSPropertyDeclaration.isCopiableTo(
   copies: Sequence<CopyPair>,
   other: KSPropertyDeclaration,
 ): Boolean {
-  val hasCopyConstructor = zip(typeDeclaration, other.typeDeclaration, copies::hasCopyConstructor) == true
-  return hasCopyConstructor || isAssignableFrom(other)
+  val thisDecl = typeDeclaration
+  val otherDecl = other.typeDeclaration
+  return when {
+    thisDecl == null || otherDecl == null -> false
+    else -> copies.hasCopyConstructor(thisDecl, otherDecl) || isAssignableFrom(other)
+  }
 }
 
 private fun KSPropertyDeclaration.isAssignableFrom(other: KSPropertyDeclaration) =
