@@ -1,21 +1,20 @@
 <!-- TOC -->
-
-* [What can KopyKat do?](#what-can-kopykat-do)
+  * [Same-type transformations](#same-type-transformations)
     * [Mutable `copy`](#mutable-copy)
-        * [Nested mutation](#nested-mutation)
-        * [Nested collections](#nested-collections)
+      * [Nested mutation](#nested-mutation)
+      * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-* [Isomorphic copy constructors](#isomorphic-copy-constructors)
+    * [`copy` for type aliases](#copy-for-type-aliases)
+  * [Isomorphic copy constructors](#isomorphic-copy-constructors)
     * [Nested copy constructors](#nested-copy-constructors)
     * [Multiple copy constructors](#multiple-copy-constructors)
-    * [`copy` for type aliases](#copy-for-type-aliases)
-* [Using KopyKat in your project](#using-kopykat-in-your-project)
+  * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
-        * [All classes in given packages](#all-classes-in-given-packages)
-        * [Using annotations](#using-annotations)
+      * [All classes in given packages](#all-classes-in-given-packages)
+      * [Using annotations](#using-annotations)
     * [Customizing the generation](#customizing-the-generation)
-* [What about optics?](#what-about-optics)
+  * [What about optics?](#what-about-optics)
 <!-- TOC -->
 
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
@@ -29,14 +28,26 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 ```
 
-<hr style="border-bottom: 3px dashed #b5e853;">
-
-## What can KopyKat do?
-
-This plug-in generates a couple of new methods that make working with immutable (read-only) types, like data classes and
+This plug-in generates a few new methods that make working with immutable (read-only) types, like data classes and
 value classes, more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
+
+Those methods can be divided in two big groups:
+
+- [Same-type transformations](#same-type-transformations), which take a value of a certain type and produce a copy
+  _of the same type_ by changing a few fields. Those methods are closer to the `copy` method available in Kotlin.
+- [Isomorphic copy constructors](#isomorphic-copy-constructors), which produce a value of a different type from the
+  given one, provided that they both contain the same fields. Those methods are very useful when interfacing across 
+  different layers of the application.
+
+<hr style="border-bottom: 3px dashed #b5e853;">
+
+## Same-type transformations
+
+KopyKat extends Kotlin's built-in `copy` with a version based on mutable copies, and a version based on maps (that is,
+you state the changes to be done to the values based on the old ones instead of the new values themselves.) In addition,
+the default `copy` is extended to work on sealed hierarchies and value classes.
 
 <hr>
 
@@ -197,6 +208,25 @@ fun User.takeOver() = this.copy(name = "Me")
 
 <hr>
 
+### `copy` for type aliases
+
+KopyKat can also generate the different `copy` methods for a type alias.
+
+```kotlin
+@CopyExtensions
+typealias Person = Pair<String, Int>
+
+// generates the following methods
+fun Person.copyMap(first: (String) -> String, second: (Int) -> Int): Person = TODO()
+fun Person.copy(block: `Person$Mutable`.() -> Unit): Person = TODO()
+```
+
+The following must hold for the type alias to be processed:
+- It must be marked with the `@CopyExtensions` annotation,
+- It must refer to a data or value class, or a type hierarchy of those.
+
+<hr style="border-bottom: 3px dashed #b5e853;">
+
 ## Isomorphic copy constructors
 
 We know, isomorphic seems like a big word. However, it just means that two things are similar
@@ -240,6 +270,8 @@ If you don't need either of the copy constructors, you can use either `@CopyFrom
 generate a copy constructor from the provided type to the annotated type (`LocalPerson -> Person`). On the other hand,
 if you use `@CopyTo` will generate the oposite (`Person -> LocalPerson`).
 
+<hr>
+
 ### Nested copy constructors
 
 In some cases you may want to have properties that are different on both types. To support data trees like that, you
@@ -260,6 +292,8 @@ check(person.job.title == "Developer")
 
 In this example, if `LocalJob` is not annotated wih `@Copy` (or `@CopyFrom`) the compiler will complain about it.
 
+<hr>
+
 ### Multiple copy constructors
 
 Annotations for copy constructors (`@Copy[From|To]`) can be applied more than once to the same type. This means
@@ -276,25 +310,6 @@ data class RemotePerson(val name: String, val age: Int)
 ```
 
 This configuration will generate 4 different copy constructors.
-
-<hr>
-
-### `copy` for type aliases
-
-KopyKat can also generate the different `copy` methods for a type alias.
-
-```kotlin
-@CopyExtensions
-typealias Person = Pair<String, Int>
-
-// generates the following methods
-fun Person.copyMap(first: (String) -> String, second: (Int) -> Int): Person = TODO()
-fun Person.copy(block: `Person$Mutable`.() -> Unit): Person = TODO()
-```
-
-The following must hold for the type alias to be processed:
-- It must be marked with the `@CopyExtensions` annotation,
-- It must refer to a data or value class, or a type hierarchy of those.
 
 <hr style="border-bottom: 3px dashed #b5e853;">
 
