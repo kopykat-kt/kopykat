@@ -1,8 +1,6 @@
 <!-- TOC -->
   * [Same-type transformations](#same-type-transformations)
     * [Mutable `copy`](#mutable-copy)
-      * [Nested mutation](#nested-mutation)
-      * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
     * [`copy` for type aliases](#copy-for-type-aliases)
@@ -11,8 +9,6 @@
     * [Multiple copy constructors](#multiple-copy-constructors)
   * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
-      * [All classes in given packages](#all-classes-in-given-packages)
-      * [Using annotations](#using-annotations)
     * [Customizing the generation](#customizing-the-generation)
   * [What about optics?](#what-about-optics)
 <!-- TOC -->
