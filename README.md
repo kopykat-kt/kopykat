@@ -1,12 +1,14 @@
 <!-- TOC -->
-  * [What can KopyKat do?](#what-can-kopykat-do)
+  * [Same-type transformations](#same-type-transformations)
     * [Mutable `copy`](#mutable-copy)
       * [Nested mutation](#nested-mutation)
       * [Nested collections](#nested-collections)
     * [Mapping `copyMap`](#mapping-copymap)
     * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-    * [`copy` from supertypes](#copy-from-supertypes)
     * [`copy` for type aliases](#copy-for-type-aliases)
+  * [Isomorphic copy constructors](#isomorphic-copy-constructors)
+    * [Nested copy constructors](#nested-copy-constructors)
+    * [Multiple copy constructors](#multiple-copy-constructors)
   * [Using KopyKat in your project](#using-kopykat-in-your-project)
     * [Enable only for selected types](#enable-only-for-selected-types)
       * [All classes in given packages](#all-classes-in-given-packages)
@@ -26,14 +28,26 @@ val p1 = Person("Alex", 1)
 val p2 = p1.copy(age = p1.age + 1)  // too many 'age'!
 ```
 
-<hr style="border-bottom: 3px dashed #b5e853;">
-
-## What can KopyKat do?
-
-This plug-in generates a couple of new methods that make working with immutable (read-only) types, like data classes and
+This plug-in generates a few new methods that make working with immutable (read-only) types, like data classes and
 value classes, more convenient.
 
 ![IntelliJ showing the methods](https://github.com/kopykat-kt/kopykat/blob/main/intellij.png?raw=true)
+
+Those methods can be divided in two big groups:
+
+- [Same-type transformations](#same-type-transformations), which take a value of a certain type and produce a copy
+  _of the same type_ by changing a few fields. Those methods are closer to the `copy` method available in Kotlin.
+- [Isomorphic copy constructors](#isomorphic-copy-constructors), which produce a value of a different type from the
+  given one, provided that they both contain the same fields. Those methods are very useful when interfacing across 
+  different layers of the application.
+
+<hr style="border-bottom: 3px dashed #b5e853;">
+
+## Same-type transformations
+
+KopyKat extends Kotlin's built-in `copy` with a version based on mutable copies, and a version based on maps (that is,
+you state the changes to be done to the values based on the old ones instead of the new values themselves.) In addition,
+the default `copy` is extended to work on sealed hierarchies and value classes.
 
 <hr>
 
@@ -194,38 +208,6 @@ fun User.takeOver() = this.copy(name = "Me")
 
 <hr>
 
-### `copy` from supertypes
-
-KopyKat generates "fake constructors" which consume a supertype of a data class, if that supertype defines all the
-properties required by its primary constructor. This is useful when working with separate domain and data transfer
-types.
-
-```kotlin
-data class Person(val name: String, val age: Int)
-@Serializable data class RemotePerson(val name: String, val age: Int)
-```
-
-In that case you can define a common interface which represents the data,
-
-```kotlin
-interface PersonCommon {
-  val name: String
-  val age: Int
-}
-
-data class Person(override val name: String, override val age: Int): PersonCommon
-@Serializable data class RemotePerson(override val name: String, override val age: Int): PersonCommon
-```
-
-With those "fake constructors" you can move easily from one to the other representation.
-
-```kotlin
-val p1 = Person("Alex", 1)
-val p2 = RemotePerson(p1)
-```
-
-<hr>
-
 ### `copy` for type aliases
 
 KopyKat can also generate the different `copy` methods for a type alias.
@@ -245,6 +227,92 @@ The following must hold for the type alias to be processed:
 
 <hr style="border-bottom: 3px dashed #b5e853;">
 
+## Isomorphic copy constructors
+
+We know, isomorphic seems like a big word. However, it just means that two things are similar
+in some way. In this case KopyKat can generate copy constructors between two types that
+have the same properties, with the same name, and the same type.
+
+In Kotlin, a copy constructor is a top level function with the same name as the type (in PascalCase)
+that returns the given type. This naming pattern is described in the official (Kotlin Code
+Conventions)[https://kotlinlang.org/docs/coding-conventions.html#function-names].
+
+To generate these you have to annotate your types with one of the following:
+
+- `@Copy`
+- `@CopyFrom`
+- `@CopyTo`
+
+All of them take another type to copy from/to, as a parameter. In the case of `@Copy`, it will
+generate two functions for both directions. So, if we have code like this:
+
+```kotlin
+data class Person(val name: String, val age: Int)
+
+@Copy(Person::class)
+data class LocalPerson(val name: String, val age: Int)
+```
+
+The following code is generated:
+
+```kotlin
+inline fun Person(from: LocalPerson): Person =
+    Person(name = from.name, age = from.age)
+
+inline fun LocalPerson(from: Person): Person =
+    LocalPerson(name = from.name, age = from.age)
+```
+
+These allow to convert from one type to the other and vice versa. This is quite a common pattern used to
+cross boundaries of the different layers of an application. Often, they are called mappers.
+
+If you don't need either of the copy constructors, you can use either `@CopyFrom` or `@CopyTo`. `@CopyFrom` will
+generate a copy constructor from the provided type to the annotated type (`LocalPerson -> Person`). On the other hand,
+if you use `@CopyTo` will generate the oposite (`Person -> LocalPerson`).
+
+<hr>
+
+### Nested copy constructors
+
+In some cases you may want to have properties that are different on both types. To support data trees like that, you
+must make sure that they have copy constructors generated as well. For example:
+
+```kotlin
+data class Person(val name: String, val job: Job)
+data class Job(val title: String)
+
+@Copy(Person::class) data class LocalPerson(val name: String, val job: LocalJob)
+@Copy(Job::class) data class LocalJob(val title: String)
+
+val localPerson = LocalPerson("Alice", LocalJob("Developer"))
+val person = Person(localPerson)
+check(person.name == "Alice")
+check(person.job.title == "Developer")
+```
+
+In this example, if `LocalJob` is not annotated wih `@Copy` (or `@CopyFrom`) the compiler will complain about it.
+
+<hr>
+
+### Multiple copy constructors
+
+Annotations for copy constructors (`@Copy[From|To]`) can be applied more than once to the same type. This means
+that you can define mapping across multiple isomorphic types:
+
+```kotlin
+@Copy(LocalPerson::class)
+@Copy(RemotePerson::class)
+data class Person(val name: String, val age: Int)
+
+data class LocalPerson(val name: String, val age: Int)
+
+data class RemotePerson(val name: String, val age: Int)
+```
+
+This configuration will generate 4 different copy constructors.
+
+<hr style="border-bottom: 3px dashed #b5e853;">
+
 ## Using KopyKat in your project
 
 > This [demo project](https://github.com/kopykat-kt/kopykat-demo) showcases the use of KopyKat
@@ -261,7 +329,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
-2. Add KSP to the list of plug-ins. You can check the latest version in their 
+2. Add KSP to the list of plug-ins. You can check the latest version in their
    [releases](https://github.com/google/ksp/releases/).
 
     ```kotlin
@@ -342,7 +410,6 @@ ksp {
   arg("mutableCopy", "true")
   arg("copyMap", "false")
   arg("hierarchyCopy", "true")
-  arg("superCopy", "true")
 }
 ```
 

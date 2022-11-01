@@ -11,6 +11,7 @@ dependencies {
 
     testImplementation(projects.utils.compiletesting)
     testImplementation(kotlin("test"))
+    testImplementation(libs.junit.jupiter.params)
 
     testRuntimeOnly(projects.kopykatKsp)
 }

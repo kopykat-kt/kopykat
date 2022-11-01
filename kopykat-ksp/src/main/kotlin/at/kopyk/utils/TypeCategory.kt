@@ -22,6 +22,7 @@ internal val KSDeclaration.typeCategory: TypeCategory
         isDataClass() -> Known.Data
         isValueClass() -> Known.Value
         isSealedDataHierarchy() -> Known.Sealed
+        isConstructable() -> Known.Class
         else -> Unknown(this)
       }
     else -> Unknown(this)
@@ -43,6 +44,7 @@ internal sealed interface TypeCategory {
     object Sealed : Known
     object Value : Known
     object Data : Known
+    object Class : Known
   }
 
   @JvmInline value class Unknown(val original: KSDeclaration) : TypeCategory

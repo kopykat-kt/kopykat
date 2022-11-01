@@ -1,129 +1,69 @@
 package at.kopyk
 
-import at.kopyk.poet.writeTo
-import at.kopyk.utils.ClassCompileScope
-import at.kopyk.utils.TypeAliasCompileScope
-import at.kopyk.utils.TypeCategory.Known
 import at.kopyk.utils.TypeCategory.Known.Data
 import at.kopyk.utils.TypeCategory.Known.Sealed
 import at.kopyk.utils.TypeCategory.Known.Value
 import at.kopyk.utils.TypeCompileScope
-import at.kopyk.utils.allNestedDeclarations
-import at.kopyk.utils.hasGeneratedMarker
-import at.kopyk.utils.isConstructable
+import at.kopyk.utils.hasAnnotation
+import at.kopyk.utils.lang.filterIsInstance
+import at.kopyk.utils.lang.flatMapRun
 import at.kopyk.utils.lang.forEachRun
-import at.kopyk.utils.onKnownCategory
+import at.kopyk.utils.lang.mapRun
+import at.kopyk.utils.lang.onEachRun
 import at.kopyk.utils.typeCategory
-import com.google.devtools.ksp.KspExperimental
-import com.google.devtools.ksp.isAbstract
-import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclaration
-import com.google.devtools.ksp.symbol.KSTypeAlias
-import org.apache.commons.io.FilenameUtils.wildcardMatch
+
+internal interface LoggerScope {
+  val logger: KSPLogger
+}
+
+internal interface OptionsScope {
+  val options: KopyKatOptions
+}
+
+internal class ProcessorScope(
+  environment: SymbolProcessorEnvironment,
+) : LoggerScope, OptionsScope {
+  val codegen = environment.codeGenerator
+  override val logger = environment.logger
+  override val options = KopyKatOptions(environment.logger, environment.options)
+}
 
 internal class KopyKatProcessor(
-  private val codegen: CodeGenerator,
-  private val logger: KSPLogger,
-  private val options: KopyKatOptions
+  private val scope: ProcessorScope,
 ) : SymbolProcessor {
 
-  @OptIn(KspExperimental::class)
   override fun process(resolver: Resolver): List<KSAnnotated> {
-    resolver.getAllFiles().let { files ->
-      if (files.none { it.hasGeneratedMarker() }) {
-        val declarations = files.flatMap { it.allNestedDeclarations() }
-
-        val classes = declarations
-          .filterIsInstance<KSClassDeclaration>()
-          .onEach { it.checkKnown() }
-          .onEach { it.checkRedundantAnnotation() }
-          .filter { it.shouldGenerate() && it.typeCategory is Known }
-
-        // add different copies to data and value classes
-        classes
-          .let { targets -> targets.map { ClassCompileScope(it, classes, logger) } }
-          .forEachRun { process() }
-        // add different copies to type aliases
-        declarations
-          .filterIsInstance<KSTypeAlias>()
-          .onEach { it.checkKnown() }
-          .filter { it.isAnnotationPresent(CopyExtensions::class) && it.typeCategory is Known }
-          .let { targets -> targets.map { TypeAliasCompileScope(it, classes, logger) } }
-          .forEachRun { process() }
-        // add copy from parent to all classes
-        declarations
-          .filterIsInstance<KSClassDeclaration>()
-          .filter { !it.isAbstract() && it.isConstructable() }
-          .forEach {
-            with(ClassCompileScope(it, classes, logger)) {
-              if (options.superCopy) copyFromParentKt.writeTo(codegen)
-            }
+    scope.processFiles(resolver) {
+      // add copy functions for data, value classes, and type aliases
+      if (options.copyMap || options.mutableCopy) {
+        (classes.mapRun { classScope } + typeAliases.mapRun { typealiasScope })
+          .filter { it.canHaveCopyFunctions(options.hierarchyCopy) }
+          .onEachRun { logger.logging("Processing ${simpleName.asString()}") }
+          .forEachRun {
+            if (options.copyMap) copyMapFunctionKt.write()
+            if (options.mutableCopy) mutableCopyKt.write()
           }
       }
+      // add isomorphic copies
+      declarations
+        .filterIsInstance<KSClassDeclaration> { hasCopyAnnotation() }
+        .flatMapRun { classScope.allCopies }
+        .distinctBy { it.name }
+        .let { others -> others.mapNotNull { fileSpec(others, it) } }
+        .forEachRun { write() }
     }
     return emptyList()
   }
 
-  private fun TypeCompileScope.process() {
-    logger.logging("Processing $simpleName")
-    fun mapAndMutable() {
-      if (options.copyMap) copyMapFunctionKt.writeTo(codegen)
-      if (options.mutableCopy) mutableCopyKt.writeTo(codegen)
-    }
-    onKnownCategory { category ->
-      when (category) {
-        Data, Value -> mapAndMutable()
-        Sealed -> if (options.hierarchyCopy) mapAndMutable()
-      }
-    }
-  }
-
-  @OptIn(KspExperimental::class)
-  private fun KSDeclaration.shouldGenerate(): Boolean = when (options.generate) {
-    is KopyKatGenerate.Error ->
-      false
-    is KopyKatGenerate.All ->
-      true
-    is KopyKatGenerate.Annotated ->
-      isAnnotationPresent(CopyExtensions::class)
-    is KopyKatGenerate.Packages -> {
-      val pkg = packageName.asString()
-      options.generate.patterns.any { pattern ->
-        wildcardMatch(pkg, pattern)
-      }
-    }
-  }
-
-  @OptIn(KspExperimental::class)
-  private fun KSDeclaration.checkKnown() {
-    if (isAnnotationPresent(CopyExtensions::class) && typeCategory !is Known) {
-      logger.error(
-        """
-        '@CopyExtensions' may only be used in data or value classes,
-        sealed hierarchies of those, or type aliases of those.
-        """.trimIndent(),
-        this
-      )
-    }
-  }
-
-  @OptIn(KspExperimental::class)
-  private fun KSDeclaration.checkRedundantAnnotation() {
-    if (isAnnotationPresent(CopyExtensions::class) && options.generate is KopyKatGenerate.NotAnnotated) {
-      logger.warn(
-        """
-        Unused '@CopyExtensions' annotation, the plug-in is configured to process all classes.
-        Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
-        More info at https://kopyk.at/#enable-only-for-selected-classes.
-        """.trimIndent(),
-        this
-      )
-    }
-  }
+  private fun TypeCompileScope.canHaveCopyFunctions(hierarchyCopy: Boolean) =
+    typeCategory in listOf(Data, Value) || typeCategory is Sealed && hierarchyCopy
 }
+
+private fun KSClassDeclaration.hasCopyAnnotation() =
+  hasAnnotation<Copy>() || hasAnnotation<CopyTo>() || hasAnnotation<CopyFrom>()

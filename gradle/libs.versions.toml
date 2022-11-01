@@ -8,6 +8,7 @@ kotest = "5.4.2"
 classgraph = "4.8.149"
 commonsIo = "2.11.0"
 ktlint = "11.0.0"
+junit = "5.8.0"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -20,7 +21,8 @@ kotlinCompileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testi
 kotlinCompileTestingKsp = { module = "com.github.tschuchortdev:kotlin-compile-testing-ksp", version.ref = "kotlinCompileTesting" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
-apache-commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo"}
+apache-commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 
 ### Plugins ###
 # the *Maven coodinates* of Gradle plugins. Use in ./buildSrc/build.gradle.kts.

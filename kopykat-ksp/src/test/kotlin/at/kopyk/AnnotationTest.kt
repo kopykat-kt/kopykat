@@ -15,7 +15,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.evalsWithArgs(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ANNOTATED), "r" to 2)
+      """.evalsWithArgs(mapOf("generate" to KopyKatGenerate.ANNOTATED), "r" to 2)
   }
 
   @Test
@@ -26,7 +26,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.failsWith(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ANNOTATED)) {
+      """.failsWith(mapOf("generate" to KopyKatGenerate.ANNOTATED)) {
       it.contains("Unresolved reference: copyMap")
     }
   }
@@ -58,7 +58,7 @@ class AnnotationTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
-      """.compilesWith(mapOf(KopyKatOptions.GENERATE to KopyKatGenerate.ALL)) {
+      """.compilesWith(mapOf("generate" to KopyKatGenerate.ALL)) {
       it.contains("Unused '@CopyExtensions' annotation")
     }
   }
@@ -86,7 +86,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A")
     ) {
       it.contains("Unresolved reference: copyMap")
     }
@@ -103,7 +103,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}?")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}?")
     ) {
       it.contains("Unresolved reference: copyMap")
     }
@@ -120,7 +120,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf(KopyKatOptions.GENERATE to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A")
     ) {
       it.contains("Unresolved reference: copyMap")
     }

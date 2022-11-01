@@ -1,8 +1,11 @@
 package at.kopyk.utils
 
+import at.kopyk.LoggerScope
 import at.kopyk.poet.className
 import at.kopyk.poet.makeInvariant
 import at.kopyk.poet.parameterizedWhenNotEmpty
+import at.kopyk.utils.lang.orElse
+import at.kopyk.utils.lang.takeIfInstanceOf
 import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -32,8 +35,7 @@ internal data class MutationInfo<out T : TypeName>(
   val freeze: (String) -> String
 )
 
-internal sealed interface TypeCompileScope : KSDeclaration {
-  val logger: KSPLogger
+internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
   val typeVariableNames: List<TypeVariableName>
   val typeParameterResolver: TypeParameterResolver
   val target: ClassName
@@ -56,6 +58,8 @@ internal sealed interface TypeCompileScope : KSDeclaration {
     FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
+  fun KSClassDeclaration.asScope(): ClassCompileScope
+  val KSClassDeclaration.properties: Sequence<KSPropertyDeclaration> get() = asScope().properties
 }
 
 internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver {
@@ -77,13 +81,12 @@ internal class ClassCompileScope(
     get() = classDeclaration.typeParameters.toTypeParameterResolver().invariant()
 
   override val target: ClassName = classDeclaration.className
-  val parentTypes: Sequence<KSType> =
-    classDeclaration.superTypes.map { it.resolve() }
   override val sealedTypes: Sequence<KSClassDeclaration> = classDeclaration.sealedTypes
   override val properties: Sequence<KSPropertyDeclaration> = classDeclaration.getPrimaryConstructorProperties()
 
   override val ClassName.parameterized
     get() = parameterizedWhenNotEmpty(typeVariableNames.map { it.makeInvariant() })
+
   override fun KSType.hasMutableCopy(): Boolean {
     val closestDecl = declaration.closestClassDeclaration()
     return closestDecl != null && closestDecl in mutableCandidates
@@ -93,6 +96,10 @@ internal class ClassCompileScope(
     get() = type.toTypeName(typeParameterResolver).makeInvariant()
 
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
+
+  override fun KSClassDeclaration.asScope(): ClassCompileScope =
+    takeIfInstanceOf<ClassCompileScope>()
+      .orElse { ClassCompileScope(this, mutableCandidates, logger) }
 }
 
 internal class TypeAliasCompileScope(
@@ -124,6 +131,7 @@ internal class TypeAliasCompileScope(
 
   override val ClassName.parameterized
     get() = parameterizedWhenNotEmpty(typeVariableNames.map { it.makeInvariant() })
+
   override fun KSType.hasMutableCopy(): Boolean {
     val closestDecl = aliasDeclaration.type.resolve().declaration.closestClassDeclaration()
     return closestDecl != null && closestDecl in mutableCandidates
@@ -133,6 +141,10 @@ internal class TypeAliasCompileScope(
     get() = type.toTypeName(typeParameterResolver).makeInvariant()
 
   override fun toFileScope(file: FileSpec.Builder): FileCompilerScope = FileCompilerScope(this, file = file)
+
+  override fun KSClassDeclaration.asScope(): ClassCompileScope =
+    takeIfInstanceOf<ClassCompileScope>()
+      .orElse { ClassCompileScope(this, mutableCandidates, logger) }
 }
 
 internal class FileCompilerScope(
