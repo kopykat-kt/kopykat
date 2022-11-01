@@ -233,9 +233,9 @@ We know, isomorphic seems like a big word. However, it just means that two thing
 in some way. In this case KopyKat can generate copy constructors between two types that
 have the same properties, with the same name, and the same type.
 
-In Kotlin, a copy constructor is a top level function with the same name as the type (in PascalCase)
-that returns the given type. This naming pattern is described in the official (Kotlin Code
-Conventions)[https://kotlinlang.org/docs/coding-conventions.html#function-names].
+In Kotlin, a copy constructor is a top level function with the same name as the type (in `PascalCase`)
+that returns the given type. This naming pattern is described in the official [Kotlin Code
+Conventions](https://kotlinlang.org/docs/coding-conventions.html#function-names).
 
 To generate these you have to annotate your types with one of the following:
 
