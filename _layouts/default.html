@@ -8,12 +8,56 @@
     {% include head-custom.html %}
 
 {% seo %}
+
+<style>
+  #menu {
+   width: 90%;
+   max-width: 1000px;
+   margin: 0 auto;
+  }
+  .gatete {
+    display: none;
+  }
+  #kopykat_name {
+    display: none;
+    color: #aaa;
+    padding-left: 10px;
+    font-size: 20px;
+    text-decoration: none;
+  }
+
+  @media all and (min-width: 1200px) {
+     #kopykat_name {
+       display: block;
+     }
+     #top {
+       max-width: 70% !important;
+     } 
+     #menu {
+       max-width: 20%; 
+       overflow: hidden; 
+       position: relative; 
+       float: left; 
+       position: fixed;
+     }
+     #main_div {
+       max-width: 60% !important;
+     }
+  }
+
+  @media all and (min-width: 1400px) {
+   .gatete {
+       display: inline;
+    }
+  }
+  </style>
+
   </head>
 
   <body>
 
     <header>
-      <div class="container" style="max-width: 70% !important;">
+      <div class="container" id="top">
         <a id="a-title" href="{{ '/' | relative_url }}">
           <h1>😺 → 😺 → 😺 KopyKat 😺 ← 😺 ← 😺</h1>
         </a>
@@ -28,8 +72,8 @@
       </div>
     </header>
 
-    <div style="max-width: 20%; min-width: 200px; overflow: hidden; position: relative; float: left; position: fixed;">
-      <p><a href="#a-title" style="color: #aaa; padding-left: 10px; font-size: 20px; text-decoration: none;">😺 → 😺 KopyKat 😺 ← 😺</a></p>
+    <div id="menu">
+      <p><a href="#a-title" id="kopykat_name">😺<span class="gatete"> → 😺</span> KopyKat<span class="gatete"> 😺 ← 😺</span></a></p>
       <ul>
         <li><a href="#same-type-transformations">Same-type transformations</a>
           <ul>
@@ -55,7 +99,7 @@
       </ul>
     </div>
 
-    <div class="container" style="max-width: 60% !important;">
+    <div class="container" id="main_div">
       <section id="main_content">
         {{ content }}
       </section>
