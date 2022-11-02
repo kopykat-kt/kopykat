@@ -195,30 +195,33 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
       val className = ty.toClassNameRespectingNullability()
+      infix fun String.dot(function: String) =
+        if (ty.isMarkedNullable) "$this?.$function()"
+        else "$this.$function()"
       val intermediate: MutationInfo<ClassName> = when {
         className == LIST ->
           MutationInfo(
             ClassName(className.packageName, "MutableList"),
-            { "$it.toMutableList()" },
+            { it dot "toMutableList" },
             { it }
           )
         className == MAP ->
           MutationInfo(
             ClassName(className.packageName, "MutableMap"),
-            { "$it.toMutableMap()" },
+            { it dot "toMutableMap" },
             { it }
           )
         className == SET ->
           MutationInfo(
             ClassName(className.packageName, "MutableSet"),
-            { "$it.toMutableSet()" },
+            { it dot "toMutableSet" },
             { it }
           )
         ty.hasMutableCopy() ->
           MutationInfo(
             className.mutable,
-            { "$it.toMutable()" },
-            { "$it.freeze()" }
+            { it dot "toMutable" },
+            { it dot "freeze" }
           )
         else ->
           MutationInfo(className, { it }, { it })
