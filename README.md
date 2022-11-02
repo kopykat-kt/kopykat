@@ -343,9 +343,23 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
     }
     ```
 
+    If you are using [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
+    you need to [choose explicitly]((https://kotlinlang.org/docs/ksp-multiplatform.html#avoid-the-ksp-configuration-on-ksp-1-0-1))
+    the compilation targets which need processing. For example, this is how you 
+    instruct KSP to run on the files in `commonMain`.
+
+    ```kotlin
+    dependencies {
+      // other dependencies
+      add("kspCommonMainMetadata", "at.kopyk:kopykat-ksp:$kopyKatVersion")
+    }
+    ```
+
 4. (Optional) If you are using IntelliJ as your IDE, we recommend you to 
    [follow these steps](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code) to make it 
    aware of the new code.
+
+<hr>
 
 ### Enable only for selected types
 
@@ -394,6 +408,8 @@ ksp {
     
     @CopyExtensions data class Person(val name: String, val age: Int)
     ```
+
+<hr>
 
 ### Customizing the generation
 
