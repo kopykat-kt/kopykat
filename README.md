@@ -1,18 +1,3 @@
-<!-- TOC -->
-  * [Same-type transformations](#same-type-transformations)
-    * [Mutable `copy`](#mutable-copy)
-    * [Mapping `copyMap`](#mapping-copymap)
-    * [`copy` for sealed hierarchies](#copy-for-sealed-hierarchies)
-    * [`copy` for type aliases](#copy-for-type-aliases)
-  * [Isomorphic copy constructors](#isomorphic-copy-constructors)
-    * [Nested copy constructors](#nested-copy-constructors)
-    * [Multiple copy constructors](#multiple-copy-constructors)
-  * [Using KopyKat in your project](#using-kopykat-in-your-project)
-    * [Enable only for selected types](#enable-only-for-selected-types)
-    * [Customizing the generation](#customizing-the-generation)
-  * [What about optics?](#what-about-optics)
-<!-- TOC -->
-
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
 their [`copy` method](https://kotlinlang.org/docs/data-classes.html#copying). But using it can become cumbersome very
 quickly, because you need to repeat the name of the field before and after.
@@ -149,15 +134,7 @@ means that you can access all the other fields in the body of each of the transf
 val p4 = p1.copyMap(age = { name.count() })
 ```
 
-> **Note**
-> you can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
-
-```kotlin
-val p5 = p1.copyMap(age = { 10 })
-```
-
-> **Note**
-> When using value classes, given that you only have one property, you can skip the name of the property.
+When using value classes, given that you only have one property, you can skip the name of the property.
 
 ```kotlin
 @JvmInline value class Age(ageValue: Int)
@@ -165,6 +142,12 @@ val p5 = p1.copyMap(age = { 10 })
 val a = Age(39)
 
 val b = a.copyMap { it + 1 }
+```
+
+You can use `copyMap` to simulate `copy`, by making the transformation return a constant value.
+
+```kotlin
+val p5 = p1.copyMap(age = { 10 })
 ```
 
 <hr>
@@ -361,7 +344,7 @@ Gradle. To use this plug-in, add the following in your `build.gradle.kts`:
 
 <hr>
 
-### Enable only for selected types
+### Only for selected types
 
 By default, KopyKat generates methods for **every** data and value class, and sealed hierarchies of those. If you prefer
 to enable generation for only some classes, this is of course possible. Note that you always require a `@CopyExtensions`

@@ -13,7 +13,7 @@
   <body>
 
     <header>
-      <div class="container">
+      <div class="container" style="max-width: 70% !important;">
         <a id="a-title" href="{{ '/' | relative_url }}">
           <h1>😺 → 😺 → 😺 KopyKat 😺 ← 😺 ← 😺</h1>
         </a>
@@ -28,7 +28,35 @@
       </div>
     </header>
 
-    <div class="container">
+    <div style="max-width: 15%; overflow: hidden; position: relative; float: left;">
+      <!-- TOC -->
+      <ul>
+        <li><a href="#same-type-transformations">Same-type transformations</a>
+          <ul>
+            <li><a href="#mutable-copy">Mutable <code class="language-plaintext highlighter-rouge">copy</code></a></li>
+            <li><a href="#mapping-copymap">Mapping <code class="language-plaintext highlighter-rouge">copyMap</code></a></li>
+            <li><a href="#copy-for-sealed-hierarchies"><code class="language-plaintext highlighter-rouge">copy</code> for sealed hierarchies</a></li>
+            <li><a href="#copy-for-type-aliases"><code class="language-plaintext highlighter-rouge">copy</code> for type aliases</a></li>
+          </ul>
+        </li>
+        <li><a href="#isomorphic-copy-constructors">Isomorphic copy constructors</a>
+          <ul>
+            <li><a href="#nested-copy-constructors">Nested copy constructors</a></li>
+            <li><a href="#multiple-copy-constructors">Multiple copy constructors</a></li>
+          </ul>
+        </li>
+        <li><a href="#using-kopykat-in-your-project">Using KopyKat in your project</a>
+          <ul>
+            <li><a href="#only-for-selected-types">Only for selected types</a></li>
+            <li><a href="#customizing-the-generation">Customizing the generation</a></li>
+          </ul>
+        </li>
+        <li><a href="#what-about-optics">What about optics?</a>
+      <!-- TOC --></li>
+      </ul>
+    </div>
+
+    <div class="container" style="max-width: 70% !important;">
       <section id="main_content">
         {{ content }}
       </section>
