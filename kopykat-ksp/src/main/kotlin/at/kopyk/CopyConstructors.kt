@@ -10,12 +10,15 @@ import at.kopyk.utils.baseName
 import at.kopyk.utils.fullName
 import at.kopyk.utils.getPrimaryConstructorProperties
 import at.kopyk.utils.lang.takeIfInstanceOf
+import at.kopyk.utils.minimal
+import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.ksp.toKModifier
 
 internal data class CopyPair(
   val self: TypeCompileScope,
@@ -59,6 +62,8 @@ private fun TypeCompileScope.copyConstructorFileSpec(
       addGeneratedMarker()
       addInlinedFunction(name = to.baseName, receives = null, returns = to.className.parameterized) {
         addParameter(name = "from", type = from.className)
+        val visibilities = listOf(from.getVisibility()) + from.getAllProperties().map { it.getVisibility() }
+        visibilities.minimal().toKModifier()?.let { addModifiers(it) }
         val propertyAssignments = to.properties.toList().zipByName(from.getAllProperties().toList()) { to, from ->
           propertyDefinition(others, from, to)
         }.filterNotNull()
