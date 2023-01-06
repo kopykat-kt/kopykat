@@ -3,6 +3,7 @@ package at.kopyk.poet
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSName
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.ClassName
@@ -44,7 +45,15 @@ public val KSDeclaration.className: ClassName
   get() =
     when (val parent = parentDeclaration) {
       is KSClassDeclaration -> parent.className.append(simpleName.asString())
-      else -> ClassName(packageName = packageName.asString(), simpleName.asString())
+      else -> ClassName(packageName = packageName.asStringQuoted(), simpleName.asString())
+    }
+
+public fun KSName.asStringQuoted(): String =
+  asString().split('.').joinToString(separator = ".") {
+      when (it) {
+        in KEYWORDS -> "`$it`"
+        else -> it
+      }
     }
 
 public fun TypeName.asTransformLambda(): LambdaTypeName =
@@ -60,3 +69,94 @@ public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
   val mutableSimpleName = (simpleNames + suffix).joinToString(separator = "$")
   return ClassName(packageName, mutableSimpleName).copy(this.isNullable, emptyList(), emptyMap())
 }
+
+// https://kotlinlang.org/docs/reference/keyword-reference.html
+private val KEYWORDS = setOf(
+  // Hard keywords
+  "as",
+  "break",
+  "class",
+  "continue",
+  "do",
+  "else",
+  "false",
+  "for",
+  "fun",
+  "if",
+  "in",
+  "interface",
+  "is",
+  "null",
+  "object",
+  "package",
+  "return",
+  "super",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typealias",
+  "typeof",
+  "val",
+  "var",
+  "when",
+  "while",
+
+  // Soft keywords
+  "by",
+  "catch",
+  "constructor",
+  "delegate",
+  "dynamic",
+  "field",
+  "file",
+  "finally",
+  "get",
+  "import",
+  "init",
+  "param",
+  "property",
+  "receiver",
+  "set",
+  "setparam",
+  "where",
+
+  // Modifier keywords
+  "actual",
+  "abstract",
+  "annotation",
+  "companion",
+  "const",
+  "crossinline",
+  "data",
+  "enum",
+  "expect",
+  "external",
+  "final",
+  "infix",
+  "inline",
+  "inner",
+  "internal",
+  "lateinit",
+  "noinline",
+  "open",
+  "operator",
+  "out",
+  "override",
+  "private",
+  "protected",
+  "public",
+  "reified",
+  "sealed",
+  "suspend",
+  "tailrec",
+  "value",
+  "vararg",
+
+  // These aren't keywords anymore but still break some code if unescaped. https://youtrack.jetbrains.com/issue/KT-52315
+  "header",
+  "impl",
+
+  // Other reserved keywords
+  "yield",
+)
