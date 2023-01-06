@@ -50,11 +50,11 @@ public val KSDeclaration.className: ClassName
 
 public fun KSName.asStringQuoted(): String =
   asString().split('.').joinToString(separator = ".") {
-      when (it) {
-        in KEYWORDS -> "`$it`"
-        else -> it
-      }
+    when (it) {
+      in KEYWORDS -> "`$it`"
+      else -> it
     }
+  }
 
 public fun TypeName.asTransformLambda(): LambdaTypeName =
   LambdaTypeName.get(parameters = arrayOf(this), returnType = this)
