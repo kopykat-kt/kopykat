@@ -27,7 +27,7 @@ internal interface OptionsScope {
 }
 
 internal class ProcessorScope(
-  environment: SymbolProcessorEnvironment,
+  environment: SymbolProcessorEnvironment
 ) : LoggerScope, OptionsScope {
   val codegen = environment.codeGenerator
   override val logger = environment.logger
@@ -35,7 +35,7 @@ internal class ProcessorScope(
 }
 
 internal class KopyKatProcessor(
-  private val scope: ProcessorScope,
+  private val scope: ProcessorScope
 ) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {

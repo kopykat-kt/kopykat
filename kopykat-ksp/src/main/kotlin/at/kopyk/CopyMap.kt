@@ -37,7 +37,7 @@ internal val TypeCompileScope.copyMapFunctionKt: FileSpec
 
 private fun TypeCompileScope.repeatOnSubclasses(
   line: String,
-  functionName: String,
+  functionName: String
 ): String = when (typeCategory) {
   Value -> "$fullName($line)"
   Data -> "$functionName($line)"

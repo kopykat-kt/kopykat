@@ -51,7 +51,7 @@ internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
   fun KSPropertyDeclaration.toAssignment(wrapper: (String) -> String, source: String? = null): String =
     "$baseName = ${wrapper("${source ?: ""}$baseName")}"
   fun Sequence<Pair<KSPropertyDeclaration, MutationInfo<TypeName>>>.joinAsAssignmentsWithMutation(
-    wrapper: MutationInfo<TypeName>.(String) -> String,
+    wrapper: MutationInfo<TypeName>.(String) -> String
   ) = joinToString { (prop, mut) -> prop.toAssignment({ wrapper(mut, it) }) }
 
   fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
@@ -72,7 +72,7 @@ internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver 
 internal class ClassCompileScope(
   val classDeclaration: KSClassDeclaration,
   private val mutableCandidates: Sequence<KSDeclaration>,
-  override val logger: KSPLogger,
+  override val logger: KSPLogger
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
 
   override val typeVariableNames: List<TypeVariableName> =
@@ -105,7 +105,7 @@ internal class ClassCompileScope(
 internal class TypeAliasCompileScope(
   private val aliasDeclaration: KSTypeAlias,
   private val mutableCandidates: Sequence<KSDeclaration>,
-  override val logger: KSPLogger,
+  override val logger: KSPLogger
 ) : TypeCompileScope, KSTypeAlias by aliasDeclaration {
 
   init {
@@ -149,14 +149,14 @@ internal class TypeAliasCompileScope(
 
 internal class FileCompilerScope(
   val element: TypeCompileScope,
-  val file: FileSpec.Builder,
+  val file: FileSpec.Builder
 ) {
 
   fun addFunction(
     name: String,
     receives: TypeName?,
     returns: TypeName,
-    block: FunSpec.Builder.() -> Unit = {},
+    block: FunSpec.Builder.() -> Unit = {}
   ) {
     file.addFunction(
       FunSpec.builder(name).apply {
@@ -171,7 +171,7 @@ internal class FileCompilerScope(
     name: String,
     receives: TypeName?,
     returns: TypeName,
-    block: FunSpec.Builder.() -> Unit = {},
+    block: FunSpec.Builder.() -> Unit = {}
   ) {
     addFunction(name, receives, returns) {
       addModifiers(KModifier.INLINE)
@@ -197,8 +197,11 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
       val className: ClassName = ty.toClassNameRespectingNullability()
       val nullableLessClassName = className.copy(nullable = false)
       infix fun String.dot(function: String) =
-        if (ty.isMarkedNullable) "$this?.$function()"
-        else "$this.$function()"
+        if (ty.isMarkedNullable) {
+          "$this?.$function()"
+        } else {
+          "$this.$function()"
+        }
       val intermediate: MutationInfo<ClassName> = when {
         nullableLessClassName == LIST ->
           MutationInfo(
