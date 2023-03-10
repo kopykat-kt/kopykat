@@ -17,7 +17,7 @@ package at.kopyk
  * otherwise it clears the collection and re-adds the values.
  */
 public inline fun <T : MutableCollection<A>, A> T.mutateAll(
-  transform: (A) -> A,
+  transform: (A) -> A
 ): T = mutateAllNotNull(transform)
 
 /**
@@ -37,7 +37,7 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAll(
  * otherwise it clears the collection and re-adds the values.
  */
 public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(
-  transform: (index: Int, value: A) -> A,
+  transform: (index: Int, value: A) -> A
 ): T = mutateAllIndexedNotNull(transform)
 
 /**
@@ -51,7 +51,7 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(
  */
 @Suppress("UNCHECKED_CAST") // Ah, good old erasure
 public inline fun <T : MutableCollection<A>, A> T.mutateAllNotNull(
-  transform: (A) -> A?,
+  transform: (A) -> A?
 ): T = apply {
   (this as? MutableList<A>)?.mutateAllNotNull(transform) ?: clearThenAddAllNotNull(transform)
 }
@@ -70,7 +70,7 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAllNotNull(
  * ```
  */
 public inline fun <A> MutableList<A>.mutateAllNotNull(
-  transform: (A) -> A?,
+  transform: (A) -> A?
 ): MutableList<A> = apply {
   with(listIterator()) { while (hasNext()) transform(next())?.let(::set) ?: remove() }
 }
@@ -80,7 +80,7 @@ public inline fun <A> MutableList<A>.mutateAllNotNull(
  * leaving out any that are transformed to `null`.
  */
 public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(
-  transform: (A) -> A?,
+  transform: (A) -> A?
 ): T = apply {
   val remaining = mapNotNull(transform)
   clear()
@@ -104,7 +104,7 @@ public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(
  * otherwise it clears the collection and re-adds the values.
  */
 public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexedNotNull(
-  transform: (index: Int, value: A) -> A?,
+  transform: (index: Int, value: A) -> A?
 ): T {
   var index = 0
   return mutateAllNotNull { transform(index++, it) }

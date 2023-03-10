@@ -194,26 +194,30 @@ internal fun KSType.toClassNameRespectingNullability(): ClassName =
 internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
-      val className = ty.toClassNameRespectingNullability()
+      val className: ClassName = ty.toClassNameRespectingNullability()
+      val nullableLessClassName = className.copy(nullable = false)
       infix fun String.dot(function: String) =
         if (ty.isMarkedNullable) "$this?.$function()"
         else "$this.$function()"
       val intermediate: MutationInfo<ClassName> = when {
-        className == LIST ->
+        nullableLessClassName == LIST ->
           MutationInfo(
-            ClassName(className.packageName, "MutableList"),
+            ClassName(className.packageName, "MutableList")
+              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
             { it dot "toMutableList" },
             { it }
           )
-        className == MAP ->
+        nullableLessClassName == MAP ->
           MutationInfo(
-            ClassName(className.packageName, "MutableMap"),
+            ClassName(className.packageName, "MutableMap")
+              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
             { it dot "toMutableMap" },
             { it }
           )
-        className == SET ->
+        nullableLessClassName == SET ->
           MutationInfo(
-            ClassName(className.packageName, "MutableSet"),
+            ClassName(className.packageName, "MutableSet")
+              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
             { it dot "toMutableSet" },
             { it }
           )

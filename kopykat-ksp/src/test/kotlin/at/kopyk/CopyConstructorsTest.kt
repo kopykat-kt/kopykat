@@ -14,7 +14,7 @@ class CopyConstructorsTest {
       Arguments.of("", ""),
       Arguments.of("", "data"),
       Arguments.of("data", ""),
-      Arguments.of("data", "data"),
+      Arguments.of("data", "data")
     )
   }
 

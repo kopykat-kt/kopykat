@@ -20,7 +20,7 @@ public fun TypeSpec.Builder.addProperty(
   name: String,
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
-  initializer: String? = null,
+  initializer: String? = null
 ) {
   addProperty(name, type, modifiers, initializer) { mutable(false) }
 }
@@ -29,7 +29,7 @@ public fun TypeSpec.Builder.addMutableProperty(
   name: String,
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
-  initializer: String? = null,
+  initializer: String? = null
 ) {
   addProperty(name, type, modifiers, initializer) { mutable(true) }
 }
@@ -39,7 +39,7 @@ private fun TypeSpec.Builder.addProperty(
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
   initializer: String? = null,
-  block: PropertySpec.Builder.() -> Unit = { },
+  block: PropertySpec.Builder.() -> Unit = { }
 ) {
   addProperty(
     PropertySpec.builder(name = name, type = type).apply {

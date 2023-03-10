@@ -10,21 +10,21 @@ class MutableMapTest {
   fun `can mutate all entries`() = testMutation(
     given = mutableMapOf(12 to "a", 15 to "b"),
     whenWe = { mutateValues { (k, v) -> "$k -> $v" } },
-    then = { it shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b") },
+    then = { it shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b") }
   )
 
   @Test
   fun `can mutate all items deconstructed`() = testMutation(
     given = mutableMapOf(12 to "a", 15 to "b"),
     whenWe = { mutateValues { k, v -> "$k -> $v" } },
-    then = { it shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b") },
+    then = { it shouldContainExactly mapOf(12 to "12 -> a", 15 to "15 -> b") }
   )
 
   @Test
   fun `removes null mutations`() = testMutation(
     given = mutableMapOf(12 to "a", 15 to "b", 10 to "c"),
     whenWe = { mutateValuesNotNull { (k, v) -> "$k -> $v".takeUnless { v == "b" } } },
-    then = { it shouldContainExactly mapOf(12 to "12 -> a", 10 to "10 -> c") },
+    then = { it shouldContainExactly mapOf(12 to "12 -> a", 10 to "10 -> c") }
   )
 
   @Test

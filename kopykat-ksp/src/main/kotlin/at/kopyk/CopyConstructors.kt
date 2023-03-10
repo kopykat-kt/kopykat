@@ -23,7 +23,7 @@ import com.squareup.kotlinpoet.ksp.toKModifier
 internal data class CopyPair(
   val self: TypeCompileScope,
   val from: KSClassDeclaration,
-  val to: KSClassDeclaration,
+  val to: KSClassDeclaration
 )
 
 internal val ClassCompileScope.allCopies: Sequence<CopyPair>
@@ -44,7 +44,7 @@ internal fun nameFor(from: KSClassDeclaration, to: KSClassDeclaration) =
 
 internal fun fileSpec(
   others: Sequence<CopyPair>,
-  copyPair: CopyPair,
+  copyPair: CopyPair
 ): FileSpec? =
   with(copyPair) {
     when {
@@ -83,7 +83,7 @@ private fun TypeCompileScope.reportMismatchedProperties(
 private fun propertyDefinition(
   others: Sequence<CopyPair>,
   from: KSPropertyDeclaration,
-  to: KSPropertyDeclaration,
+  to: KSPropertyDeclaration
 ): String? {
   val fromType = from.typeDeclaration
   val toType = to.typeDeclaration
@@ -100,7 +100,7 @@ private val KSPropertyDeclaration.typeDeclaration
 
 private fun KSClassDeclaration.isIsomorphicOf(
   copies: Sequence<CopyPair>,
-  other: KSClassDeclaration,
+  other: KSClassDeclaration
 ): Boolean {
   val properties = getAllProperties().toSet()
   val otherProperties = other.getPrimaryConstructorProperties().toSet()
@@ -116,7 +116,7 @@ private val Iterable<KSPropertyDeclaration>.names get() = map { it.baseName }
 
 private fun KSPropertyDeclaration.isCopiableTo(
   copies: Sequence<CopyPair>,
-  other: KSPropertyDeclaration,
+  other: KSPropertyDeclaration
 ): Boolean {
   val thisDecl = typeDeclaration
   val otherDecl = other.typeDeclaration
