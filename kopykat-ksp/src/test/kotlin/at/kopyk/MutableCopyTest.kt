@@ -192,4 +192,26 @@ class MutableCopyTest {
       |val r = p2.second
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `issue #83, check null`() {
+    """
+      |data class Person(val d: List<String>? = null)
+      |
+      |val p = Person(listOf("e"))
+      |val p2 = p.copy { d = null }
+      |val r = p2.d
+      """.evals("r" to null)
+  }
+
+  @Test
+  fun `issue #83, check add`() {
+    """
+      |data class Person(val d: List<String>? = null)
+      |
+      |val p = Person(listOf("e"))
+      |val p2 = p.copy { d?.add("f") ; Unit }
+      |val r = p2.d
+      """.evals("r" to listOf("e", "f"))
+  }
 }

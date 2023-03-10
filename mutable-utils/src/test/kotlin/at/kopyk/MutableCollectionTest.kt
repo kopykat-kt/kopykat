@@ -10,21 +10,21 @@ class MutableCollectionTest {
   fun `can mutate all items`() = testMutation<MutableCollection<String>>(
     given = mutableListOf("a", "b", "c"),
     whenWe = { mutateAll { it + it } },
-    then = { it shouldContainExactly listOf("aa", "bb", "cc") },
+    then = { it shouldContainExactly listOf("aa", "bb", "cc") }
   )
 
   @Test
   fun `can mutate all items indexed`() = testMutation<MutableCollection<String>>(
     given = mutableListOf("a", "b", "c"),
     whenWe = { mutateAllIndexed { index, value -> value + index } },
-    then = { it shouldContainExactly listOf("a0", "b1", "c2") },
+    then = { it shouldContainExactly listOf("a0", "b1", "c2") }
   )
 
   @Test
   fun `removes null mutations`() = testMutation<MutableCollection<String>>(
     given = mutableListOf("a", "b", "c"),
     whenWe = { mutateAllNotNull { value -> value.takeUnless { it == "b" } } },
-    then = { it shouldContainExactly listOf("a", "c") },
+    then = { it shouldContainExactly listOf("a", "c") }
   )
 
   @Test

@@ -15,7 +15,7 @@ class CopyConstructorsWithValueTest {
       Arguments.of("value", "data"),
       Arguments.of("value", "value"),
       Arguments.of("", "value"),
-      Arguments.of("data", "value"),
+      Arguments.of("data", "value")
     )
   }
 

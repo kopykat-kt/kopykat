@@ -7,7 +7,7 @@ package at.kopyk
  * The mutable equivalent to [Map.mapValues].
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValues(
-  transform: (entry: Map.Entry<K, V>) -> V,
+  transform: (entry: Map.Entry<K, V>) -> V
 ): MutableMap<K, V> = mutateValuesNotNull(transform)
 
 /**
@@ -17,7 +17,7 @@ public inline fun <K, V> MutableMap<K, V>.mutateValues(
  * The mutable equivalent to [Map.mapValues].
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValues(
-  transform: (key: K, value: V) -> V,
+  transform: (key: K, value: V) -> V
 ): MutableMap<K, V> = mutateValuesNotNull(transform)
 
 /**
@@ -25,7 +25,7 @@ public inline fun <K, V> MutableMap<K, V>.mutateValues(
  * removing the item if `null` is returned.
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
-  transform: (entry: Map.Entry<K, V>) -> V?,
+  transform: (entry: Map.Entry<K, V>) -> V?
 ): MutableMap<K, V> = apply {
   with(iterator()) {
     while (hasNext()) {
@@ -41,7 +41,7 @@ public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
  * removing the item if `null` is returned.
  */
 public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
-  transform: (key: K, value: V) -> V?,
+  transform: (key: K, value: V) -> V?
 ): MutableMap<K, V> = mutateValuesNotNull { (key, value) -> transform(key, value) }
 
 /**

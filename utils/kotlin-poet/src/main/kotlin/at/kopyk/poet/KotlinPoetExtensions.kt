@@ -29,7 +29,7 @@ public val KSPropertyDeclaration.parameterModifiers: List<KModifier>
   get() = modifiers.mapNotNull { it.takeIf { it in modifiersAllowedInParams }?.toKModifier() }
 
 public fun ClassName.parameterizedWhenNotEmpty(typeArguments: List<TypeName>): TypeName =
-  takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments) ?: this
+  takeIf { typeArguments.isNotEmpty() }?.parameterizedBy(typeArguments)?.copy(nullable = this.isNullable) ?: this
 
 public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
   writeTo(codeGenerator = codeGenerator, aggregating = false)
@@ -158,5 +158,5 @@ private val KEYWORDS = setOf(
   "impl",
 
   // Other reserved keywords
-  "yield",
+  "yield"
 )

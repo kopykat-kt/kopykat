@@ -22,7 +22,7 @@ import org.apache.commons.io.FilenameUtils
 
 internal fun ProcessorScope.processFiles(
   resolver: Resolver,
-  block: FileCompileScope.() -> Unit,
+  block: FileCompileScope.() -> Unit
 ) {
   val files = resolver.getAllFiles()
   if (files.none(KSFile::hasGeneratedMarker)) {
@@ -32,7 +32,7 @@ internal fun ProcessorScope.processFiles(
 
 internal class FileCompileScope(
   files: Sequence<KSFile>,
-  scope: ProcessorScope,
+  scope: ProcessorScope
 ) : LoggerScope by scope, OptionsScope by scope {
 
   private val codegen: CodeGenerator = scope.codegen
