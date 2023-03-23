@@ -16,6 +16,17 @@ class MutableCopyTest {
   }
 
   @Test
+  fun `mutate one property, internal`() {
+    """
+      |internal data class Person(val name: String, val age: Int)
+      |
+      |internal val p1 = Person("Alex", 1)
+      |internal val p2 = p1.copy { age = age + 1 }
+      |val r = p2.age
+      """.evals("r" to 2)
+  }
+
+  @Test
   fun `weird package name, issue #78`() {
     """
       |package `this`.`in`.other

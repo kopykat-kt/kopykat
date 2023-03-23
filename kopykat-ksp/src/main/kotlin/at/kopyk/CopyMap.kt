@@ -16,12 +16,14 @@ import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
 import at.kopyk.utils.typeCategory
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.ksp.toKModifier
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
   get() = buildFile(fileName = target.append("CopyMap").reflectionName()) {
     val parameterized = target.parameterized
     addGeneratedMarker()
     addInlinedFunction(name = "copyMap", receives = parameterized, returns = parameterized) {
+      visibility.toKModifier()?.let { addModifiers(it) }
       properties
         .onEachRun {
           addParameter(
