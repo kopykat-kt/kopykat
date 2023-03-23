@@ -28,6 +28,7 @@ import at.kopyk.utils.typeCategory
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ksp.toKModifier
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
   get() = buildFile(target.mutable.reflectionName()) {
@@ -46,6 +47,7 @@ internal val TypeCompileScope.mutableCopyKt: FileSpec
 internal fun FileCompilerScope.addMutableCopy() {
   with(element) {
     file.addClass(target.mutable) {
+      visibility.toKModifier()?.let { addModifiers(it) }
       addAnnotation(target.dslMarker)
       addTypeVariables(typeVariableNames.map { it.makeInvariant() })
       primaryConstructor {
@@ -75,6 +77,7 @@ internal fun FileCompilerScope.addFreezeFunction() {
   with(element) {
     onKnownCategory { category ->
       addFunction(name = "freeze", receives = target.mutable.parameterized, returns = target.parameterized) {
+        visibility.toKModifier()?.let { addModifiers(it) }
         addReturn(
           when (category) {
             Known.Class -> error("Plain classes are not supported as mutable")
@@ -93,6 +96,7 @@ internal fun FileCompilerScope.addToMutateFunction() {
   with(element) {
     val parameterized = target.mutable.parameterized
     addFunction(name = "toMutable", receives = target.parameterized, returns = parameterized) {
+      visibility.toKModifier()?.let { addModifiers(it) }
       addReturn("$parameterized(old = this, ${mutationInfo.joinAsAssignmentsWithMutation { toMutable(it) }})")
     }
   }
@@ -123,7 +127,10 @@ private fun FileCompilerScope.addRetrofittedCopyFunction() {
 
 internal fun FileCompilerScope.addCopyFunction(block: FunSpec.Builder.() -> Unit) {
   with(element) {
-    addInlinedFunction(name = "copy", receives = target.parameterized, returns = target.parameterized, block = block)
+    addInlinedFunction(name = "copy", receives = target.parameterized, returns = target.parameterized) {
+      visibility.toKModifier()?.let { addModifiers(it) }
+      block()
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import at.kopyk.poet.parameterizedWhenNotEmpty
 import at.kopyk.utils.lang.orElse
 import at.kopyk.utils.lang.takeIfInstanceOf
 import com.google.devtools.ksp.closestClassDeclaration
+import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
@@ -14,6 +15,7 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.Visibility
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -38,6 +40,7 @@ internal data class MutationInfo<out T : TypeName>(
 internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
   val typeVariableNames: List<TypeVariableName>
   val typeParameterResolver: TypeParameterResolver
+  val visibility: Visibility
   val target: ClassName
   val sealedTypes: Sequence<KSClassDeclaration>
   val properties: Sequence<KSPropertyDeclaration>
@@ -80,6 +83,7 @@ internal class ClassCompileScope(
   override val typeParameterResolver: TypeParameterResolver
     get() = classDeclaration.typeParameters.toTypeParameterResolver().invariant()
 
+  override val visibility: Visibility = classDeclaration.getVisibility()
   override val target: ClassName = classDeclaration.className
   override val sealedTypes: Sequence<KSClassDeclaration> = classDeclaration.sealedTypes
   override val properties: Sequence<KSPropertyDeclaration> = classDeclaration.getPrimaryConstructorProperties()
@@ -116,6 +120,12 @@ internal class TypeAliasCompileScope(
     aliasDeclaration.typeParameters.map { it.toTypeVariableName() }
   override val typeParameterResolver: TypeParameterResolver
     get() = aliasDeclaration.typeParameters.toTypeParameterResolver().invariant()
+
+  override val visibility: Visibility
+    get() {
+      val ultimate = aliasDeclaration.ultimateDeclaration?.getVisibility() ?: Visibility.PUBLIC
+      return listOf(aliasDeclaration.getVisibility(), ultimate).minimal()
+    }
 
   override val target: ClassName = aliasDeclaration.className
   override val sealedTypes: Sequence<KSClassDeclaration> =
