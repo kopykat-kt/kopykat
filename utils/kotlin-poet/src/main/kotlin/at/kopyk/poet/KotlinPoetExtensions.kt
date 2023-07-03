@@ -10,6 +10,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.UNIT
@@ -68,6 +69,11 @@ public fun TypeName.asReceiverConsumer(): LambdaTypeName =
 public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
   val mutableSimpleName = (simpleNames + suffix).joinToString(separator = "$")
   return ClassName(packageName, mutableSimpleName).copy(this.isNullable, emptyList(), emptyMap())
+}
+
+public fun ParameterizedTypeName.flattenWithSuffix(suffix: String): ParameterizedTypeName {
+  val mutableSimpleName = (rawType.simpleNames + suffix).joinToString(separator = "$")
+  return ClassName(rawType.packageName, mutableSimpleName).copy(this.isNullable, emptyList(), emptyMap()).parameterizedBy(this.typeArguments)
 }
 
 // https://kotlinlang.org/docs/reference/keyword-reference.html
