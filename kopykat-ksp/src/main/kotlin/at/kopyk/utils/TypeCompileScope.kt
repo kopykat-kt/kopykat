@@ -22,6 +22,7 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.MAP
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeVariableName
@@ -201,39 +202,24 @@ internal class FileCompilerScope(
 internal fun KSType.toClassNameRespectingNullability(): ClassName =
   toClassName().copy(this.isMarkedNullable, emptyList(), emptyMap())
 
+internal fun KSType.toTypeNameRespectingNullability(typeParamResolver: TypeParameterResolver = TypeParameterResolver.EMPTY): TypeName =
+  toTypeName(typeParamResolver).copy(this.isMarkedNullable, emptyList(), emptyMap())
+
 internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
-      val className: ClassName = ty.toClassNameRespectingNullability()
+      val typeName: TypeName = ty.toTypeNameRespectingNullability(typeParameterResolver)
+      val className = when (typeName) {
+        is ClassName -> typeName
+        is ParameterizedTypeName -> typeName.rawType
+        else -> ty.toClassNameRespectingNullability()
+      }
       val nullableLessClassName = className.copy(nullable = false)
-      infix fun String.dot(function: String) =
-        if (ty.isMarkedNullable) {
-          "$this?.$function()"
-        } else {
-          "$this.$function()"
-        }
-      val intermediate: MutationInfo<ClassName> = when {
-        nullableLessClassName == LIST ->
-          MutationInfo(
-            ClassName(className.packageName, "MutableList")
-              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
-            { it dot "toMutableList" },
-            { it }
-          )
-        nullableLessClassName == MAP ->
-          MutationInfo(
-            ClassName(className.packageName, "MutableMap")
-              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
-            { it dot "toMutableMap" },
-            { it }
-          )
-        nullableLessClassName == SET ->
-          MutationInfo(
-            ClassName(className.packageName, "MutableSet")
-              .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()),
-            { it dot "toMutableSet" },
-            { it }
-          )
+      infix fun String.dot(function: String) = dot(ty, function)
+      when {
+        nullableLessClassName == LIST -> mutationInfoOfCollection(ty, className, className.simpleName)
+        nullableLessClassName == MAP -> mutationInfoOfCollection(ty, className, className.simpleName)
+        nullableLessClassName == SET -> mutationInfoOfCollection(ty, className, className.simpleName)
         ty.hasMutableCopy() ->
           MutationInfo(
             className.mutable,
@@ -241,16 +227,59 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
             { it dot "freeze" }
           )
         else ->
-          MutationInfo(className, { it }, { it })
+          MutationInfo(
+            className.parameterizedWhenNotEmpty(
+              ty.arguments.map { it.toTypeName(typeParameterResolver) }
+            ),
+            { it },
+            { it }
+          )
       }
-      MutationInfo(
-        className = intermediate.className.parameterizedWhenNotEmpty(
-          ty.arguments.map { it.toTypeName(typeParameterResolver) }
-        ),
-        toMutable = intermediate.toMutable,
-        freeze = intermediate.freeze
-      )
     }
     else ->
       MutationInfo(ty.toTypeName(typeParameterResolver), { it }, { it })
+  }
+
+internal fun TypeCompileScope.mutationInfoOfCollection(
+  ty: KSType,
+  className: ClassName,
+  collectionType: String
+): MutationInfo<TypeName> {
+  infix fun String.dot(function: String) = dot(ty, function)
+  infix fun String.dotMap(map: String) = dotMap(ty, map)
+  val type = ty.arguments[0].type?.resolve()
+  val isMutableCollection =
+    (ty.arguments.size == 1 && type?.hasMutableCopy() == true)
+  val transform: (String) -> String = if (isMutableCollection) {
+    { it dotMap "it.toMutable()" dot "toMutable$collectionType" }
+  } else {
+    { it dot "toMutable$collectionType" }
+  }
+  val freeze: (String) -> String = if (isMutableCollection) {
+    { it dotMap "it.freeze()" }
+  } else {
+    { it }
+  }
+  return MutationInfo(
+    ClassName(className.packageName, "Mutable$collectionType")
+      .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()).parameterizedWhenNotEmpty(
+        type?.takeIf { isMutableCollection }?.toTypeName(typeParameterResolver)?.mutable?.let(::listOf)
+          ?: ty.arguments.map { it.toTypeName(typeParameterResolver) }
+      ),
+    transform,
+    freeze
+  )
+}
+
+internal fun String.dot(ty: KSType, function: String) = if (ty.isMarkedNullable) {
+  "$this?.$function()"
+} else {
+  "$this.$function()"
+}
+
+internal fun String.dotMap(ty: KSType, map: String) =
+  if (ty.isMarkedNullable) {
+    "$this?.map { $map }"
+  } else {
+    "$this.map { $map }"
   }
