@@ -18,6 +18,7 @@ class MutableCollectionCopyTest {
       val age = g2.p[1].age
     """.trimIndent().evals("age" to 3)
   }
+
   @Test
   fun `copy property in collection with generic type`() {
     """

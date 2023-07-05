@@ -15,4 +15,3 @@ internal val TypeName.mutable: TypeName?
     is ParameterizedTypeName -> this.mutable
     else -> null
   }
-

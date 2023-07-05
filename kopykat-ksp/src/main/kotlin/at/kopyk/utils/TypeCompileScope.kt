@@ -209,10 +209,10 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
       val typeName: TypeName = ty.toTypeNameRespectingNullability(typeParameterResolver)
-      val className = when(typeName) {
+      val className = when (typeName) {
         is ClassName -> typeName
         is ParameterizedTypeName -> typeName.rawType
-        else ->  ty.toClassNameRespectingNullability()
+        else -> ty.toClassNameRespectingNullability()
       }
       val nullableLessClassName = className.copy(nullable = false)
       infix fun String.dot(function: String) = dot(ty, function)
@@ -227,9 +227,13 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
             { it dot "freeze" }
           )
         else ->
-          MutationInfo(className.parameterizedWhenNotEmpty(
-            ty.arguments.map { it.toTypeName(typeParameterResolver) }
-          ), { it }, { it })
+          MutationInfo(
+            className.parameterizedWhenNotEmpty(
+              ty.arguments.map { it.toTypeName(typeParameterResolver) }
+            ),
+            { it },
+            { it }
+          )
       }
     }
     else ->
