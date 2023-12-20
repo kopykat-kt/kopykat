@@ -3,7 +3,6 @@ package at.kopyk
 import org.junit.jupiter.api.Test
 
 class PackageTest {
-
   @Test
   fun `copyMap, simple test`() {
     """

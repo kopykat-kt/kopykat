@@ -12,7 +12,10 @@ public fun TypeSpec.Builder.primaryConstructor(block: FunSpec.Builder.() -> Unit
   primaryConstructor(FunSpec.constructorBuilder().apply(block).build())
 }
 
-public fun FileSpec.Builder.addClass(className: ClassName, block: TypeSpec.Builder.() -> Unit) {
+public fun FileSpec.Builder.addClass(
+  className: ClassName,
+  block: TypeSpec.Builder.() -> Unit,
+) {
   addType(TypeSpec.classBuilder(className).apply(block).build())
 }
 
@@ -20,7 +23,7 @@ public fun TypeSpec.Builder.addProperty(
   name: String,
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
-  initializer: String? = null
+  initializer: String? = null,
 ) {
   addProperty(name, type, modifiers, initializer) { mutable(false) }
 }
@@ -29,7 +32,7 @@ public fun TypeSpec.Builder.addMutableProperty(
   name: String,
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
-  initializer: String? = null
+  initializer: String? = null,
 ) {
   addProperty(name, type, modifiers, initializer) { mutable(true) }
 }
@@ -39,12 +42,12 @@ private fun TypeSpec.Builder.addProperty(
   type: TypeName,
   modifiers: Iterable<KModifier> = emptyList(),
   initializer: String? = null,
-  block: PropertySpec.Builder.() -> Unit = { }
+  block: PropertySpec.Builder.() -> Unit = { },
 ) {
   addProperty(
     PropertySpec.builder(name = name, type = type).apply {
       if (initializer != null) initializer(initializer)
       addModifiers(modifiers)
-    }.apply(block).build()
+    }.apply(block).build(),
   )
 }

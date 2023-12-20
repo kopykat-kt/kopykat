@@ -11,22 +11,23 @@ import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Modifier.SEALED
 
 internal val KSDeclaration.typeCategory: TypeCategory
-  get() = when (this) {
-    is KSTypeAlias ->
-      when (val result = type.resolve().declaration.typeCategory) {
-        is Unknown -> Unknown(this)
-        else -> result
-      }
-    is KSClassDeclaration ->
-      when {
-        isDataClass() -> Known.Data
-        isValueClass() -> Known.Value
-        isSealedDataHierarchy() -> Known.Sealed
-        isConstructable() -> Known.Class
-        else -> Unknown(this)
-      }
-    else -> Unknown(this)
-  }
+  get() =
+    when (this) {
+      is KSTypeAlias ->
+        when (val result = type.resolve().declaration.typeCategory) {
+          is Unknown -> Unknown(this)
+          else -> result
+        }
+      is KSClassDeclaration ->
+        when {
+          isDataClass() -> Known.Data
+          isValueClass() -> Known.Value
+          isSealedDataHierarchy() -> Known.Sealed
+          isConstructable() -> Known.Class
+          else -> Unknown(this)
+        }
+      else -> Unknown(this)
+    }
 
 internal val KSTypeAlias.ultimateDeclaration: KSClassDeclaration? get() =
   when (val oneStep = type.resolve().declaration) {
@@ -42,8 +43,11 @@ internal inline fun TypeCompileScope.onKnownCategory(block: (Known) -> Unit) {
 internal sealed interface TypeCategory {
   sealed interface Known : TypeCategory {
     object Sealed : Known
+
     object Value : Known
+
     object Data : Known
+
     object Class : Known
   }
 
@@ -56,8 +60,6 @@ private fun KSClassDeclaration.isDataClass() = isConstructable() && Modifier.DAT
 
 private fun KSClassDeclaration.isValueClass() = isConstructable() && Modifier.VALUE in modifiers
 
-private fun KSClassDeclaration.isSealedDataHierarchy() =
-  SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
+private fun KSClassDeclaration.isSealedDataHierarchy() = SEALED in modifiers && isAbstract() && hasOnlyDataClassChildren()
 
-private fun KSClassDeclaration.hasOnlyDataClassChildren() =
-  sealedTypes.any() && sealedTypes.all { it.isDataClass() || it.isValueClass() }
+private fun KSClassDeclaration.hasOnlyDataClassChildren() = sealedTypes.any() && sealedTypes.all { it.isDataClass() || it.isValueClass() }

@@ -3,7 +3,6 @@ package at.kopyk
 import org.junit.jupiter.api.Test
 
 class ValueCopyMapTest {
-
   @Test
   fun `simple test`() {
     """

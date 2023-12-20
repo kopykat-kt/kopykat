@@ -22,7 +22,7 @@ import org.apache.commons.io.FilenameUtils
 
 internal fun ProcessorScope.processFiles(
   resolver: Resolver,
-  block: FileCompileScope.() -> Unit
+  block: FileCompileScope.() -> Unit,
 ) {
   val files = resolver.getAllFiles()
   if (files.none(KSFile::hasGeneratedMarker)) {
@@ -32,23 +32,25 @@ internal fun ProcessorScope.processFiles(
 
 internal class FileCompileScope(
   files: Sequence<KSFile>,
-  scope: ProcessorScope
+  scope: ProcessorScope,
 ) : LoggerScope by scope, OptionsScope by scope {
-
   private val codegen: CodeGenerator = scope.codegen
 
-  val declarations = files
-    .flatMap { it.allNestedDeclarations() }
-    .onEach { it.isKnownWithCopyExtension() }
-    .onEach { it.checkRedundantAnnotation() }
-    .filter { it.typeCategory is Known }
+  val declarations =
+    files
+      .flatMap { it.allNestedDeclarations() }
+      .onEach { it.isKnownWithCopyExtension() }
+      .onEach { it.checkRedundantAnnotation() }
+      .filter { it.typeCategory is Known }
 
-  val typeAliases = declarations
-    .filterIsInstance<KSTypeAlias> { isKnownWithCopyExtension() }
+  val typeAliases =
+    declarations
+      .filterIsInstance<KSTypeAlias> { isKnownWithCopyExtension() }
 
-  val classes = declarations
-    .filterIsInstance<KSClassDeclaration>()
-    .filter { it.shouldGenerate() }
+  val classes =
+    declarations
+      .filterIsInstance<KSClassDeclaration>()
+      .filter { it.shouldGenerate() }
 
   val KSClassDeclaration.classScope: ClassCompileScope
     get() = ClassCompileScope(this, classes, logger)
@@ -65,7 +67,7 @@ internal class FileCompileScope(
             '@CopyExtensions' may only be used in data or value classes,
             sealed hierarchies of those, or type aliases of those.
             """.trimIndent(),
-            this
+            this,
           )
         }
       }
@@ -83,27 +85,28 @@ internal class FileCompileScope(
         Add 'arg("annotatedOnly", "true")' to your KSP configuration to change this option.
         More info at https://kopyk.at/#enable-only-for-selected-classes.
         """.trimIndent(),
-        this
+        this,
       )
     }
   }
 
   @OptIn(KspExperimental::class)
-  private fun KSDeclaration.shouldGenerate(): Boolean = when (options.generate) {
-    is KopyKatGenerate.Error ->
-      false
+  private fun KSDeclaration.shouldGenerate(): Boolean =
+    when (options.generate) {
+      is KopyKatGenerate.Error ->
+        false
 
-    is KopyKatGenerate.All ->
-      true
+      is KopyKatGenerate.All ->
+        true
 
-    is KopyKatGenerate.Annotated ->
-      isAnnotationPresent(CopyExtensions::class)
+      is KopyKatGenerate.Annotated ->
+        isAnnotationPresent(CopyExtensions::class)
 
-    is KopyKatGenerate.Packages -> {
-      val pkg = packageName.asString()
-      options.generate.patterns.any { pattern ->
-        FilenameUtils.wildcardMatch(pkg, pattern)
+      is KopyKatGenerate.Packages -> {
+        val pkg = packageName.asString()
+        options.generate.patterns.any { pattern ->
+          FilenameUtils.wildcardMatch(pkg, pattern)
+        }
       }
     }
-  }
 }

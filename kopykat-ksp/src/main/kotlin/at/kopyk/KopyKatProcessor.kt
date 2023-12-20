@@ -27,7 +27,7 @@ internal interface OptionsScope {
 }
 
 internal class ProcessorScope(
-  environment: SymbolProcessorEnvironment
+  environment: SymbolProcessorEnvironment,
 ) : LoggerScope, OptionsScope {
   val codegen = environment.codeGenerator
   override val logger = environment.logger
@@ -35,9 +35,8 @@ internal class ProcessorScope(
 }
 
 internal class KopyKatProcessor(
-  private val scope: ProcessorScope
+  private val scope: ProcessorScope,
 ) : SymbolProcessor {
-
   override fun process(resolver: Resolver): List<KSAnnotated> {
     scope.processFiles(resolver) {
       // add copy functions for data, value classes, and type aliases
@@ -65,5 +64,4 @@ internal class KopyKatProcessor(
     typeCategory in listOf(Data, Value) || typeCategory is Sealed && hierarchyCopy
 }
 
-private fun KSClassDeclaration.hasCopyAnnotation() =
-  hasAnnotation<Copy>() || hasAnnotation<CopyTo>() || hasAnnotation<CopyFrom>()
+private fun KSClassDeclaration.hasCopyAnnotation() = hasAnnotation<Copy>() || hasAnnotation<CopyTo>() || hasAnnotation<CopyFrom>()

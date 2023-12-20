@@ -36,11 +36,9 @@ public fun FileSpec.writeTo(codeGenerator: CodeGenerator) {
   writeTo(codeGenerator = codeGenerator, aggregating = false)
 }
 
-public fun ClassName.map(name: (String) -> String): ClassName =
-  ClassName(packageName, simpleNames.run { dropLast(1) + name(last()) })
+public fun ClassName.map(name: (String) -> String): ClassName = ClassName(packageName, simpleNames.run { dropLast(1) + name(last()) })
 
-public fun ClassName.append(name: String): ClassName =
-  ClassName(packageName, simpleNames + name)
+public fun ClassName.append(name: String): ClassName = ClassName(packageName, simpleNames + name)
 
 public val KSDeclaration.className: ClassName
   get() =
@@ -57,14 +55,12 @@ public fun KSName.asStringQuoted(): String =
     }
   }
 
-public fun TypeName.asTransformLambda(): LambdaTypeName =
-  LambdaTypeName.get(parameters = arrayOf(this), returnType = this)
+public fun TypeName.asTransformLambda(): LambdaTypeName = LambdaTypeName.get(parameters = arrayOf(this), returnType = this)
 
 public fun TypeName.asTransformLambda(receiver: TypeName): LambdaTypeName =
   LambdaTypeName.get(receiver = receiver, parameters = arrayOf(this), returnType = this)
 
-public fun TypeName.asReceiverConsumer(): LambdaTypeName =
-  LambdaTypeName.get(receiver = this, returnType = UNIT)
+public fun TypeName.asReceiverConsumer(): LambdaTypeName = LambdaTypeName.get(receiver = this, returnType = UNIT)
 
 public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
   val mutableSimpleName = (simpleNames + suffix).joinToString(separator = "$")
@@ -73,96 +69,96 @@ public fun ClassName.flattenWithSuffix(suffix: String): ClassName {
 
 public fun ParameterizedTypeName.flattenWithSuffix(suffix: String): ParameterizedTypeName {
   val mutableSimpleName = (rawType.simpleNames + suffix).joinToString(separator = "$")
-  return ClassName(rawType.packageName, mutableSimpleName).copy(this.isNullable, emptyList(), emptyMap()).parameterizedBy(this.typeArguments)
+  return ClassName(
+    rawType.packageName,
+    mutableSimpleName,
+  ).copy(this.isNullable, emptyList(), emptyMap()).parameterizedBy(this.typeArguments)
 }
 
 // https://kotlinlang.org/docs/reference/keyword-reference.html
-private val KEYWORDS = setOf(
-  // Hard keywords
-  "as",
-  "break",
-  "class",
-  "continue",
-  "do",
-  "else",
-  "false",
-  "for",
-  "fun",
-  "if",
-  "in",
-  "interface",
-  "is",
-  "null",
-  "object",
-  "package",
-  "return",
-  "super",
-  "this",
-  "throw",
-  "true",
-  "try",
-  "typealias",
-  "typeof",
-  "val",
-  "var",
-  "when",
-  "while",
-
-  // Soft keywords
-  "by",
-  "catch",
-  "constructor",
-  "delegate",
-  "dynamic",
-  "field",
-  "file",
-  "finally",
-  "get",
-  "import",
-  "init",
-  "param",
-  "property",
-  "receiver",
-  "set",
-  "setparam",
-  "where",
-
-  // Modifier keywords
-  "actual",
-  "abstract",
-  "annotation",
-  "companion",
-  "const",
-  "crossinline",
-  "data",
-  "enum",
-  "expect",
-  "external",
-  "final",
-  "infix",
-  "inline",
-  "inner",
-  "internal",
-  "lateinit",
-  "noinline",
-  "open",
-  "operator",
-  "out",
-  "override",
-  "private",
-  "protected",
-  "public",
-  "reified",
-  "sealed",
-  "suspend",
-  "tailrec",
-  "value",
-  "vararg",
-
-  // These aren't keywords anymore but still break some code if unescaped. https://youtrack.jetbrains.com/issue/KT-52315
-  "header",
-  "impl",
-
-  // Other reserved keywords
-  "yield"
-)
+private val KEYWORDS =
+  setOf(
+    // Hard keywords
+    "as",
+    "break",
+    "class",
+    "continue",
+    "do",
+    "else",
+    "false",
+    "for",
+    "fun",
+    "if",
+    "in",
+    "interface",
+    "is",
+    "null",
+    "object",
+    "package",
+    "return",
+    "super",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typealias",
+    "typeof",
+    "val",
+    "var",
+    "when",
+    "while",
+    // Soft keywords
+    "by",
+    "catch",
+    "constructor",
+    "delegate",
+    "dynamic",
+    "field",
+    "file",
+    "finally",
+    "get",
+    "import",
+    "init",
+    "param",
+    "property",
+    "receiver",
+    "set",
+    "setparam",
+    "where",
+    // Modifier keywords
+    "actual",
+    "abstract",
+    "annotation",
+    "companion",
+    "const",
+    "crossinline",
+    "data",
+    "enum",
+    "expect",
+    "external",
+    "final",
+    "infix",
+    "inline",
+    "inner",
+    "internal",
+    "lateinit",
+    "noinline",
+    "open",
+    "operator",
+    "out",
+    "override",
+    "private",
+    "protected",
+    "public",
+    "reified",
+    "sealed",
+    "suspend",
+    "tailrec",
+    "value",
+    "vararg",
+    // These aren't keywords anymore but still break some code if unescaped. https://youtrack.jetbrains.com/issue/KT-52315
+    "header",
+    "impl",
+    // Other reserved keywords
+    "yield",
+  )

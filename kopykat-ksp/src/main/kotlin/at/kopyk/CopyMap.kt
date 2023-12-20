@@ -19,30 +19,32 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 
 internal val TypeCompileScope.copyMapFunctionKt: FileSpec
-  get() = buildFile(fileName = target.append("CopyMap").reflectionName()) {
-    val parameterized = target.parameterized
-    addGeneratedMarker()
-    addInlinedFunction(name = "copyMap", receives = parameterized, returns = parameterized) {
-      visibility.toKModifier()?.let { addModifiers(it) }
-      properties
-        .onEachRun {
-          addParameter(
-            name = baseName,
-            type = typeName.asTransformLambda(receiver = parameterized),
-            defaultValue = "{ it }"
-          )
-        }
-        .mapRun { "$baseName = $baseName(this, this.$baseName)" }
-        .run { addReturn(repeatOnSubclasses(joinToString(), "copy")) }
+  get() =
+    buildFile(fileName = target.append("CopyMap").reflectionName()) {
+      val parameterized = target.parameterized
+      addGeneratedMarker()
+      addInlinedFunction(name = "copyMap", receives = parameterized, returns = parameterized) {
+        visibility.toKModifier()?.let { addModifiers(it) }
+        properties
+          .onEachRun {
+            addParameter(
+              name = baseName,
+              type = typeName.asTransformLambda(receiver = parameterized),
+              defaultValue = "{ it }",
+            )
+          }
+          .mapRun { "$baseName = $baseName(this, this.$baseName)" }
+          .run { addReturn(repeatOnSubclasses(joinToString(), "copy")) }
+      }
     }
-  }
 
 private fun TypeCompileScope.repeatOnSubclasses(
   line: String,
-  functionName: String
-): String = when (typeCategory) {
-  Value -> "$fullName($line)"
-  Data -> "$functionName($line)"
-  Sealed -> sealedTypes.joinWithWhen { "is ${it.fullName} -> $functionName($line)" }
-  else -> error("Unknown type category for ${target.canonicalName}")
-}
+  functionName: String,
+): String =
+  when (typeCategory) {
+    Value -> "$fullName($line)"
+    Data -> "$functionName($line)"
+    Sealed -> sealedTypes.joinWithWhen { "is ${it.fullName} -> $functionName($line)" }
+    else -> error("Unknown type category for ${target.canonicalName}")
+  }

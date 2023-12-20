@@ -10,8 +10,7 @@ internal inline fun <A> Sequence<A>.forEachRun(block: A.() -> Unit) {
 /**
  * Alias of [flatMap] with the item as the receiver.
  */
-internal inline fun <A, R> Sequence<A>.flatMapRun(crossinline block: A.() -> Sequence<R>) =
-  flatMap { it.block() }
+internal inline fun <A, R> Sequence<A>.flatMapRun(crossinline block: A.() -> Sequence<R>) = flatMap { it.block() }
 
 /**
  * Alias of [onEach] with the item as the receiver.

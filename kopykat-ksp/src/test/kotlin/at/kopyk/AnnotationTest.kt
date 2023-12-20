@@ -3,7 +3,6 @@ package at.kopyk
 import org.junit.jupiter.api.Test
 
 class AnnotationTest {
-
   @Test
   fun `generates with annotation`() {
     """
@@ -86,7 +85,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A"),
     ) {
       it.contains("Unresolved reference: copyMap")
     }
@@ -103,7 +102,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}?")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}?"),
     ) {
       it.contains("Unresolved reference: copyMap")
     }
@@ -120,7 +119,7 @@ class AnnotationTest {
       |val p2 = p1.copyMap(age = { it + 1 })
       |val r = p2.age
       """.failsWith(
-      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A")
+      mapOf("generate" to "${KopyKatGenerate.PACKAGES_PREFIX}A"),
     ) {
       it.contains("Unresolved reference: copyMap")
     }

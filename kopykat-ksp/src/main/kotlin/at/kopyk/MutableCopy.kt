@@ -31,18 +31,19 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ksp.toKModifier
 
 internal val TypeCompileScope.mutableCopyKt: FileSpec
-  get() = buildFile(target.mutable.reflectionName()) {
-    addGeneratedMarker()
-    addDslMarkerClass()
-    addMutableCopy()
-    addFreezeFunction()
-    addToMutateFunction()
-    addCopyClosure()
+  get() =
+    buildFile(target.mutable.reflectionName()) {
+      addGeneratedMarker()
+      addDslMarkerClass()
+      addMutableCopy()
+      addFreezeFunction()
+      addToMutateFunction()
+      addCopyClosure()
 
-    if (typeCategory is Sealed) {
-      addRetrofittedCopyFunction()
+      if (typeCategory is Sealed) {
+        addRetrofittedCopyFunction()
+      }
     }
-  }
 
 internal fun FileCompilerScope.addMutableCopy() {
   with(element) {
@@ -56,13 +57,13 @@ internal fun FileCompilerScope.addMutableCopy() {
             addParameter(
               name = baseName,
               type = mutationInfo.className,
-              modifiers = parameterModifiers
+              modifiers = parameterModifiers,
             )
             addMutableProperty(
               name = baseName,
               type = mutationInfo.className,
               modifiers = propertyModifiers,
-              initializer = baseName
+              initializer = baseName,
             )
           }
         }
@@ -82,10 +83,11 @@ internal fun FileCompilerScope.addFreezeFunction() {
           when (category) {
             Known.Class -> error("Plain classes are not supported as mutable")
             Data, Value -> "${target.canonicalName}(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) }})"
-            Sealed -> sealedTypes.joinWithWhen(subject = "old") { type ->
-              "is ${type.fullName} -> old.copy(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) }})"
-            }
-          }
+            Sealed ->
+              sealedTypes.joinWithWhen(subject = "old") { type ->
+                "is ${type.fullName} -> old.copy(${mutationInfo.joinAsAssignmentsWithMutation { freeze(it) }})"
+              }
+          },
         )
       }
     }
@@ -119,7 +121,7 @@ private fun FileCompilerScope.addRetrofittedCopyFunction() {
       addReturn(
         sealedTypes.joinWithWhen { type ->
           "is ${type.fullName} -> this.copy(${properties.joinToString { "${it.baseName} = ${it.baseName}" }})"
-        }
+        },
       )
     }
   }

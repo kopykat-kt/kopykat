@@ -100,6 +100,8 @@ class HierarchyCopyTest {
       |
       |val p1: User = Person("Alex", 1)
       |val p2 = p1.copy(age = 2)
-      """.failsWith { it.contains("Cannot find a parameter with this name: age") }
+      """.failsWith {
+      it.contains("Cannot find a parameter with this name: age")
+    }
   }
 }

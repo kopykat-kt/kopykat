@@ -50,6 +50,7 @@ internal fun KSTypeReference.substitute(subst: TypeSubstitution): KSTypeReferenc
   val previous: KSTypeReference = this
   return object : KSTypeReference by previous {
     override val element: KSReferenceElement? = null
+
     override fun resolve(): KSType = previous.resolve().substitute(subst)
   }
 }

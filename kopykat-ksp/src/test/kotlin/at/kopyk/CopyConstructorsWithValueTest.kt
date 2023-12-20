@@ -7,21 +7,24 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 class CopyConstructorsWithValueTest {
-
   companion object {
     @JvmStatic
-    fun cases(): Stream<Arguments> = Stream.of(
-      Arguments.of("value", ""),
-      Arguments.of("value", "data"),
-      Arguments.of("value", "value"),
-      Arguments.of("", "value"),
-      Arguments.of("data", "value")
-    )
+    fun cases(): Stream<Arguments> =
+      Stream.of(
+        Arguments.of("value", ""),
+        Arguments.of("value", "data"),
+        Arguments.of("value", "value"),
+        Arguments.of("", "value"),
+        Arguments.of("data", "value"),
+      )
   }
 
   @ParameterizedTest(name = "{0} class CopyFrom {1} class")
   @MethodSource("cases")
-  fun copyFrom(annotatedModifiers: String, targetModifiers: String) {
+  fun copyFrom(
+    annotatedModifiers: String,
+    targetModifiers: String,
+  ) {
     """
     |import at.kopyk.CopyFrom
     |
@@ -40,7 +43,10 @@ class CopyConstructorsWithValueTest {
 
   @ParameterizedTest(name = "{0} class CopyTo {1} class")
   @MethodSource("cases")
-  fun copyTo(annotatedModifiers: String, targetModifiers: String) {
+  fun copyTo(
+    annotatedModifiers: String,
+    targetModifiers: String,
+  ) {
     """
     |import at.kopyk.CopyTo
     |
@@ -59,7 +65,10 @@ class CopyConstructorsWithValueTest {
 
   @ParameterizedTest(name = "{0} class Copy {1} class")
   @MethodSource("cases")
-  fun copy(annotatedModifiers: String, targetModifiers: String) {
+  fun copy(
+    annotatedModifiers: String,
+    targetModifiers: String,
+  ) {
     """
     |import at.kopyk.Copy
     |
@@ -91,7 +100,9 @@ class CopyConstructorsWithValueTest {
       |val p1 = Person()
       |val p2 = LocalPerson(p1)
       |val r = p2.name
-      """.failsWith { it.contains("LocalPerson must have the same constructor properties as Person") }
+      """.failsWith {
+      it.contains("LocalPerson must have the same constructor properties as Person")
+    }
   }
 
   @Test
@@ -108,7 +119,9 @@ class CopyConstructorsWithValueTest {
       |val p1 = Person()
       |val p2 = LocalPerson(p1)
       |val r = p2.name
-      """.failsWith { it.contains("LocalPerson must have the same constructor properties as Person") }
+      """.failsWith {
+      it.contains("LocalPerson must have the same constructor properties as Person")
+    }
   }
 
   @Test
@@ -125,6 +138,8 @@ class CopyConstructorsWithValueTest {
       |val p1 = Person()
       |val p2 = LocalPerson(p1)
       |val r = p2.age
-      """.failsWith { it.contains("Person must have the same constructor properties as LocalPerson") }
+      """.failsWith {
+      it.contains("Person must have the same constructor properties as LocalPerson")
+    }
   }
 }

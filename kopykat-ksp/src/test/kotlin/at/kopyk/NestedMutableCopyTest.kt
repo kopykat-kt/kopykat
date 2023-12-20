@@ -3,7 +3,6 @@ package at.kopyk
 import org.junit.jupiter.api.Test
 
 class NestedMutableCopyTest {
-
   @Test
   fun `mutate nested property`() {
     """
@@ -50,6 +49,8 @@ class NestedMutableCopyTest {
     """
       |data class Person(val name: String, val passport: Passport?)
       |data class Passport(val id: String, val countryCode: String)
-    """.compilesWith { true }
+    """.compilesWith {
+      true
+    }
   }
 }

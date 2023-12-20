@@ -3,7 +3,6 @@ package at.kopyk
 import org.junit.jupiter.api.Test
 
 class CopyMapTest {
-
   @Test
   fun `simple test`() {
     """
@@ -80,7 +79,9 @@ class CopyMapTest {
       |val p1 = Person("Alex", 1)
       |val p2 = p1.copyMap()
       |val r = p2.age
-      """.failsWith { it.contains("Unresolved reference: copyMap") }
+      """.failsWith {
+      it.contains("Unresolved reference: copyMap")
+    }
   }
 
   @Test

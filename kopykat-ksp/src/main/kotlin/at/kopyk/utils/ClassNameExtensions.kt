@@ -10,8 +10,9 @@ internal val ParameterizedTypeName.mutable: ParameterizedTypeName get() = flatte
 internal val ClassName.dslMarker: ClassName get() = flattenWithSuffix("DslMarker")
 
 internal val TypeName.mutable: TypeName?
-  get() = when (this) {
-    is ClassName -> this.mutable
-    is ParameterizedTypeName -> this.mutable
-    else -> null
-  }
+  get() =
+    when (this) {
+      is ClassName -> this.mutable
+      is ParameterizedTypeName -> this.mutable
+      else -> null
+    }

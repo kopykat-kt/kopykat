@@ -12,18 +12,18 @@ import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Paths
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 
 private const val SOURCE_FILENAME = "Source.kt"
 
 public fun String.failsWith(
   provider: SymbolProcessorProvider,
   providerArgs: Map<String, String> = emptyMap(),
-  check: (String) -> Boolean
+  check: (String) -> Boolean,
 ) {
   val compilationResult = compile(this, provider, providerArgs)
   compilationResult.exitCode shouldNotBe OK
@@ -33,7 +33,7 @@ public fun String.failsWith(
 public fun String.compilesWith(
   provider: SymbolProcessorProvider,
   providerArgs: Map<String, String> = emptyMap(),
-  check: (String) -> Boolean
+  check: (String) -> Boolean,
 ) {
   val compilationResult = compile(this, provider, providerArgs)
 
@@ -44,7 +44,7 @@ public fun String.compilesWith(
 public fun String.evals(
   provider: SymbolProcessorProvider,
   providerArgs: Map<String, String> = emptyMap(),
-  vararg things: Pair<String, Any?>
+  vararg things: Pair<String, Any?>,
 ) {
   val compilationResult = compile(this, provider, providerArgs)
   compilationResult.exitCode shouldBe OK
@@ -59,26 +59,25 @@ public fun String.evals(
 
 internal data class FullCompilationResult(
   val mainResult: CompilationResult,
-  val additionalMessages: String?
+  val additionalMessages: String?,
 ) {
   val exitCode = mainResult.exitCode
   val outputDirectory = mainResult.outputDirectory
-  val messages = when (additionalMessages) {
-    null -> mainResult.messages
-    else -> listOf(additionalMessages, mainResult.messages).joinToString(separator = "\n")
-  }
+  val messages =
+    when (additionalMessages) {
+      null -> mainResult.messages
+      else -> listOf(additionalMessages, mainResult.messages).joinToString(separator = "\n")
+    }
 }
 
-private fun CompilationResult.pass1Result() =
-  FullCompilationResult(this, null)
+private fun CompilationResult.pass1Result() = FullCompilationResult(this, null)
 
-private fun CompilationResult.pass2Result(additionalMessages: String) =
-  FullCompilationResult(this, additionalMessages)
+private fun CompilationResult.pass2Result(additionalMessages: String) = FullCompilationResult(this, additionalMessages)
 
 internal fun compile(
   text: String,
   provider: SymbolProcessorProvider,
-  providerArgs: Map<String, String> = emptyMap()
+  providerArgs: Map<String, String> = emptyMap(),
 ): FullCompilationResult {
   val compilation = buildCompilation(text, provider, providerArgs)
   // fix problems with double compilation and KSP
@@ -99,7 +98,7 @@ internal fun compile(
 private fun buildCompilation(
   text: String,
   provider: SymbolProcessorProvider,
-  providerArgs: Map<String, String> = emptyMap()
+  providerArgs: Map<String, String> = emptyMap(),
 ) = KotlinCompilation().apply {
   symbolProcessorProviders = listOf(provider)
   kspArgs.putAll(providerArgs)
@@ -116,7 +115,10 @@ private val KotlinCompilation.kspGeneratedSourceFiles: List<SourceFile>
       .map { SourceFile.fromPath(it.absoluteFile) }
       .toList()
 
-private fun eval(expression: String, classesDirectory: File): Any? {
+private fun eval(
+  expression: String,
+  classesDirectory: File,
+): Any? {
   val classLoader = URLClassLoader(arrayOf(classesDirectory.toURI().toURL()))
   val fullClassName = getFullClassName(classesDirectory)
   val field = classLoader.loadClass(fullClassName).getDeclaredField(expression)

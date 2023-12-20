@@ -6,9 +6,8 @@ package at.kopyk
  *
  * The mutable equivalent to [Map.mapValues].
  */
-public inline fun <K, V> MutableMap<K, V>.mutateValues(
-  transform: (entry: Map.Entry<K, V>) -> V
-): MutableMap<K, V> = mutateValuesNotNull(transform)
+public inline fun <K, V> MutableMap<K, V>.mutateValues(transform: (entry: Map.Entry<K, V>) -> V): MutableMap<K, V> =
+  mutateValuesNotNull(transform)
 
 /**
  * Applies [transform] to each entry in the map,
@@ -16,33 +15,30 @@ public inline fun <K, V> MutableMap<K, V>.mutateValues(
  *
  * The mutable equivalent to [Map.mapValues].
  */
-public inline fun <K, V> MutableMap<K, V>.mutateValues(
-  transform: (key: K, value: V) -> V
-): MutableMap<K, V> = mutateValuesNotNull(transform)
+public inline fun <K, V> MutableMap<K, V>.mutateValues(transform: (key: K, value: V) -> V): MutableMap<K, V> =
+  mutateValuesNotNull(transform)
 
 /**
  * Applies [transform] to each entry in the map,
  * removing the item if `null` is returned.
  */
-public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
-  transform: (entry: Map.Entry<K, V>) -> V?
-): MutableMap<K, V> = apply {
-  with(iterator()) {
-    while (hasNext()) {
-      next().apply {
-        transform(this)?.also(::setValue) ?: remove()
+public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(transform: (entry: Map.Entry<K, V>) -> V?): MutableMap<K, V> =
+  apply {
+    with(iterator()) {
+      while (hasNext()) {
+        next().apply {
+          transform(this)?.also(::setValue) ?: remove()
+        }
       }
     }
   }
-}
 
 /**
  * Applies [transform] to each entry in the map,
  * removing the item if `null` is returned.
  */
-public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(
-  transform: (key: K, value: V) -> V?
-): MutableMap<K, V> = mutateValuesNotNull { (key, value) -> transform(key, value) }
+public inline fun <K, V> MutableMap<K, V>.mutateValuesNotNull(transform: (key: K, value: V) -> V?): MutableMap<K, V> =
+  mutateValuesNotNull { (key, value) -> transform(key, value) }
 
 /**
  * Removes any values in the map that are not type [V] and

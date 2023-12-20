@@ -36,7 +36,7 @@ import com.squareup.kotlinpoet.ksp.toTypeVariableName
 internal data class MutationInfo<out T : TypeName>(
   val className: T,
   val toMutable: (String) -> String,
-  val freeze: (String) -> String
+  val freeze: (String) -> String,
 )
 
 internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
@@ -51,35 +51,43 @@ internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
 
   val ClassName.parameterized: TypeName
   val KSPropertyDeclaration.typeName: TypeName
+
   fun KSType.hasMutableCopy(): Boolean
 
-  fun KSPropertyDeclaration.toAssignment(wrapper: (String) -> String, source: String? = null): String =
-    "$baseName = ${wrapper("${source ?: ""}$baseName")}"
+  fun KSPropertyDeclaration.toAssignment(
+    wrapper: (String) -> String,
+    source: String? = null,
+  ): String = "$baseName = ${wrapper("${source ?: ""}$baseName")}"
+
   fun Sequence<Pair<KSPropertyDeclaration, MutationInfo<TypeName>>>.joinAsAssignmentsWithMutation(
-    wrapper: MutationInfo<TypeName>.(String) -> String
+    wrapper: MutationInfo<TypeName>.(String) -> String,
   ) = joinToString { (prop, mut) -> prop.toAssignment({ wrapper(mut, it) }) }
 
-  fun buildFile(fileName: String, block: FileCompilerScope.() -> Unit): FileSpec =
-    FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
+  fun buildFile(
+    fileName: String,
+    block: FileCompilerScope.() -> Unit,
+  ): FileSpec = FileSpec.builder(packageName.asString(), fileName).also { toFileScope(it).block() }.build()
 
   fun toFileScope(file: FileSpec.Builder): FileCompilerScope
+
   fun KSClassDeclaration.asScope(): ClassCompileScope
+
   val KSClassDeclaration.properties: Sequence<KSPropertyDeclaration> get() = asScope().properties
 }
 
-internal fun TypeParameterResolver.invariant() = object : TypeParameterResolver {
-  override val parametersMap: Map<String, TypeVariableName>
-    get() = this@invariant.parametersMap.mapValues { (_, v) -> v.makeInvariant() }
-  override fun get(index: String): TypeVariableName =
-    this@invariant[index].makeInvariant()
-}
+internal fun TypeParameterResolver.invariant() =
+  object : TypeParameterResolver {
+    override val parametersMap: Map<String, TypeVariableName>
+      get() = this@invariant.parametersMap.mapValues { (_, v) -> v.makeInvariant() }
+
+    override fun get(index: String): TypeVariableName = this@invariant[index].makeInvariant()
+  }
 
 internal class ClassCompileScope(
   val classDeclaration: KSClassDeclaration,
   private val mutableCandidates: Sequence<KSDeclaration>,
-  override val logger: KSPLogger
+  override val logger: KSPLogger,
 ) : TypeCompileScope, KSClassDeclaration by classDeclaration {
-
   override val typeVariableNames: List<TypeVariableName> =
     classDeclaration.typeParameters.map { it.toTypeVariableName() }
   override val typeParameterResolver: TypeParameterResolver
@@ -112,9 +120,8 @@ internal class ClassCompileScope(
 internal class TypeAliasCompileScope(
   private val aliasDeclaration: KSTypeAlias,
   private val mutableCandidates: Sequence<KSDeclaration>,
-  override val logger: KSPLogger
+  override val logger: KSPLogger,
 ) : TypeCompileScope, KSTypeAlias by aliasDeclaration {
-
   init {
     requireNotNull(aliasDeclaration.ultimateDeclaration)
   }
@@ -162,21 +169,20 @@ internal class TypeAliasCompileScope(
 
 internal class FileCompilerScope(
   val element: TypeCompileScope,
-  val file: FileSpec.Builder
+  val file: FileSpec.Builder,
 ) {
-
   fun addFunction(
     name: String,
     receives: TypeName?,
     returns: TypeName,
-    block: FunSpec.Builder.() -> Unit = {}
+    block: FunSpec.Builder.() -> Unit = {},
   ) {
     file.addFunction(
       FunSpec.builder(name).apply {
         if (receives != null) receiver(receives)
         returns(returns)
         addTypeVariables(element.typeVariableNames.map { it.makeInvariant() })
-      }.apply(block).build()
+      }.apply(block).build(),
     )
   }
 
@@ -184,7 +190,7 @@ internal class FileCompilerScope(
     name: String,
     receives: TypeName?,
     returns: TypeName,
-    block: FunSpec.Builder.() -> Unit = {}
+    block: FunSpec.Builder.() -> Unit = {},
   ) {
     addFunction(name, receives, returns) {
       addModifiers(KModifier.INLINE)
@@ -201,8 +207,7 @@ internal class FileCompilerScope(
  * issue #62, this meant that [String?] was for example mapped
  * (incorrectly) to [String] when generating mutation info.
  */
-internal fun KSType.toClassNameRespectingNullability(): ClassName =
-  toClassName().copy(this.isMarkedNullable, emptyList(), emptyMap())
+internal fun KSType.toClassNameRespectingNullability(): ClassName = toClassName().copy(this.isMarkedNullable, emptyList(), emptyMap())
 
 internal fun KSType.toTypeNameRespectingNullability(typeParamResolver: TypeParameterResolver = TypeParameterResolver.EMPTY): TypeName =
   toTypeName(typeParamResolver).copy(this.isMarkedNullable, emptyList(), emptyMap())
@@ -211,12 +216,14 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
   when (ty.declaration) {
     is KSClassDeclaration -> {
       val typeName: TypeName = ty.toTypeNameRespectingNullability(typeParameterResolver)
-      val className = when (typeName) {
-        is ClassName -> typeName
-        is ParameterizedTypeName -> typeName.rawType
-        else -> ty.toClassNameRespectingNullability()
-      }
+      val className =
+        when (typeName) {
+          is ClassName -> typeName
+          is ParameterizedTypeName -> typeName.rawType
+          else -> ty.toClassNameRespectingNullability()
+        }
       val nullableLessClassName = className.copy(nullable = false)
+
       infix fun String.dot(function: String) = dot(ty, function)
       when {
         nullableLessClassName == LIST -> mutationInfoOfCollection(ty, className, className.simpleName)
@@ -226,15 +233,15 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
           MutationInfo(
             className.mutable,
             { it dot "toMutable" },
-            { it dot "freeze" }
+            { it dot "freeze" },
           )
         else ->
           MutationInfo(
             className.parameterizedWhenNotEmpty(
-              ty.arguments.map { it.toTypeName(typeParameterResolver) }
+              ty.arguments.map { it.toTypeName(typeParameterResolver) },
             ),
             { it },
-            { it }
+            { it },
           )
       }
     }
@@ -245,43 +252,51 @@ internal fun TypeCompileScope.mutationInfo(ty: KSType): MutationInfo<TypeName> =
 internal fun TypeCompileScope.mutationInfoOfCollection(
   ty: KSType,
   className: ClassName,
-  collectionType: String
+  collectionType: String,
 ): MutationInfo<TypeName> {
   infix fun String.dot(function: String) = dot(ty, function)
+
   infix fun String.dotMap(map: String) = dotMap(ty, map)
   val type = ty.arguments[0].type?.resolve()
   val isMutableCollection =
     (ty.arguments.size == 1 && type?.hasMutableCopy() == true)
-  val transform: (String) -> String = if (isMutableCollection) {
-    { it dotMap "it.toMutable()" dot "toMutable$collectionType" }
-  } else {
-    { it dot "toMutable$collectionType" }
-  }
-  val freeze: (String) -> String = if (isMutableCollection) {
-    { it dotMap "it.freeze()" }
-  } else {
-    { it }
-  }
+  val transform: (String) -> String =
+    if (isMutableCollection) {
+      { it dotMap "it.toMutable()" dot "toMutable$collectionType" }
+    } else {
+      { it dot "toMutable$collectionType" }
+    }
+  val freeze: (String) -> String =
+    if (isMutableCollection) {
+      { it dotMap "it.freeze()" }
+    } else {
+      { it }
+    }
   return MutationInfo(
     ClassName(className.packageName, "Mutable$collectionType")
       .copy(nullable = ty.isMarkedNullable, annotations = emptyList(), tags = emptyMap()).parameterizedWhenNotEmpty(
         type?.takeIf { isMutableCollection }?.toTypeName(typeParameterResolver)?.mutable?.let(::listOf)
-          ?: ty.arguments.map { it.toTypeName(typeParameterResolver) }
+          ?: ty.arguments.map { it.toTypeName(typeParameterResolver) },
       ),
     transform,
-    freeze
+    freeze,
   )
 }
 
-internal fun String.dot(ty: KSType, function: String) = if (ty.isMarkedNullable) {
+internal fun String.dot(
+  ty: KSType,
+  function: String,
+) = if (ty.isMarkedNullable) {
   "$this?.$function()"
 } else {
   "$this.$function()"
 }
 
-internal fun String.dotMap(ty: KSType, map: String) =
-  if (ty.isMarkedNullable) {
-    "$this?.map { $map }"
-  } else {
-    "$this.map { $map }"
-  }
+internal fun String.dotMap(
+  ty: KSType,
+  map: String,
+) = if (ty.isMarkedNullable) {
+  "$this?.map { $map }"
+} else {
+  "$this.map { $map }"
+}

@@ -16,9 +16,7 @@ package at.kopyk
  * _Note_: this function removes in-place only if [A] is a [MutableList],
  * otherwise it clears the collection and re-adds the values.
  */
-public inline fun <T : MutableCollection<A>, A> T.mutateAll(
-  transform: (A) -> A
-): T = mutateAllNotNull(transform)
+public inline fun <T : MutableCollection<A>, A> T.mutateAll(transform: (A) -> A): T = mutateAllNotNull(transform)
 
 /**
  * Applies [transform] to each element in the collection with the current item index,
@@ -36,9 +34,8 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAll(
  * _Note_: this function removes in-place only if [A] is a [MutableList],
  * otherwise it clears the collection and re-adds the values.
  */
-public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(
-  transform: (index: Int, value: A) -> A
-): T = mutateAllIndexedNotNull(transform)
+public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(transform: (index: Int, value: A) -> A): T =
+  mutateAllIndexedNotNull(transform)
 
 /**
  * Applies [transform] to each element in the collection,
@@ -51,10 +48,11 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexed(
  */
 @Suppress("UNCHECKED_CAST") // Ah, good old erasure
 public inline fun <T : MutableCollection<A>, A> T.mutateAllNotNull(
-  transform: (A) -> A?
-): T = apply {
-  (this as? MutableList<A>)?.mutateAllNotNull(transform) ?: clearThenAddAllNotNull(transform)
-}
+  transform: (A) -> A?,
+): T =
+  apply {
+    (this as? MutableList<A>)?.mutateAllNotNull(transform) ?: clearThenAddAllNotNull(transform)
+  }
 
 /**
  * Applies [transform] to each element in the list,
@@ -69,23 +67,21 @@ public inline fun <T : MutableCollection<A>, A> T.mutateAllNotNull(
  * }
  * ```
  */
-public inline fun <A> MutableList<A>.mutateAllNotNull(
-  transform: (A) -> A?
-): MutableList<A> = apply {
-  with(listIterator()) { while (hasNext()) transform(next())?.let(::set) ?: remove() }
-}
+public inline fun <A> MutableList<A>.mutateAllNotNull(transform: (A) -> A?): MutableList<A> =
+  apply {
+    with(listIterator()) { while (hasNext()) transform(next())?.let(::set) ?: remove() }
+  }
 
 /**
  * Removes all elements in a collection and transforms them,
  * leaving out any that are transformed to `null`.
  */
-public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(
-  transform: (A) -> A?
-): T = apply {
-  val remaining = mapNotNull(transform)
-  clear()
-  addAll(remaining)
-}
+public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(transform: (A) -> A?): T =
+  apply {
+    val remaining = mapNotNull(transform)
+    clear()
+    addAll(remaining)
+  }
 
 /**
  * Applies [transform] to each element in the list with the current item index,
@@ -103,9 +99,7 @@ public inline fun <T : MutableCollection<A>, A> T.clearThenAddAllNotNull(
  * _Note_: this function removes in-place only if [A] is a [MutableList],
  * otherwise it clears the collection and re-adds the values.
  */
-public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexedNotNull(
-  transform: (index: Int, value: A) -> A?
-): T {
+public inline fun <T : MutableCollection<A>, A> T.mutateAllIndexedNotNull(transform: (index: Int, value: A) -> A?): T {
   var index = 0
   return mutateAllNotNull { transform(index++, it) }
 }
