@@ -6,9 +6,6 @@ plugins {
 }
 
 val gradleJvmTarget = "11"
-val gradleKotlinTarget = "1.8"
-
-val kotlinVersion = "1.8.10"
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
@@ -21,23 +18,9 @@ dependencies {
     implementation(libs.gradlePlugin.dokka)
 }
 
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = gradleJvmTarget
-        apiVersion = gradleKotlinTarget
-        languageVersion = gradleKotlinTarget
-    }
-}
-
-
-kotlin {
-    jvmToolchain {
+java {
+    toolchain {
         (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(gradleJvmTarget))
     }
 }
 
-
-kotlinDslPluginOptions {
-    jvmTarget.set(gradleJvmTarget)
-}

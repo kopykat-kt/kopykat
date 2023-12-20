@@ -14,6 +14,7 @@ import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.Visibility
 import com.squareup.kotlinpoet.ClassName
@@ -93,6 +94,7 @@ internal class ClassCompileScope(
     get() = parameterizedWhenNotEmpty(typeVariableNames.map { it.makeInvariant() })
 
   override fun KSType.hasMutableCopy(): Boolean {
+    if (declaration is KSTypeParameter) return false
     val closestDecl = declaration.closestClassDeclaration()
     return closestDecl != null && closestDecl in mutableCandidates
   }

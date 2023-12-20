@@ -18,4 +18,5 @@ dependencies {
         )
     }
     implementation(libs.kotlinCompileTestingKsp)
+    implementation(libs.ksp)
 }

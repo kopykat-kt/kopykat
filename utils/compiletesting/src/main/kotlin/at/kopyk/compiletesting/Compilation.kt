@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalCompilerApi::class)
+
 package at.kopyk.compiletesting
 
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.tschuchort.compiletesting.CompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
@@ -13,6 +16,7 @@ import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Paths
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 
 private const val SOURCE_FILENAME = "Source.kt"
 
@@ -54,7 +58,7 @@ public fun String.evals(
 // =======================================
 
 internal data class FullCompilationResult(
-  val mainResult: KotlinCompilation.Result,
+  val mainResult: CompilationResult,
   val additionalMessages: String?
 ) {
   val exitCode = mainResult.exitCode
@@ -65,10 +69,10 @@ internal data class FullCompilationResult(
   }
 }
 
-private fun KotlinCompilation.Result.pass1Result() =
+private fun CompilationResult.pass1Result() =
   FullCompilationResult(this, null)
 
-private fun KotlinCompilation.Result.pass2Result(additionalMessages: String) =
+private fun CompilationResult.pass2Result(additionalMessages: String) =
   FullCompilationResult(this, additionalMessages)
 
 internal fun compile(
