@@ -14,6 +14,7 @@ import at.kopyk.utils.fullName
 import at.kopyk.utils.lang.joinWithWhen
 import at.kopyk.utils.lang.mapRun
 import at.kopyk.utils.lang.onEachRun
+import at.kopyk.utils.sanitizedName
 import at.kopyk.utils.typeCategory
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
@@ -33,7 +34,7 @@ internal val TypeCompileScope.copyMapFunctionKt: FileSpec
               defaultValue = "{ it }",
             )
           }
-          .mapRun { "$baseName = $baseName(this, this.$baseName)" }
+          .mapRun { "$sanitizedName = $sanitizedName(this, this.$sanitizedName)" }
           .run { addReturn(repeatOnSubclasses(joinToString(), "copy")) }
       }
     }

@@ -163,4 +163,15 @@ class CopyMapTest {
       |val r = p2.second
       """.evals("r" to 2)
   }
+
+  @Test
+  fun `keyword as fields, issue #93`() {
+    """
+      |data class Person(val `in`: String, val `out`: Int)
+      |
+      |val p1 = Person("Alex", 1)
+      |val p2 = p1.copyMap(`out` = { it + 1 })
+      |val r = p2.`out`
+      """.evals("r" to 2)
+  }
 }
