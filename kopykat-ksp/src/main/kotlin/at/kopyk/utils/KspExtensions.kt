@@ -6,7 +6,10 @@ import com.google.devtools.ksp.symbol.KSDeclarationContainer
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
 internal val KSDeclaration.baseName: String
-  get() = simpleName.asString().sanitize()
+  get() = simpleName.asString()
+
+internal val KSDeclaration.sanitizedName: String
+  get() = baseName.sanitize()
 
 internal val KSDeclaration.fullName: String
   get() = qualifiedName?.asString() ?: simpleName.asString()
@@ -36,10 +39,13 @@ private fun KSClassDeclaration.hasPrimaryProperty(property: KSPropertyDeclaratio
 /**
  * Sanitizes each delimited section if it matches with Kotlin reserved keywords.
  */
-private fun String.sanitize(
+internal fun String.sanitize(
   delimiter: String = ".",
   prefix: String = "",
-) = splitToSequence(delimiter).joinToString(delimiter, prefix) { if (it in KOTLIN_KEYWORDS) "`$it`" else it }
+): String =
+  splitToSequence(delimiter).joinToString(delimiter, prefix) {
+    if (it in KOTLIN_KEYWORDS) "`$it`" else it
+  }
 
 private val KOTLIN_KEYWORDS =
   setOf(

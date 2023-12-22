@@ -224,4 +224,15 @@ class MutableCopyTest {
       |val r = p2.d
       """.evals("r" to listOf("e", "f"))
   }
+
+  @Test
+  fun `keyword as fields, issue #93`() {
+    """
+    |data class Person(val `in`: String, val `out`: Int)
+    |
+    |val p1 = Person("Alex", 1)
+    |val p2 = p1.copy { `out` = `out` + 1 }
+    |val r = p2.`out`
+    """.evals("r" to 2)
+  }
 }
