@@ -1,3 +1,6 @@
+> This project is currently on maintenance mode. We recommend to try [Kopy](https://github.com/JavierSegoviaCordoba/kopy)
+> if you need a similar feature for Kotlin 2.x.
+
 One of the great features of Kotlin [data classes](https://kotlinlang.org/docs/data-classes.html) is
 their [`copy` method](https://kotlinlang.org/docs/data-classes.html#copying). But using it can become cumbersome very
 quickly, because you need to repeat the name of the field before and after.
