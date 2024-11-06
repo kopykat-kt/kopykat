@@ -57,7 +57,7 @@ internal sealed interface TypeCompileScope : KSDeclaration, LoggerScope {
   fun KSPropertyDeclaration.toAssignment(
     wrapper: (String) -> String,
     source: String? = null,
-  ): String = "$baseName = ${wrapper("${source ?: ""}$baseName")}"
+  ): String = "$sanitizedName = ${wrapper("${source ?: ""}$sanitizedName")}"
 
   fun Sequence<Pair<KSPropertyDeclaration, MutationInfo<TypeName>>>.joinAsAssignmentsWithMutation(
     wrapper: MutationInfo<TypeName>.(String) -> String,

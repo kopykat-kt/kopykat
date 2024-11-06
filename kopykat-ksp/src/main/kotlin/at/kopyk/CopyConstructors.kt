@@ -11,6 +11,7 @@ import at.kopyk.utils.fullName
 import at.kopyk.utils.getPrimaryConstructorProperties
 import at.kopyk.utils.lang.takeIfInstanceOf
 import at.kopyk.utils.minimal
+import at.kopyk.utils.sanitizedName
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
@@ -75,7 +76,7 @@ private fun TypeCompileScope.copyConstructorFileSpec(
           to.properties.toList().zipByName(from.getAllProperties().toList()) { to, from ->
             propertyDefinition(others, from, to)
           }.filterNotNull()
-        addReturn("${to.baseName}(${propertyAssignments.joinToString()})")
+        addReturn("${to.sanitizedName}(${propertyAssignments.joinToString()})")
       }
     }
   }
@@ -94,10 +95,10 @@ private fun propertyDefinition(
 ): String? {
   val fromType = from.typeDeclaration
   val toType = to.typeDeclaration
-  val propertyName = from.baseName
+  val propertyName = from.sanitizedName
   return when {
     fromType == null || toType == null -> null
-    others.hasCopyConstructor(fromType, toType) -> "$propertyName = ${toType.baseName}(from.$propertyName)"
+    others.hasCopyConstructor(fromType, toType) -> "$propertyName = ${toType.sanitizedName}(from.$propertyName)"
     else -> "$propertyName = from.$propertyName"
   }
 }
